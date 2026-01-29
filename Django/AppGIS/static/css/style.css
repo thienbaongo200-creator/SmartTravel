@@ -249,3 +249,319 @@ footer ul li a:hover {
 .social-links a:hover {
   color: #6a11cb;
 }
+
+.dropdown {
+    position: relative;
+}
+
+.dropdown > a {
+    cursor: pointer;
+    position: relative;
+    padding: 10px 15px;
+    color: #fff;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.dropdown > a::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 0;
+    height: 2px;
+    background: #f1c40f;
+    transition: all 0.3s ease;
+    transform: translateX(-50%);
+}
+.dropdown > a:hover::after {
+    width: 100%;
+}
+.dropdown > a:hover {
+    color: #f1c40f;
+}
+
+.dropdown_menu {
+    display: block;
+    position: absolute;
+    background: #2980b9;
+    list-style: none;
+    padding: 10px 0;
+    margin: 0;
+    border-radius: 8px;
+    min-width: 200px;
+    top: 120%;
+    left: 50%;
+    transform: translateX(-50%) translateY(10px);
+    opacity: 0;
+    visibility: hidden;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+    transition: all 0.35s ease;
+    z-index: 1000;
+}
+
+.dropdown_menu li {
+    padding: 8px 20px;
+}
+.dropdown_menu li a {
+    color: #fff;
+    text-decoration: none;
+    display: block;
+    transition: background 0.3s ease, padding-left 0.3s ease;
+}
+.dropdown_menu li a:hover {
+    background: #3498db;
+    padding-left: 25px;
+}
+
+.dropdown:hover .dropdown_menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+}
+.navbar_links li a {
+    position: relative;
+    text-decoration: none;
+    color: #fff;
+    padding: 8px 12px;
+}
+
+.navbar_links li a::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 0;
+    height: 2px;
+    background: #3498db;
+    transition: all 0.3s ease;
+    transform: translateX(-50%);
+}
+
+.navbar_links li a:hover::after {
+    width: 100%;
+}
+body, html {
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', sans-serif;
+            background-color: #f9f9f9;
+        }
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(90deg, #3498db, #2980b9);
+            padding: 10px 30px;
+            color: #fff;
+        }
+        .navbar_logo img {
+            height: 50px;
+            border-radius: 6px;
+        }
+        .navbar_links {
+            list-style: none;
+            display: flex;
+            gap: 20px;
+            margin: 0;
+        }
+        .navbar_links li a {
+            text-decoration: none;
+            color: #fff;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        .navbar_links li a:hover {
+            color: #ffd700;
+        }
+        main.container {
+            padding: 30px;
+            min-height: 70vh;
+        }
+        footer {
+            background: #2c3e50;
+            color: #fff;
+            text-align: center;
+            padding: 15px 0;
+            margin-top: 40px;
+        }
+        footer ul {
+            list-style: none;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            padding: 0;
+            margin: 0 0 10px 0;
+        }
+        footer ul li a {
+            color: #fff;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        footer ul li a:hover {
+            color: #3498db;
+        }
+body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            margin: 0;
+            padding: 0;
+        }
+        .about_section {
+            max-width: 900px;
+            margin: 40px auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .about_section h2 {
+            color: #3498db;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .about_section ul {
+            line-height: 1.8;
+        }
+body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            margin: 0;
+            padding: 0;
+        }
+        .events_section {
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+        .events_section h2 {
+            color: #3498db;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .events_section div {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        .event_card {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .event_card h3 {
+            color: #2980b9;
+            margin-top: 0;
+        }
+body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background: #f4f6f8;
+        }
+        #banner {
+            text-align: center;
+            padding: 40px;
+            background: #ecf0f1;
+        }
+        #banner h1 {
+            margin: 0 0 10px;
+        }
+        #banner p {
+            margin: 0 0 20px;
+        }
+        #banner .btn {
+            background: #3498db;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+        }
+        #map {
+            height: 600px;
+            margin: 30px auto;
+            max-width: 1200px;
+        }
+body {
+      font-family: 'Roboto', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f9f9f9;
+    }
+    .contact_section {
+      max-width: 800px;
+      margin: 50px auto;
+      background: #fff;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .contact_section h2 {
+      text-align: center;
+      color: #3498db;
+      margin-bottom: 20px;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    input, textarea {
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    button {
+      background: #3498db;
+      color: #fff;
+      border: none;
+      padding: 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    button:hover {
+      background: #2980b9;
+    }
+    .contact-info {
+      margin-top: 30px;
+      text-align: center;
+    }
+    .contact-info p {
+      margin: 5px 0;
+    }
+    .social-links {
+      margin-top: 20px;
+      text-align: center;
+    }
+    .social-links a {
+      margin: 0 10px;
+      text-decoration: none;
+      color: #3498db;
+      font-size: 20px;
+    }
+    .social-links a:hover {
+      color: #2980b9;
+    }
+body { font-family: 'Roboto', sans-serif; margin:0; padding:0; background:#f9f9f9; }
+    .destination_section { max-width: 1000px; margin: 50px auto; padding: 20px; }
+    .destination_section h2 { text-align:center; color:#3498db; margin-bottom:30px; }
+    .destination-list { display:grid; grid-template-columns: repeat(auto-fit,minmax(280px,1fr)); gap:20px; }
+    .destination-item { background:#fff; padding:20px; border-radius:8px; box-shadow:0 4px 10px rgba(0,0,0,0.1); }
+    .destination-item h3 { color:#2980b9; margin-bottom:10px; }
+    .destination-item p { font-size:14px; color:#555; }
+    .card-img-top {
+    width: 100%;
+    height: 220px; 
+    object-fit: cover; 
+    border-top-left-radius: 0.5rem;
+    border-top-right-radius: 0.5rem;
+}
+body { font-family: 'Roboto', sans-serif; margin:0; padding:0; background:#f9f9f9; }
+    .service_section { max-width: 1000px; margin: 50px auto; padding: 20px; }
+    .service_section h2 { text-align:center; color:#3498db; margin-bottom:30px; }
+    .service-list { display:grid; grid-template-columns: repeat(auto-fit,minmax(280px,1fr)); gap:20px; }
+    .service-item { background:#fff; padding:20px; border-radius:8px; box-shadow:0 4px 10px rgba(0,0,0,0.1); }
+    .service-item h3 { color:#2980b9; margin-bottom:10px; }
+    .service-item p { font-size:14px; color:#555; }

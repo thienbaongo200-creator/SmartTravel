@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Liên hệ - Smart Travel Map{% endblock %}
+
+{% block content %}
+<section class="contact_section">
+    <h2>Liên hệ với chúng tôi</h2>
+    <form method="post">
+        {% csrf_token %}
+        <input type="text" name="name" placeholder="Tên của bạn" required>
+        <input type="email" name="email" placeholder="Email" required>
+        <textarea name="message" placeholder="Tin nhắn" rows="5" required></textarea>
+        <button type="submit">Gửi</button>
+    </form>
+
+    <div class="contact-info">
+        <p><strong>Email:</strong> support@smarttourism.vn</p>
+        <p><strong>Điện thoại:</strong> +84 2245426</p>
+        <p><strong>Địa chỉ:</strong> Trung tâm hỗ trợ du lịch, TP.HCM</p>
+    </div>
+
+    <div class="social-links">
+        <a href="#"><i class="fa-brands fa-facebook"></i></a>
+        <a href="#"><i class="fa-brands fa-instagram"></i></a>
+        <a href="#"><i class="fa-brands fa-twitter"></i></a>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://kit.fontawesome.com/769a7475d7.js" crossorigin="anonymous"></script>
+{% endblock %}

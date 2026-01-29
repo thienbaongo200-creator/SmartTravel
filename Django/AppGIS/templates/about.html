@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Giới Thiệu{% endblock %}
+
+{% block content %}
+<section class="about_section py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold">Giới thiệu về Smart Travel Map</h2>
+            <p class="text-muted">
+                Nền tảng trực tuyến giúp du khách khám phá điểm đến, sự kiện và dịch vụ du lịch một cách trực quan, tiện lợi và hiện đại.
+            </p>
+        </div>
+
+        <div class="row align-items-center mb-5">
+            <div class="col-md-6">
+                <img src="{% static 'images/logo.jpg' %}" alt="Smart Travel Map" class="img-fluid rounded shadow">
+            </div>
+            <div class="col-md-6">
+                <h4 class="fw-bold">Sứ mệnh của chúng tôi</h4>
+                <p>
+                    Smart Travel Map hướng tới việc trở thành người bạn đồng hành tin cậy của du khách, 
+                    mang đến trải nghiệm du lịch thông minh, an toàn và bền vững.
+                </p>
+                <ul>
+                    <li><strong>Cung cấp thông tin:</strong> Chính xác, cập nhật liên tục.</li>
+                    <li><strong>Hỗ trợ du lịch bền vững:</strong> Khuyến khích trải nghiệm thân thiện với môi trường.</li>
+                    <li><strong>Kết nối cộng đồng:</strong> Tạo cầu nối giữa du khách và doanh nghiệp địa phương.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="row text-center mb-5">
+            <h4 class="fw-bold mb-4">Tính năng nổi bật</h4>
+            <div class="col-md-4">
+                <i class="bi bi-map fs-1 text-primary"></i>
+                <h5 class="mt-3">Bản đồ tương tác</h5>
+                <p>Khám phá điểm đến dễ dàng với bản đồ trực quan, chi tiết.</p>
+            </div>
+            <div class="col-md-4">
+                <i class="bi bi-search fs-1 text-success"></i>
+                <h5 class="mt-3">Tìm kiếm nhanh</h5>
+                <p>Tìm sự kiện, dịch vụ và địa điểm chỉ trong vài giây.</p>
+            </div>
+            <div class="col-md-4">
+                <i class="bi bi-translate fs-1 text-warning"></i>
+                <h5 class="mt-3">Đa ngôn ngữ</h5>
+                <p>Hỗ trợ nhiều ngôn ngữ để phục vụ du khách quốc tế.</p>
+            </div>
+        </div>
+
+        <div class="text-center">
+            <h4 class="fw-bold">Đơn vị phát triển</h4>
+            <p>
+                Smart Travel Map được nghiên cứu và phát triển bởi <strong>Nhóm GIS Hotel</strong>, 
+                với đội ngũ chuyên gia giàu kinh nghiệm trong lĩnh vực công nghệ bản đồ và du lịch.
+            </p>
+        </div>
+    </div>
+</section>
+{% endblock %}
