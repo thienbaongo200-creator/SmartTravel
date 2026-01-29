@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Trang Chủ{% endblock %}
+
+{% block content %}
+<section id="banner">
+    <h1>Bản đồ du lịch thông minh</h1>
+    <p>Khám phá địa điểm nổi bật và lên kế hoạch chuyến đi dễ dàng</p>
+    <a href="#map" class="btn">Khám phá ngay</a>
+</section>
+
+<div id="map"></div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+    var map = L.map('map').setView([10.762622, 106.660172], 12);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '© OpenStreetMap'
+    }).addTo(map);
+
+    fetch("{% static 'data/data.geojson' %}")
+      .then(res => res.json())
+      .then(data => {
+          L.geoJSON(data, {
+              onEachFeature: function (feature, layer) {
+                  let p = feature.properties;
+                  let popupContent = `
+                    <div style="text-align:center;">
+                      <h3 style="color:#3498db;">${p.name}</h3>
+                      <img src="${p.img}" width="220" style="border-radius:8px; margin:10px 0;">
+                      <p><strong>Loại:</strong> ${p.type || "Địa điểm"}</p>
+                      <p><strong>Đánh giá:</strong> ⭐ ${p.rating || "Chưa có"}</p>
+                      <p><strong>Địa chỉ:</strong> ${p.address || "Đang cập nhật"}</p>
+                      <p><strong>Giờ mở cửa:</strong> ${p.open_hours || "Không rõ"}</p>
+                      <p>${p.desc}</p>
+                    </div>
+                  `;
+                  layer.bindPopup(popupContent);
+              }
+          }).addTo(map);
+      });
+</script>
+{% endblock %}
