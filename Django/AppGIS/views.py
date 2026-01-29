@@ -1,16 +1,20 @@
 from django.shortcuts import render, HttpResponse
-from .models import TodoItem
 
 # Create your views here.
-def index(requets):
-    return render(requets, 'home.html')
-def about(requets):
-    return render(requets, 'about.html')
-def destination(requets):
-    return render(requets, 'destination.html')
+def index(request):
+    return render(request, 'home.html')
+
+def about(request):
+    return render(request, 'about.html')
+
+def destinations(request):
+    return render(request, 'destinations.html')
+
 def events(request):
     return render(request, 'events.html')
+
 def services(request):
     return render(request, 'services.html')
+
 def contact(request):
     return render(request, 'contact.html')
