@@ -6,8 +6,8 @@ def index(requets):
     return render(requets, 'home.html')
 def about(requets):
     return render(requets, 'about.html')
-def destination(requets):
-    return render(requets, 'destination.html')
+def destinations(requets):
+    return render(requets, 'destinations.html')
 def events(request):
     return render(request, 'events.html')
 def services(request):
