@@ -27,10 +27,6 @@ def contact(request):
 # ==============================
 # Tool WebGIS
 # ==============================
-def map_view(request):
-    points = TourismPoint.objects.all()
-    return render(request, "map.html", {"points": points})
-
 def search(request):
     query = request.GET.get("q", "")
     results = TourismPoint.objects.filter(name__icontains=query)
