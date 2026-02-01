@@ -151,17 +151,98 @@ footer ul li a:hover {
   transform: scale(1.05);
 }
 
-/* =========================
-   MAP
-========================= */
-#map {
-  height: 600px;
-  margin: 30px auto;
-  max-width: 1200px;
-  border-radius: 12px;
-  box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+/* ========================= 
+MAP CONTAINER 
+========================= */ 
+.map-container {
+  display: flex; 
+  max-width: 1200px; 
+  margin: 30px auto; 
+  gap: 20px; /* khoảng cách giữa sidebar và map */ 
+} 
+
+/* ========================= 
+SIDEBAR (Transport Options) 
+========================= */ 
+#sidebar { 
+  width: 220px; 
+  background: linear-gradient(180deg, #fdfbfb, #ebedee); /* nền sáng nhẹ */ 
+  padding: 20px; 
+  border-radius: 12px; 
+  border: 1px solid #e0e0e0; 
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08); 
+  transition: transform 0.3s ease; 
+} 
+/* Ẩn sidebar khi toggle */ 
+#sidebar.hidden { 
+  transform: translateX(-250px); 
+  opacity: 0; 
+  pointer-events: none; 
+} 
+/* Nội dung trong sidebar */ 
+#sidebar h3 { 
+  margin-top: 0; 
+  color: #3498db; 
+  text-align: center;
+  font-weight: 600; 
+  margin-bottom: 15px; 
+} 
+#sidebar ul { 
+  list-style: none; 
+  padding: 0; 
+} 
+#sidebar li { 
+  padding: 12px; 
+  margin: 8px 0; 
+  background: #ffffff;
+  border-radius: 8px; 
+  cursor: pointer; 
+  text-align: center; 
+  font-weight: 500; 
+  color: #2c3e50; 
+  transition: all 0.3s ease; 
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05); 
+} 
+#sidebar li:hover { 
+  background: linear-gradient(135deg, #6a11cb, #2575fc); 
+  color: #fff; 
+  transform: translateX(5px); 
+} 
+#sidebar li.active { 
+  background: linear-gradient(135deg, #6a11cb, #2575fc); 
+  color: #fff; 
+  font-weight: bold; 
 }
 
+/* ========================= 
+  MAP
+========================= */ 
+#map { 
+  flex: 1; /* chiếm hết phần còn lại */ 
+  height: 600px;
+  border-radius: 12px; 
+  box-shadow: 0 6px 15px rgba(0,0,0,0.1); 
+} 
+/* ========================= 
+TOGGLE BUTTON 
+========================= */ 
+#toggleSidebar { 
+  position: absolute; 
+  top: 110px; 
+  left: 10px; 
+  z-index: 1000; 
+  background: #3498db; 
+  color: #fff; 
+  border: none; 
+  padding: 8px 14px; 
+  border-radius: 6px; 
+  cursor: pointer;
+  font-weight: bold; 
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+} 
+ #toggleSidebar:hover { 
+  background: #2575fc; 
+}
 /* =========================
    SECTIONS (About, Events, Destinations, Services, Contact)
 ========================= */
