@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Điểm đến{% endblock %}
+
+{% block content %}
+<section class="destinations_section py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold">Khám phá các điểm đến nổi bật</h2>
+            <p class="text-muted">
+                Smart Travel Map giới thiệu những địa điểm du lịch hấp dẫn, mang đến trải nghiệm văn hóa, lịch sử và giải trí đa dạng cho du khách.
+            </p>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <img src="{% static 'images/ChoBenThanh.jpg' %}" class="card-img-top" alt="Chợ Bến Thành">
+                    <div class="card-body">
+                        <h5 class="card-title">Chợ Bến Thành</h5>
+                        <p class="card-text">
+                            Biểu tượng của TP.HCM, nơi du khách có thể mua sắm, thưởng thức ẩm thực và trải nghiệm văn hóa địa phương.
+                        </p>
+                        <ul>
+                            <li><strong>Địa chỉ:</strong> Quận 1, TP.HCM</li>
+                            <li><strong>Giờ mở cửa:</strong> 7:00 - 19:00</li>
+                            <li><strong>Hoạt động nổi bật:</strong> Mua sắm, ẩm thực đường phố</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <img src="{% static 'images/NhaThoDucBa.jpg' %}" class="card-img-top" alt="Nhà thờ Đức Bà">
+                    <div class="card-body">
+                        <h5 class="card-title">Nhà thờ Đức Bà</h5>
+                        <p class="card-text">
+                            Công trình kiến trúc cổ kính mang đậm dấu ấn Pháp, là điểm check-in nổi tiếng và biểu tượng văn hóa của thành phố.
+                        </p>
+                        <ul>
+                            <li><strong>Địa chỉ:</strong> Quận 1, TP.HCM</li>
+                            <li><strong>Giờ mở cửa:</strong> 8:00 - 18:00</li>
+                            <li><strong>Hoạt động nổi bật:</strong> Tham quan, chụp ảnh</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <img src="{% static 'images/DinhDocLap.jpg' %}" class="card-img-top" alt="Dinh Độc Lập">
+                    <div class="card-body">
+                        <h5 class="card-title">Dinh Độc Lập</h5>
+                        <p class="card-text">
+                            Di tích lịch sử quốc gia, nơi lưu giữ nhiều dấu ấn quan trọng của Việt Nam, thu hút đông đảo du khách trong và ngoài nước.
+                        </p>
+                        <ul>
+                            <li><strong>Địa chỉ:</strong> Quận 1, TP.HCM</li>
+                            <li><strong>Giờ mở cửa:</strong> 7:30 - 17:00</li>
+                            <li><strong>Hoạt động nổi bật:</strong> Tham quan lịch sử, triển lãm</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-5">
+            <h4 class="fw-bold">Còn nhiều điểm đến hấp dẫn khác</h4>
+            <p class="text-muted">Hãy tiếp tục khám phá để có trải nghiệm du lịch trọn vẹn cùng Smart Travel Map.</p>
+        </div>
+    </div>
+</section>
+{% endblock %}

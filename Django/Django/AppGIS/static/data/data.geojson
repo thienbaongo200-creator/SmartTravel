@@ -1,0 +1,69 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.700981, 10.776889]
+      },
+      "properties": {
+        "name": "Khách sạn Rex",
+        "img": "/static/images/hotel_rex.jpg",
+        "type": "Khách sạn",
+        "rating": "4.5",
+        "address": "141 Nguyễn Huệ, Quận 1, TP.HCM",
+        "open_hours": "24/7",
+        "desc": "Khách sạn 5 sao nổi tiếng tại trung tâm Sài Gòn."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.693333, 10.776111]
+      },
+      "properties": {
+        "name": "Nhà hàng Ngon",
+        "img": "/static/images/restaurant_ngon.jpg",
+        "type": "Nhà hàng",
+        "rating": "4.3",
+        "address": "160 Pasteur, Quận 1, TP.HCM",
+        "open_hours": "09:00 - 22:00",
+        "desc": "Ẩm thực Việt Nam truyền thống với không gian cổ kính."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.698333, 10.772222]
+      },
+      "properties": {
+        "name": "Tour Chợ Bến Thành",
+        "img": "/static/images/tour_ben_thanh.jpg",
+        "type": "Tour du lịch",
+        "rating": "4.2",
+        "address": "Quận 1, TP.HCM",
+        "open_hours": "08:00 - 17:00",
+        "desc": "Tour tham quan chợ Bến Thành và trải nghiệm văn hóa địa phương."
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.6625, 10.7625]
+      },
+      "properties": {
+        "name": "Trạm xe buýt Bến Thành",
+        "img": "/static/images/bus_station.jpg",
+        "type": "Phương tiện di chuyển",
+        "rating": "3.8",
+        "address": "Quận 1, TP.HCM",
+        "open_hours": "05:00 - 22:00",
+        "desc": "Trạm trung chuyển xe buýt lớn nhất thành phố."
+      }
+    }
+  ]
+}
