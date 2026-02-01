@@ -12,8 +12,21 @@
     </div>
 </section>
 
-<div id="map"></div>
-
+<!-- Container chứa sidebar và map --> 
+    <div class="map-container"> 
+        <!-- Sidebar --> 
+        <div id="sidebar"> 
+            <h3>Phương tiện đi lại</h3> 
+            <ul> 
+                <li onclick="selectTransport('walking', this)">🚶 Đi bộ</li> 
+                <li onclick="selectTransport('motorbike', this)">🛵 Xe máy</li> 
+                <li onclick="selectTransport('car', this)">🚗 Ô tô</li> 
+                <li onclick="selectTransport('bus', this)">🚌 Xe buýt</li> 
+            </ul> 
+        </div> 
+        <!-- Map --> 
+        <div id="map"></div> 
+    </div>
 {% endblock %}
 
 {% block scripts %}
