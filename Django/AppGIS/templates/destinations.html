@@ -14,56 +14,37 @@
         </div>
 
         <div class="row">
+            {% for point in points %}
             <div class="col-md-4 mb-4">
                 <div class="card h-100 shadow-sm">
-                    <img src="{% static 'images/ChoBenThanh.jpg' %}" class="card-img-top" alt="Chợ Bến Thành">
+                    {% if point.img %}
+                        <img src="{{ point.img }}" class="card-img-top" alt="{{ point.name }}">
+                    {% else %}
+                        <img src="{% static 'images/default.jpg' %}" class="card-img-top" alt="No image">
+                    {% endif %}
                     <div class="card-body">
-                        <h5 class="card-title">Chợ Bến Thành</h5>
-                        <p class="card-text">
-                            Biểu tượng của TP.HCM, nơi du khách có thể mua sắm, thưởng thức ẩm thực và trải nghiệm văn hóa địa phương.
-                        </p>
+                        <h5 class="card-title">{{ point.name }}</h5>
+                        <p class="card-text">{{ point.description|truncatewords:25 }}</p>
                         <ul>
-                            <li><strong>Địa chỉ:</strong> Quận 1, TP.HCM</li>
-                            <li><strong>Giờ mở cửa:</strong> 7:00 - 19:00</li>
-                            <li><strong>Hoạt động nổi bật:</strong> Mua sắm, ẩm thực đường phố</li>
+                            {% if point.address %}
+                                <li><strong>Địa chỉ:</strong> {{ point.address }}</li>
+                            {% endif %}
+                            {% if point.open_hours %}
+                                <li><strong>Giờ mở cửa:</strong> {{ point.open_hours }}</li>
+                            {% endif %}
+                            {% if point.type %}
+                                <li><strong>Loại hình:</strong> {{ point.type }}</li>
+                            {% endif %}
+                            {% if point.rating %}
+                                <li><strong>Đánh giá:</strong> ⭐ {{ point.rating }}</li>
+                            {% endif %}
                         </ul>
                     </div>
                 </div>
             </div>
-
-            <div class="col-md-4 mb-4">
-                <div class="card h-100 shadow-sm">
-                    <img src="{% static 'images/NhaThoDucBa.jpg' %}" class="card-img-top" alt="Nhà thờ Đức Bà">
-                    <div class="card-body">
-                        <h5 class="card-title">Nhà thờ Đức Bà</h5>
-                        <p class="card-text">
-                            Công trình kiến trúc cổ kính mang đậm dấu ấn Pháp, là điểm check-in nổi tiếng và biểu tượng văn hóa của thành phố.
-                        </p>
-                        <ul>
-                            <li><strong>Địa chỉ:</strong> Quận 1, TP.HCM</li>
-                            <li><strong>Giờ mở cửa:</strong> 8:00 - 18:00</li>
-                            <li><strong>Hoạt động nổi bật:</strong> Tham quan, chụp ảnh</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-4 mb-4">
-                <div class="card h-100 shadow-sm">
-                    <img src="{% static 'images/DinhDocLap.jpg' %}" class="card-img-top" alt="Dinh Độc Lập">
-                    <div class="card-body">
-                        <h5 class="card-title">Dinh Độc Lập</h5>
-                        <p class="card-text">
-                            Di tích lịch sử quốc gia, nơi lưu giữ nhiều dấu ấn quan trọng của Việt Nam, thu hút đông đảo du khách trong và ngoài nước.
-                        </p>
-                        <ul>
-                            <li><strong>Địa chỉ:</strong> Quận 1, TP.HCM</li>
-                            <li><strong>Giờ mở cửa:</strong> 7:30 - 17:00</li>
-                            <li><strong>Hoạt động nổi bật:</strong> Tham quan lịch sử, triển lãm</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
+            {% empty %}
+            <p class="text-center">Chưa có điểm đến nào được thêm vào hệ thống.</p>
+            {% endfor %}
         </div>
 
         <div class="text-center mt-5">
