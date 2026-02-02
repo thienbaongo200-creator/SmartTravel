@@ -4,44 +4,20 @@
 {% block title %}Trang Chủ - Bản đồ du lịch{% endblock %}
 
 {% block content %}
+<!-- Font Awesome -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-<style>
-    .map-container { position: relative; display: flex; height: 600px; border: 1px solid #ddd; }
-    #map { flex: 1; height: 100%; z-index: 1; }
-    
-    /* Bảng thông tin giống Google Maps */
-    #info-panel {
-        position: absolute; top: 10px; left: 10px; z-index: 1000;
-        width: 320px; background: white; padding: 0;
-        border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        display: none; max-height: 90%; overflow-y: auto;
-    }
-    .info-header img { width: 100%; height: 180px; object-fit: cover; border-radius: 8px 8px 0 0; }
-    .info-body { padding: 15px; }
-    .info-body h2 { margin: 0 0 10px 0; color: #1a73e8; font-size: 20px; }
-    .info-body p { margin: 5px 0; font-size: 14px; color: #555; }
-    .close-btn { position: absolute; top: 5px; right: 10px; font-size: 20px; cursor: pointer; color: white; text-shadow: 1px 1px 3px #000; z-index: 1001; }
-    
-    #search-bar { margin: 20px 0; text-align: center; }
-    #searchBox { padding: 10px; width: 300px; border: 1px solid #ccc; border-radius: 4px; outline: none; }
-    #search-bar button { padding: 10px 15px; margin: 2px; cursor: pointer; border-radius: 4px; border: 1px solid #ddd; background: white; transition: 0.3s; }
-    #search-bar button:hover { background: #f0f0f0; }
-    .btn-primary { background: #1a73e8 !important; color: white !important; border: none !important; }
-    
-    /* Sidebar cũ nếu bạn vẫn muốn dùng */
-    #sidebar { width: 200px; background: #f8f9fa; padding: 15px; border-right: 1px solid #ddd; }
-    #sidebar ul { list-style: none; padding: 0; }
-    #sidebar li { padding: 10px; cursor: pointer; border-bottom: 1px solid #eee; }
-    #sidebar li:hover { background: #e9ecef; }
-</style>
+<!-- Custom CSS -->
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
 
+<!-- Banner -->
 <section id="banner" style="background:url('{% static "images/banner_travel.jpg" %}') center/cover no-repeat; color:white; text-align:center; padding:60px 20px;">
     <h1>Bản đồ du lịch thông minh</h1>
 </section>
 
+<!-- Thanh tìm kiếm -->
 <div id="search-bar">
     <input type="text" id="searchBox" placeholder="Nhập tên địa điểm (vd: Nhà Thờ Đức Bà)...">
-    <button onclick="searchPlace()" class="btn-primary">Tìm kiếm</button>
+    <button onclick="searchPlace()" class="btn-primary"><i class="fa-solid fa-magnifying-glass"></i> Tìm kiếm</button>
     <button onclick="locateUser()"><i class="fa-solid fa-location-crosshairs"></i> Vị trí của tôi</button>
     <hr style="width: 50%; margin: 10px auto; border: 0.5px solid #eee;">
     <button onclick="filterCategory('restaurant')"><i class="fa-solid fa-utensils"></i> Nhà hàng</button>
@@ -52,7 +28,9 @@
     <button onclick="filterCategory('atm')"><i class="fa-solid fa-credit-card"></i> ATM</button>
 </div>
 
+<!-- Container chứa sidebar và map -->
 <div class="map-container"> 
+    <!-- Sidebar phương tiện -->
     <div id="sidebar"> 
         <h3>Phương tiện</h3> 
         <ul> 
@@ -63,14 +41,17 @@
         </ul> 
     </div> 
 
+    <!-- Info panel -->
     <div id="info-panel">
         <span class="close-btn" onclick="document.getElementById('info-panel').style.display='none'">×</span>
         <div id="info-content"></div>
     </div>
 
+    <!-- Bản đồ -->
     <div id="map"></div> 
 </div>
 
+<!-- Loading overlay -->
 <div id="loading" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.8); z-index:9999; text-align:center; padding-top:200px; font-size:24px;">
     <i class="fa-solid fa-spinner fa-spin"></i> Đang xác định vị trí...
 </div>
