@@ -18,7 +18,7 @@
     <button onclick="filterCategory('hotel')"><i class="fa-solid fa-bed"></i> Khách sạn</button>
     <button onclick="filterCategory('attraction')"><i class="fa-solid fa-camera"></i> Điểm tham quan</button>
     <button onclick="filterCategory('museum')"><i class="fa-solid fa-landmark"></i> Bảo tàng</button>
-    <button onclick="filterCategory('transport')"><i class="fa-solid fa-bus"></i> Phương tiện công cộng</button>
+    <!-- <button onclick="filterCategory('transport')"><i class="fa-solid fa-bus"></i> Phương tiện công cộng</button> -->
     <button onclick="filterCategory('pharmacy')"><i class="fa-solid fa-prescription-bottle-medical"></i> Hiệu thuốc</button>
     <button onclick="filterCategory('atm')"><i class="fa-solid fa-credit-card"></i> ATM</button>
 </div>
@@ -46,12 +46,12 @@
 <div class="map-container"> 
     <!-- Sidebar -->
     <div id="sidebar"> 
-        <h3>Phương tiện đi lại</h3> 
+        <h3> Phương tiện công cộng</h3> 
         <ul> 
-            <li onclick="selectTransport('walking', this)">🚶 Đi bộ</li> 
-            <li onclick="selectTransport('motorbike', this)">🛵 Xe máy</li> 
-            <li onclick="selectTransport('car', this)">🚗 Ô tô</li> 
-            <li onclick="selectTransport('bus', this)">🚌 Xe buýt</li> 
+            <li onclick="selectTransport('walking', this)"><i class="fa-solid fa-person-walking"></i> Đi bộ</li> 
+            <li onclick="selectTransport('motorbike', this)"><i class="fa-solid fa-motorcycle"></i> Xe máy</li> 
+            <li onclick="selectTransport('car', this)"><i class="fa-solid fa-car"></i> Ô tô</li> 
+            <li onclick="selectTransport('bus', this)"><i class="fa-solid fa-bus"></i> Xe buýt</li> 
         </ul> 
     </div> 
 
