@@ -12,4 +12,5 @@ urlpatterns = [
     #Tool WebGIS
     path('search/', views.search, name='search'),
     path('distance/', views.distance, name='distance'),
+    path("distance/<int:point_id>/", views.get_distance, name="get_distance"),
 ]

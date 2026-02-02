@@ -4,9 +4,10 @@
 {% block title %}Trang Chủ - Bản đồ du lịch{% endblock %}
 
 {% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <style>
     .map-container { position: relative; display: flex; height: 600px; border: 1px solid #ddd; }
-    #map { flex: 1; height: 100%; }
+    #map { flex: 1; height: 100%; z-index: 1; }
     
     /* Bảng thông tin giống Google Maps */
     #info-panel {
@@ -21,33 +22,57 @@
     .info-body p { margin: 5px 0; font-size: 14px; color: #555; }
     .close-btn { position: absolute; top: 5px; right: 10px; font-size: 20px; cursor: pointer; color: white; text-shadow: 1px 1px 3px #000; z-index: 1001; }
     
-    #search-bar { margin: 20px 0; }
-    #searchBox { padding: 10px; width: 300px; border: 1px solid #ccc; border-radius: 4px 0 0 4px; outline: none; }
-    .search-btn { padding: 10px 20px; background: #1a73e8; color: white; border: none; border-radius: 0 4px 4px 0; cursor: pointer; }
+    #search-bar { margin: 20px 0; text-align: center; }
+    #searchBox { padding: 10px; width: 300px; border: 1px solid #ccc; border-radius: 4px; outline: none; }
+    #search-bar button { padding: 10px 15px; margin: 2px; cursor: pointer; border-radius: 4px; border: 1px solid #ddd; background: white; transition: 0.3s; }
+    #search-bar button:hover { background: #f0f0f0; }
+    .btn-primary { background: #1a73e8 !important; color: white !important; border: none !important; }
+    
+    /* Sidebar cũ nếu bạn vẫn muốn dùng */
+    #sidebar { width: 200px; background: #f8f9fa; padding: 15px; border-right: 1px solid #ddd; }
+    #sidebar ul { list-style: none; padding: 0; }
+    #sidebar li { padding: 10px; cursor: pointer; border-bottom: 1px solid #eee; }
+    #sidebar li:hover { background: #e9ecef; }
 </style>
 
-<section id="banner" style="background:url('{% static "images/banner_travel.jpg" %}') center/cover no-repeat; color:white; text-align:center; padding:40px 20px;">
+<section id="banner" style="background:url('{% static "images/banner_travel.jpg" %}') center/cover no-repeat; color:white; text-align:center; padding:60px 20px;">
     <h1>Bản đồ du lịch thông minh</h1>
 </section>
 
-<div id="search-bar" style="text-align:center;"> 
-    <input type="text" id="searchBox" placeholder="Nhập tên địa điểm (vd: Nhà Thờ Đức Bà)..."> 
-    <button onclick="searchPlace()" class="search-btn">Tìm kiếm</button> 
-    <button onclick="locateUser()" style="padding: 10px; margin-left: 10px;">📍 Vị trí của tôi</button>
+<div id="search-bar">
+    <input type="text" id="searchBox" placeholder="Nhập tên địa điểm (vd: Nhà Thờ Đức Bà)...">
+    <button onclick="searchPlace()" class="btn-primary">Tìm kiếm</button>
+    <button onclick="locateUser()"><i class="fa-solid fa-location-crosshairs"></i> Vị trí của tôi</button>
+    <hr style="width: 50%; margin: 10px auto; border: 0.5px solid #eee;">
+    <button onclick="filterCategory('restaurant')"><i class="fa-solid fa-utensils"></i> Nhà hàng</button>
+    <button onclick="filterCategory('hotel')"><i class="fa-solid fa-bed"></i> Khách sạn</button>
+    <button onclick="filterCategory('attraction')"><i class="fa-solid fa-camera"></i> Điểm tham quan</button>
+    <button onclick="filterCategory('museum')"><i class="fa-solid fa-landmark"></i> Bảo tàng</button>
+    <button onclick="filterCategory('pharmacy')"><i class="fa-solid fa-prescription-bottle-medical"></i> Hiệu thuốc</button>
+    <button onclick="filterCategory('atm')"><i class="fa-solid fa-credit-card"></i> ATM</button>
 </div>
 
 <div class="map-container"> 
+    <div id="sidebar"> 
+        <h3>Phương tiện</h3> 
+        <ul> 
+            <li onclick="selectTransport('walking', this)"><i class="fa-solid fa-person-walking"></i> Đi bộ</li> 
+            <li onclick="selectTransport('motorbike', this)"><i class="fa-solid fa-motorcycle"></i> Xe máy</li> 
+            <li onclick="selectTransport('car', this)"><i class="fa-solid fa-car"></i> Ô tô</li> 
+            <li onclick="selectTransport('bus', this)"><i class="fa-solid fa-bus"></i> Xe buýt</li> 
+        </ul> 
+    </div> 
+
     <div id="info-panel">
         <span class="close-btn" onclick="document.getElementById('info-panel').style.display='none'">×</span>
-        <div id="info-content">
-            </div>
+        <div id="info-content"></div>
     </div>
 
     <div id="map"></div> 
 </div>
 
-<div id="loading" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.8); z-index:9999; text-align:center; padding-top:200px;">
-    Đang xác định vị trí...
+<div id="loading" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.8); z-index:9999; text-align:center; padding-top:200px; font-size:24px;">
+    <i class="fa-solid fa-spinner fa-spin"></i> Đang xác định vị trí...
 </div>
 {% endblock %}
 
