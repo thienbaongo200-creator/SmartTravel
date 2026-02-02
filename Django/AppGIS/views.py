@@ -31,7 +31,20 @@ def contact(request):
 def search(request):
     query = request.GET.get("q", "")
     results = TourismPoint.objects.filter(name__icontains=query)
-    return JsonResponse(list(results.values()), safe=False)
+    data = [] 
+    for p in results: 
+        data.append({ 
+            "name": p.name, 
+            "description": p.description, 
+            "latitude": p.latitude, 
+            "longitude": p.longitude, 
+            "type": p.type, 
+            "address": p.address, 
+            "open_hours": p.open_hours, 
+            "rating": p.rating, 
+            "img": p.img, 
+        })
+    return JsonResponse(data, safe=False)
 
 def distance(request):
     start = request.GET.get("start")
