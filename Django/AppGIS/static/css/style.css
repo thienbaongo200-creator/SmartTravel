@@ -750,6 +750,7 @@ body { font-family: 'Roboto', sans-serif; margin:0; padding:0; background:#f9f9f
     .service-item { background:#fff; padding:20px; border-radius:8px; box-shadow:0 4px 10px rgba(0,0,0,0.1); }
     .service-item h3 { color:#2980b9; margin-bottom:10px; }
     .service-item p { font-size:14px; color:#555; }
+    
     #search-bar {
   display: flex;
   flex-wrap: wrap;
@@ -775,7 +776,8 @@ body { font-family: 'Roboto', sans-serif; margin:0; padding:0; background:#f9f9f
   gap: 6px;
   padding: 8px 14px;
   font-size: 16px;
-  background-color: #fff;
+  background-color: #ffffff;   /* nền trắng */
+  color: #000000;              /* chữ đen */
   border: 1px solid #ccc;
   border-radius: 6px;
   cursor: pointer;
@@ -783,11 +785,5 @@ body { font-family: 'Roboto', sans-serif; margin:0; padding:0; background:#f9f9f
 }
 
 #search-bar button:hover {
-  background-color: #e6f0ff;
-  box-shadow: 0 0 5px rgba(0,0,0,0.1);
-}
-
-#search-bar i {
-  font-size: 18px;
-  color: #333;
-}
+  background-color: #f0f0f0;   /* nền xám nhạt khi hover */
+  box-shadow: 0 0 5px rgba(0
