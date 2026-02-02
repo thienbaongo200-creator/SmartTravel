@@ -77,3 +77,7 @@ def get_distance(request, point_id):
         return JsonResponse({"error": "Không tìm thấy địa điểm"}, status=404)
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=400)
+# ==============================
+def destinations(request):
+    points = TourismPoint.objects.all() 
+    return render(request, "destinations.html", {"points": points})
