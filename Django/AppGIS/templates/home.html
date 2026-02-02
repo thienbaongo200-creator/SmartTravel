@@ -12,13 +12,12 @@
 </section>
 <div id="search-bar">
     <input type="text" id="searchBox" placeholder="Nhập tên địa điểm...">
-    <button onclick="searchPlace()">Tìm kiếm</button>
+    <button onclick="searchPlace()"><i class="fa-solid fa-magnifying-glass"></i></button>
     <button onclick="locateUser()" class="btn"><i class="fa-solid fa-eye"></i> Vị trí của tôi</button>
     <button onclick="filterCategory('restaurant')"><i class="fa-solid fa-utensils"></i> Nhà hàng</button>
     <button onclick="filterCategory('hotel')"><i class="fa-solid fa-bed"></i> Khách sạn</button>
     <button onclick="filterCategory('attraction')"><i class="fa-solid fa-camera"></i> Điểm tham quan</button>
     <button onclick="filterCategory('museum')"><i class="fa-solid fa-landmark"></i> Bảo tàng</button>
-    <!-- <button onclick="filterCategory('transport')"><i class="fa-solid fa-bus"></i> Phương tiện công cộng</button> -->
     <button onclick="filterCategory('pharmacy')"><i class="fa-solid fa-prescription-bottle-medical"></i> Hiệu thuốc</button>
     <button onclick="filterCategory('atm')"><i class="fa-solid fa-credit-card"></i> ATM</button>
 </div>
@@ -28,12 +27,6 @@
 </div>
 
 
-<!-- <div id="search-bar" style="margin:10px 0; text-align:center;"> 
-        <input type="text" id="searchBox" placeholder="Nhập tên địa điểm..." style="padding:6px; width:250px;"> 
-        <button onclick="searchPlace()" style="padding:6px 12px;">Tìm kiếm</button> 
-        <button onclick="locateUser()" class="btn">📍 Vị trí của tôi</button>
-    </div> -->
-    <!-- Loading overlay -->
     <div id="loading" style="display:none;
         position:fixed; top:0; left:0; width:100%; height:100%;
         background:rgba(255,255,255,0.8);
