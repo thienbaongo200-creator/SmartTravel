@@ -814,5 +814,10 @@ body { font-family: 'Roboto', sans-serif; margin:0; padding:0; background:#f9f9f
 
 #search-bar button:hover {
   background-color: #f0f0f0;   /* nền xám nhạt khi hover */
-  box-shadow: 0 0 5px rgba(0
-  
+  box-shadow: 0 0 5px rgba(0,0,0,0.2);
+  transform: translateY(-2px);
+}
+
+#search-bar button i {
+  color: #3498db;
+}
