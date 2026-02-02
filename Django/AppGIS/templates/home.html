@@ -10,8 +10,9 @@
 <link rel="stylesheet" href="{% static 'css/style.css' %}">
 
 <!-- Banner -->
-<section id="banner" style="background:url('{% static "images/banner_travel.jpg" %}') center/cover no-repeat; color:white; text-align:center; padding:60px 20px;">
+<section id="banner" style="background:url('{% static "images/banner_travel.jpg" %}') center/cover no-repeat; color:white; text-align:center; padding:80px 20px;">
     <h1>Bản đồ du lịch thông minh</h1>
+    <p>Khám phá địa điểm nổi bật và lên kế hoạch chuyến đi dễ dàng</p>
 </section>
 
 <!-- Thanh tìm kiếm -->
@@ -19,7 +20,6 @@
     <input type="text" id="searchBox" placeholder="Nhập tên địa điểm (vd: Nhà Thờ Đức Bà)...">
     <button onclick="searchPlace()" class="btn-primary"><i class="fa-solid fa-magnifying-glass"></i> Tìm kiếm</button>
     <button onclick="locateUser()"><i class="fa-solid fa-location-crosshairs"></i> Vị trí của tôi</button>
-    <hr style="width: 50%; margin: 10px auto; border: 0.5px solid #eee;">
     <button onclick="filterCategory('restaurant')"><i class="fa-solid fa-utensils"></i> Nhà hàng</button>
     <button onclick="filterCategory('hotel')"><i class="fa-solid fa-bed"></i> Khách sạn</button>
     <button onclick="filterCategory('attraction')"><i class="fa-solid fa-camera"></i> Điểm tham quan</button>
