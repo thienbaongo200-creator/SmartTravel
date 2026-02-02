@@ -65,6 +65,7 @@ function selectTransport(type, el) {
     // Hiển thị thông báo
     alert("Bạn đã chọn phương tiện: " + type);
 }
+let userMarker = null;
 function locateUser() {
     if (!navigator.geolocation) {
         alert("Trình duyệt không hỗ trợ định vị!");
