@@ -1,15 +1,46 @@
+// Khởi tạo bản đồ
 var map = L.map('map').setView([10.762622, 106.660172], 12);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: '© OpenStreetMap'
 }).addTo(map);
 
+let userMarker = null;
+let routeLine = null;
+
+// Hàm vẽ tuyến đường đơn giản từ vị trí người dùng đến điểm đến
+function showRoute(destLat, destLng) {
+    if (!userMarker) {
+        alert("Bạn cần bật định vị trước!");
+        return;
+    }
+
+    let userLatLng = userMarker.getLatLng();
+
+    // Xóa tuyến đường cũ nếu có
+    if (routeLine) {
+        map.removeLayer(routeLine);
+    }
+
+    // Vẽ polyline
+    routeLine = L.polyline([
+        [userLatLng.lat, userLatLng.lng],
+        [destLat, destLng]
+    ], { color: 'blue', weight: 4 }).addTo(map);
+
+    map.fitBounds(routeLine.getBounds());
+}
+
+// Load dữ liệu GeoJSON và hiển thị popup
 fetch("/static/data/data.geojson")
   .then(res => res.json())
   .then(data => {
       L.geoJSON(data, {
           onEachFeature: function (feature, layer) {
               let p = feature.properties;
+              let lat = feature.geometry.coordinates[1];
+              let lng = feature.geometry.coordinates[0];
+
               let popupContent = `
                 <div style="text-align:center;">
                   <h3 style="color:#3498db;">${p.name}</h3>
@@ -19,6 +50,14 @@ fetch("/static/data/data.geojson")
                   <p><strong>Địa chỉ:</strong> ${p.address || "Đang cập nhật"}</p>
                   <p><strong>Giờ mở cửa:</strong> ${p.open_hours || "Không rõ"}</p>
                   <p>${p.desc}</p>
+                  <button onclick="showRoute(${lat}, ${lng})"
+                          style="margin-top:10px; padding:6px 12px; background:#3498db; color:white; border:none; border-radius:5px;">
+                      🚗 Chỉ đường
+                  </button>
+                  <button onclick="showDistance(${p.id}, ${lat}, ${lng})"
+                          style="margin-top:10px; padding:6px 12px; background:#2ecc71; color:white; border:none; border-radius:5px;">
+                      📏 Tính khoảng cách
+                  </button>
                 </div>
               `;
               layer.bindPopup(popupContent);
@@ -26,6 +65,7 @@ fetch("/static/data/data.geojson")
       }).addTo(map);
   });
 
+// Hàm tìm kiếm địa điểm
 function searchPlace() {
     let query = document.getElementById("searchBox").value;
     if (!query) return;
@@ -46,6 +86,7 @@ function searchPlace() {
       });
 }
 
+// Quản lý chọn phương tiện
 let selectedTransport = null;
 function selectTransport(type, el) {
     selectedTransport = type;
@@ -58,7 +99,8 @@ function selectTransport(type, el) {
 
     alert("Bạn đã chọn phương tiện: " + type);
 }
-let userMarker = null;
+
+// Định vị người dùng
 function locateUser() {
     if (!navigator.geolocation) {
         alert("Trình duyệt không hỗ trợ định vị!");
@@ -73,16 +115,15 @@ function locateUser() {
             let lng = position.coords.longitude;
 
             if (userMarker) {
-                map.removeLayer(userMarker);
+                userMarker.setLatLng([lat, lng]);
+            } else {
+                userMarker = L.marker([lat, lng])
+                    .addTo(map)
+                    .bindPopup("📍 Vị trí của bạn")
+                    .openPopup();
             }
 
-            userMarker = L.marker([lat, lng])
-                .addTo(map)
-                .bindPopup("📍 Vị trí của bạn")
-                .openPopup();
-
             map.setView([lat, lng], 15);
-
             document.getElementById("loading").style.display = "none";
         },
         function (error) {
@@ -97,8 +138,17 @@ function locateUser() {
         }
     );
 }
+
+// Hàm gọi API tính khoảng cách/thời gian
 function showDistance(pointId, userLat, userLng) {
-    fetch(`/distance/${pointId}/?lat=${userLat}&lng=${userLng}`)
+    if (!userMarker) {
+        alert("Bạn cần bật định vị trước!");
+        return;
+    }
+
+    let pos = userMarker.getLatLng();
+
+    fetch(`/distance/${pointId}/?lat=${pos.lat}&lng=${pos.lng}`)
       .then(res => res.json())
       .then(data => {
           if (!data.error) {
