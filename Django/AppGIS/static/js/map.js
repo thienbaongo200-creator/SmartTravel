@@ -1,9 +1,11 @@
+// Khởi tạo bản đồ
 var map = L.map('map').setView([10.762622, 106.660172], 12);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: '© OpenStreetMap'
 }).addTo(map);
 
+// Load dữ liệu GeoJSON
 fetch("/static/data/data.geojson")
   .then(res => res.json())
   .then(data => {
@@ -26,7 +28,7 @@ fetch("/static/data/data.geojson")
       }).addTo(map);
   });
 
-// Hàm tìm kiếm
+// Hàm tìm kiếm địa điểm
 function searchPlace() {
     let query = document.getElementById("searchBox").value;
     if (!query) return;
@@ -46,3 +48,56 @@ function searchPlace() {
           }
       });
 }
+
+// Quản lý chọn phương tiện
+let selectedTransport = null;
+function selectTransport(type, el) {
+    selectedTransport = type;
+
+    // Xóa trạng thái active cũ
+    document.querySelectorAll("#sidebar li").forEach(li => {
+        li.classList.remove("active");
+    });
+
+    // Đánh dấu item vừa chọn
+    el.classList.add("active");
+
+    // Hiển thị thông báo
+    alert("Bạn đã chọn phương tiện: " + type);
+}
+let userMarker = null; 
+
+    function locateUser() {
+        if (!navigator.geolocation) {
+            alert("Trình duyệt không hỗ trợ định vị!");
+            return;
+        }
+
+        document.getElementById("loading").style.display = "block";
+
+        navigator.geolocation.watchPosition(
+            function (position) {
+                let lat = position.coords.latitude;
+                let lng = position.coords.longitude;
+
+                if (userMarker) {
+                    map.removeLayer(userMarker);
+                }
+
+                userMarker = L.marker([lat, lng]).addTo(map).bindPopup("Vị trí của bạn").openPopup();
+
+                map.setView([lat, lng], 15);
+
+                document.getElementById("loading").style.display = "none";
+            },
+            function (error) {
+                alert("Không thể lấy vị trí: " + error.message);
+                document.getElementById("loading").style.display = "none";
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 15000,
+                maximumAge: 0
+            }
+        );
+    }
