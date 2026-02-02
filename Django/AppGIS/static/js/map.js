@@ -1,34 +1,34 @@
 // Khởi tạo bản đồ
-var map = L.map('map').setView([10.762622, 106.660172], 12);
+var map = L.map('map').setView([10.762622, 106.660172], 13);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
     attribution: '© OpenStreetMap'
 }).addTo(map);
 
-// Load dữ liệu GeoJSON
-fetch("/static/data/data.geojson")
-  .then(res => res.json())
-  .then(data => {
-      L.geoJSON(data, {
-          onEachFeature: function (feature, layer) {
-              let p = feature.properties;
-              let popupContent = `
-                <div style="text-align:center;">
-                  <h3 style="color:#3498db;">${p.name}</h3>
-                  <img src="${p.img}" width="220" style="border-radius:8px; margin:10px 0;">
-                  <p><strong>Loại:</strong> ${p.type || "Địa điểm"}</p>
-                  <p><strong>Đánh giá:</strong> ⭐ ${p.rating || "Chưa có"}</p>
-                  <p><strong>Địa chỉ:</strong> ${p.address || "Đang cập nhật"}</p>
-                  <p><strong>Giờ mở cửa:</strong> ${p.open_hours || "Không rõ"}</p>
-                  <p>${p.desc}</p>
-                </div>
-              `;
-              layer.bindPopup(popupContent);
-          }
-      }).addTo(map);
-  });
+var searchMarker = null;
 
-// Hàm tìm kiếm địa điểm
+// Hàm hiển thị thông tin lên Panel bên trái
+function displayInfo(p) {
+    const panel = document.getElementById("info-panel");
+    const content = document.getElementById("info-content");
+
+    panel.style.display = "block";
+    content.innerHTML = `
+        <div class="info-header">
+            <img src="${p.img || 'https://via.placeholder.com/300x180?text=No+Image'}" alt="${p.name}">
+        </div>
+        <div class="info-body">
+            <h2>${p.name}</h2>
+            <p><strong>⭐ Đánh giá:</strong> ${p.rating || 'Chưa có'}</p>
+            <p><strong>📍 Địa chỉ:</strong> ${p.address || 'Đang cập nhật'}</p>
+            <p><strong>⏰ Giờ mở cửa:</strong> ${p.open_hours || '8:00 - 21:00'}</p>
+            <p><strong>ℹ️ Mô tả:</strong> ${p.description || 'Không có mô tả chi tiết.'}</p>
+            <hr>
+            <button onclick="map.setView([${p.latitude}, ${p.longitude}], 18)" style="width:100%; padding:8px; cursor:pointer;">Phóng to vị trí</button>
+        </div>
+    `;
+}
+
+// Hàm tìm kiếm
 function searchPlace() {
     let query = document.getElementById("searchBox").value;
     if (!query) return;
@@ -38,69 +38,41 @@ function searchPlace() {
       .then(data => {
           if (data.length > 0) {
               let p = data[0];
+
+              // Xóa marker cũ nếu có
+              if (searchMarker) map.removeLayer(searchMarker);
+
+              // Nhảy tới vị trí
               map.setView([p.latitude, p.longitude], 16);
-              L.marker([p.latitude, p.longitude])
-                .addTo(map)
-                .bindPopup(`<b>${p.name}</b><br>${p.description}`)
-                .openPopup();
+
+              // Thêm marker mới
+              searchMarker = L.marker([p.latitude, p.longitude]).addTo(map)
+                              .bindPopup(`<b>${p.name}</b>`).openPopup();
+
+              // HIỆN THÔNG TIN CHI TIẾT
+              displayInfo(p);
           } else {
-              alert("Không tìm thấy địa điểm!");
+              alert("Không tìm thấy địa điểm này trong hệ thống!");
           }
       });
 }
 
-// Quản lý chọn phương tiện
-let selectedTransport = null;
-function selectTransport(type, el) {
-    selectedTransport = type;
+// Lắng nghe phím Enter
+document.getElementById("searchBox").addEventListener("keypress", function(e) {
+    if (e.key === "Enter") searchPlace();
+});
 
-    // Xóa trạng thái active cũ
-    document.querySelectorAll("#sidebar li").forEach(li => {
-        li.classList.remove("active");
-    });
-
-    // Đánh dấu item vừa chọn
-    el.classList.add("active");
-
-    // Hiển thị thông báo
-    alert("Bạn đã chọn phương tiện: " + type);
-}
-let userMarker = null;
+// Định vị người dùng
 function locateUser() {
-    if (!navigator.geolocation) {
-        alert("Trình duyệt không hỗ trợ định vị!");
-        return;
-    }
-
     document.getElementById("loading").style.display = "block";
-
-    navigator.geolocation.watchPosition(
-        function (position) {
-            let lat = position.coords.latitude;
-            let lng = position.coords.longitude;
-
-            if (userMarker) {
-                map.removeLayer(userMarker);
-            }
-
-            userMarker = L.marker([lat, lng])
-                .addTo(map)
-                .bindPopup("📍 Vị trí của bạn")
-                .openPopup();
-
-            map.setView([lat, lng], 15);
-
-            document.getElementById("loading").style.display = "none";
-        },
-        function (error) {
-            console.error("Geolocation error:", error);
-            alert("Không thể lấy vị trí. Mã lỗi: " + error.code + " - " + error.message);
-            document.getElementById("loading").style.display = "none";
-        },
-        {
-            enableHighAccuracy: true,
-            timeout: 15000,
-            maximumAge: 0
-        }
-    );
+    navigator.geolocation.getCurrentPosition(function(pos) {
+        let lat = pos.coords.latitude;
+        let lng = pos.coords.longitude;
+        map.setView([lat, lng], 15);
+        L.marker([lat, lng]).addTo(map).bindPopup("Vị trí của bạn").openPopup();
+        document.getElementById("loading").style.display = "none";
+    }, function() {
+        alert("Lỗi định vị!");
+        document.getElementById("loading").style.display = "none";
+    });
 }

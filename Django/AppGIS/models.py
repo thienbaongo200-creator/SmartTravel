@@ -14,6 +14,10 @@ class TourismPoint(models.Model):
     latitude = models.FloatField() 
     longitude = models.FloatField() 
     type = models.CharField(max_length=100, blank=True) 
+    address = models.CharField(max_length=255, blank=True, null=True) 
+    open_hours = models.CharField(max_length=100, blank=True, null=True) 
+    rating = models.FloatField(blank=True, null=True) 
+    img = models.URLField(blank=True, null=True)
     
     def __str__(self): 
         return self.name
