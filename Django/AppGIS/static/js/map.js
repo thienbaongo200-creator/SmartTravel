@@ -65,39 +65,41 @@ function selectTransport(type, el) {
     // Hiển thị thông báo
     alert("Bạn đã chọn phương tiện: " + type);
 }
-let userMarker = null; 
+function locateUser() {
+    if (!navigator.geolocation) {
+        alert("Trình duyệt không hỗ trợ định vị!");
+        return;
+    }
 
-    function locateUser() {
-        if (!navigator.geolocation) {
-            alert("Trình duyệt không hỗ trợ định vị!");
-            return;
-        }
+    document.getElementById("loading").style.display = "block";
 
-        document.getElementById("loading").style.display = "block";
+    navigator.geolocation.watchPosition(
+        function (position) {
+            let lat = position.coords.latitude;
+            let lng = position.coords.longitude;
 
-        navigator.geolocation.watchPosition(
-            function (position) {
-                let lat = position.coords.latitude;
-                let lng = position.coords.longitude;
+            if (userMarker) {
+                map.removeLayer(userMarker);
+            }
 
-                if (userMarker) {
-                    map.removeLayer(userMarker);
-                }
+            userMarker = L.marker([lat, lng])
+                .addTo(map)
+                .bindPopup("📍 Vị trí của bạn")
+                .openPopup();
 
-                userMarker = L.marker([lat, lng]).addTo(map).bindPopup("Vị trí của bạn").openPopup();
+            map.setView([lat, lng], 15);
 
-                map.setView([lat, lng], 15);
-
-                document.getElementById("loading").style.display = "none";
-            },
-            function (error) {
-                alert("Không thể lấy vị trí: " + error.message);
-                document.getElementById("loading").style.display = "none";
-            },
-            {
-                enableHighAccuracy: true,
-                timeout: 15000,
-                maximumAge: 0
-            }
-        );
-    }
+            document.getElementById("loading").style.display = "none";
+        },
+        function (error) {
+            console.error("Geolocation error:", error);
+            alert("Không thể lấy vị trí. Mã lỗi: " + error.code + " - " + error.message);
+            document.getElementById("loading").style.display = "none";
+        },
+        {
+            enableHighAccuracy: true,
+            timeout: 15000,
+            maximumAge: 0
+        }
+    );
+}
