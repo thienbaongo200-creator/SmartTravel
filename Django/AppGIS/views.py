@@ -2,7 +2,8 @@ from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 from .models import TodoItem, TourismPoint
 from geopy.distance import geodesic
-
+from django.http import JsonResponse
+from .models import TourismPoint
 # ==============================
 # Các trang tĩnh
 # ==============================
@@ -42,3 +43,24 @@ def distance(request):
         return JsonResponse({"distance_km": dist})
     except TourismPoint.DoesNotExist:
         return JsonResponse({"error": "Không tìm thấy điểm"}, status=404)
+
+def get_distance(request, point_id):
+    try:
+        user_lat = float(request.GET.get("lat"))
+        user_lng = float(request.GET.get("lng"))
+
+        point = TourismPoint.objects.get(id=point_id)
+
+        info = point.distance_from(user_lat, user_lng, speed_kmh=40)
+
+        return JsonResponse({
+            "point": point.name,
+            "distance_km": info["distance_km"],
+            "time_minutes": info["time_minutes"],
+            "latitude": point.latitude,
+            "longitude": point.longitude,
+        })
+    except TourismPoint.DoesNotExist:
+        return JsonResponse({"error": "Không tìm thấy địa điểm"}, status=404)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=400)

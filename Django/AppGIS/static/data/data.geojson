@@ -1,0 +1,73 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": 1,
+        "name": "Nhà thờ Đức Bà",
+        "type": "attraction",
+        "rating": 4.7,
+        "address": "01 Công xã Paris, Quận 1, TP.HCM",
+        "open_hours": "06:00 - 20:00",
+        "desc": "Biểu tượng kiến trúc nổi tiếng của Sài Gòn.",
+        "img": "/static/images/notre_dame.jpg"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.6953, 10.7798]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": 2,
+        "name": "Bưu điện Trung tâm",
+        "type": "attraction",
+        "rating": 4.6,
+        "address": "02 Công xã Paris, Quận 1, TP.HCM",
+        "open_hours": "07:00 - 19:00",
+        "desc": "Công trình kiến trúc Pháp cổ kính.",
+        "img": "/static/images/post_office.jpg"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.6960, 10.7794]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": 3,
+        "name": "Dinh Độc Lập",
+        "type": "museum",
+        "rating": 4.5,
+        "address": "135 Nam Kỳ Khởi Nghĩa, Quận 1, TP.HCM",
+        "open_hours": "08:00 - 17:00",
+        "desc": "Di tích lịch sử quan trọng của Việt Nam.",
+        "img": "/static/images/independence_palace.jpg"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.6950, 10.7772]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": 4,
+        "name": "Chợ Bến Thành",
+        "type": "market",
+        "rating": 4.3,
+        "address": "Lê Lợi, Quận 1, TP.HCM",
+        "open_hours": "07:00 - 19:00",
+        "desc": "Khu chợ truyền thống nổi tiếng.",
+        "img": "/static/images/ben_thanh.jpg"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [106.6983, 10.7720]
+      }
+    }
+  ]
+}
