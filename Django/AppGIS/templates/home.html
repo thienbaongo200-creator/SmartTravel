@@ -1,19 +1,25 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Trang Chủ{% endblock %}
+{% block title %}Trang Chủ - Bản đồ du lịch{% endblock %}
 
 {% block content %}
+<!-- Font Awesome -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<!-- Custom CSS -->
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
 
-<section id="banner" style="background:url('{% static "images/banner_travel.jpg" %}') center/cover no-repeat; color:white; text-align:center; padding:80px 20px;">
+<!-- Banner -->
+<section id="banner" style="background:url('{% static "images/banner_travel.jpg" %}') center/cover no-repeat; color:white; text-align:center; padding:60px 20px;">
     <h1>Bản đồ du lịch thông minh</h1>
-    <p>Khám phá địa điểm nổi bật và lên kế hoạch chuyến đi dễ dàng</p>
 </section>
+
+<!-- Thanh tìm kiếm -->
 <div id="search-bar">
-    <input type="text" id="searchBox" placeholder="Nhập tên địa điểm...">
-    <button onclick="searchPlace()"><i class="fa-solid fa-magnifying-glass"></i></button>
-    <button onclick="locateUser()" class="btn"><i class="fa-solid fa-eye"></i> Vị trí của tôi</button>
+    <input type="text" id="searchBox" placeholder="Nhập tên địa điểm (vd: Nhà Thờ Đức Bà)...">
+    <button onclick="searchPlace()" class="btn-primary"><i class="fa-solid fa-magnifying-glass"></i> Tìm kiếm</button>
+    <button onclick="locateUser()"><i class="fa-solid fa-location-crosshairs"></i> Vị trí của tôi</button>
+    <hr style="width: 50%; margin: 10px auto; border: 0.5px solid #eee;">
     <button onclick="filterCategory('restaurant')"><i class="fa-solid fa-utensils"></i> Nhà hàng</button>
     <button onclick="filterCategory('hotel')"><i class="fa-solid fa-bed"></i> Khách sạn</button>
     <button onclick="filterCategory('attraction')"><i class="fa-solid fa-camera"></i> Điểm tham quan</button>
@@ -22,38 +28,38 @@
     <button onclick="filterCategory('atm')"><i class="fa-solid fa-credit-card"></i> ATM</button>
 </div>
 
-</div>
-
-</div>
-
-
-    <div id="loading" style="display:none;
-        position:fixed; top:0; left:0; width:100%; height:100%;
-        background:rgba(255,255,255,0.8);
-        z-index:9999; text-align:center; padding-top:200px; font-size:30px;">
-        Đang xác định vị trí...
-    </div>
-</section>
-
 <!-- Container chứa sidebar và map -->
 <div class="map-container"> 
-    <!-- Sidebar -->
+    <!-- Sidebar phương tiện -->
     <div id="sidebar"> 
-        <h3> Phương tiện công cộng</h3> 
+        <h3>Phương tiện</h3> 
         <ul> 
             <li onclick="selectTransport('walking', this)"><i class="fa-solid fa-person-walking"></i> Đi bộ</li> 
             <li onclick="selectTransport('motorbike', this)"><i class="fa-solid fa-motorcycle"></i> Xe máy</li> 
             <li onclick="selectTransport('car', this)"><i class="fa-solid fa-car"></i> Ô tô</li> 
             <li onclick="selectTransport('bus', this)"><i class="fa-solid fa-bus"></i> Xe buýt</li> 
+            
         </ul> 
     </div> 
 
-    <!-- Map -->
+    <!-- Info panel -->
+    <div id="info-panel">
+        <span class="close-btn" onclick="document.getElementById('info-panel').style.display='none'">×</span>
+        <div id="info-content"></div>
+    </div>
+
+    <!-- Bản đồ -->
     <div id="map"></div> 
+</div>
+
+<!-- Loading overlay -->
+<div id="loading" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.8); z-index:9999; text-align:center; padding-top:200px; font-size:24px;">
+    <i class="fa-solid fa-spinner fa-spin"></i> Đang xác định vị trí...
 </div>
 {% endblock %}
 
 {% block scripts %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script src="{% static 'js/map.js' %}"></script>
 {% endblock %}
