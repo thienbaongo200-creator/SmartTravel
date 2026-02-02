@@ -515,16 +515,35 @@ body, html {
     animation: fadeIn 1s ease-in-out;
 }
 
+/* Tiêu đề chính */
 .about_section h2 {
     text-align: center;
-    font-size: 2.5rem;
+    font-size: 2rem; /* to hơn */
+    font-weight: 800; /* đậm hơn */
     color: #0d6efd;
 }
-
-.about_section img {
-    display: block;
-    margin: 0 auto;
+.about_section h5 {
+    font-size: 1rem;   /* to hơn mặc định */
+    font-weight: 500;  /* đậm vừa */
 }
+
+/* Tiêu đề phụ (h4) */
+.about_section h4 {
+    font-size: 2rem; /* to hơn chữ mô tả */
+    font-weight: 700; /* đậm */
+    color: #000; /* chữ đen đậm */
+    margin-bottom: 0.5rem;
+}
+
+/* Đoạn mô tả (p) */
+.about_section p {
+    font-size: 1.25rem; /* nhỏ hơn h4 một chút */
+    font-weight: 400; /* chữ đen nhạt hơn */
+    color: #333; /* màu xám đậm để dễ đọc */
+    line-height: 1.6;
+}
+
+/* Trang trí gạch dưới tiêu đề chính */
 .about_section h2::after {
     content: "";
     display: block;
@@ -535,6 +554,7 @@ body, html {
     border-radius: 2px;
 }
 
+/* Card tính năng */
 .about_section .col-md-4 {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     padding: 20px;
@@ -546,6 +566,7 @@ body, html {
     background: #fff;
 }
 
+/* Icon */
 .about_section i {
     transition: transform 0.3s ease, color 0.3s ease;
 }
@@ -554,13 +575,17 @@ body, html {
     color: #0d6efd;
 }
 
+/* Hình ảnh */
 .about_section img {
+    display: block;
+    margin: 0 auto;
     transition: transform 0.5s ease, box-shadow 0.5s ease;
 }
 .about_section img:hover {
     transform: scale(1.05);
     box-shadow: 0 10px 25px rgba(0,0,0,0.2);
 }
+
 
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(20px); }
