@@ -1,11 +1,9 @@
-// Khởi tạo bản đồ
 var map = L.map('map').setView([10.762622, 106.660172], 12);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: '© OpenStreetMap'
 }).addTo(map);
 
-// Load dữ liệu GeoJSON
 fetch("/static/data/data.geojson")
   .then(res => res.json())
   .then(data => {
@@ -28,7 +26,6 @@ fetch("/static/data/data.geojson")
       }).addTo(map);
   });
 
-// Hàm tìm kiếm địa điểm
 function searchPlace() {
     let query = document.getElementById("searchBox").value;
     if (!query) return;
@@ -49,20 +46,16 @@ function searchPlace() {
       });
 }
 
-// Quản lý chọn phương tiện
 let selectedTransport = null;
 function selectTransport(type, el) {
     selectedTransport = type;
 
-    // Xóa trạng thái active cũ
     document.querySelectorAll("#sidebar li").forEach(li => {
         li.classList.remove("active");
     });
 
-    // Đánh dấu item vừa chọn
     el.classList.add("active");
 
-    // Hiển thị thông báo
     alert("Bạn đã chọn phương tiện: " + type);
 }
 let userMarker = null;
@@ -103,4 +96,15 @@ function locateUser() {
             maximumAge: 0
         }
     );
+}
+function showDistance(pointId, userLat, userLng) {
+    fetch(`/distance/${pointId}/?lat=${userLat}&lng=${userLng}`)
+      .then(res => res.json())
+      .then(data => {
+          if (!data.error) {
+              alert(`📍 Địa điểm: ${data.point}\n📏 Khoảng cách: ${data.distance_km} km\n⏱️ Thời gian dự kiến: ${data.time_minutes} phút`);
+          } else {
+              alert("Lỗi: " + data.error);
+          }
+      });
 }
