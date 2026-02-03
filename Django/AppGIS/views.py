@@ -25,6 +25,9 @@ def services(request):
 def contact(request):
     return render(request, 'contact.html')
 
+def contact_success(request):
+    return render(request, 'contact_success.html')
+
 # ==============================
 # Tool WebGIS
 # ==============================
@@ -81,3 +84,4 @@ def get_distance(request, point_id):
 def destinations(request):
     points = TourismPoint.objects.all() 
     return render(request, "destinations.html", {"points": points})
+
