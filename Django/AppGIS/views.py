@@ -81,3 +81,6 @@ def get_distance(request, point_id):
 def destinations(request):
     points = TourismPoint.objects.all() 
     return render(request, "destinations.html", {"points": points})
+def hotels_list(request):
+    hotels = TourismPoint.objects.filter(type="Khách sạn")
+    return render(request, "hotels.html", {"hotels": hotels})
