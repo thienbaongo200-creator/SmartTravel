@@ -9,6 +9,7 @@ urlpatterns = [
     path("events/", views.events, name="events"),
     path("services/", views.services, name="services"),
     path("hotels/", views.hotels_list, name="hotels"),
+    path("restaurants/", views.restaurants_list, name="restaurants"),
 
     # Tool WebGIS
     path("search/", views.search, name="search"),
