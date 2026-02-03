@@ -3,7 +3,6 @@ from django.http import HttpResponse, JsonResponse
 from .models import TodoItem, TourismPoint
 from geopy.distance import geodesic
 from django.http import JsonResponse
-from .models import TourismPoint
 # ==============================
 # Các trang tĩnh
 # ==============================
@@ -84,4 +83,25 @@ def get_distance(request, point_id):
 def destinations(request):
     points = TourismPoint.objects.all() 
     return render(request, "destinations.html", {"points": points})
+def hotels_list(request):
+    hotels = TourismPoint.objects.filter(type="Khách sạn")
+    return render(request, "hotels.html", {"hotels": hotels})
+def restaurants_list(request):
+    restaurants = TourismPoint.objects.filter(type="Nhà hàng")
+    return render(request, "restaurants.html", {"restaurants": restaurants})
+def tour_list(request):
+    tours = [
+        {"title": "Tour Sài Gòn trong ngày", "desc": "Khám phá các điểm nổi bật ở TP.HCM", "price": "1.200.000 VND"},
+        {"title": "Tour miền Tây sông nước", "desc": "Trải nghiệm chợ nổi và văn hóa miền Tây", "price": "2.500.000 VND"},
+        {"title": "Tour Đà Lạt 3 ngày 2 đêm", "desc": "Khám phá thành phố ngàn hoa", "price": "3.800.000 VND"},
+    ]
+    return render(request, "tours.html", {"tours": tours})
+def transport_list(request):
+    transports = [
+        {"title": "Taxi", "desc": "Đặt taxi nhanh chóng, tích hợp định vị GPS.", "price": "Theo km"},
+        {"title": "Xe buýt", "desc": "Thông tin tuyến xe buýt, giờ chạy và trạm dừng.", "price": "5.000 VND/lượt"},
+        {"title": "Thuê xe máy", "desc": "Thuê xe máy theo ngày, có sẵn bản đồ chỉ đường.", "price": "150.000 VND/ngày"},
+        {"title": "Thuê ô tô", "desc": "Xe 4-7 chỗ, có tài xế hoặc tự lái.", "price": "800.000 VND/ngày"},
+    ]
+    return render(request, "transport.html", {"transports": transports})
 
