@@ -84,3 +84,6 @@ def destinations(request):
 def hotels_list(request):
     hotels = TourismPoint.objects.filter(type="Khách sạn")
     return render(request, "hotels.html", {"hotels": hotels})
+def restaurants_list(request):
+    restaurants = TourismPoint.objects.filter(type="Nhà hàng")
+    return render(request, "restaurants.html", {"restaurants": restaurants})
