@@ -6,19 +6,17 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap'
 }).addTo(map);
 
-// Các biến toàn cục
 var searchMarker = null;
 var userMarker = null;
 var routeLine = null;
 var geojsonLayer = null;
 var watchId = null;
-var selectedTransport = "driving"; // Mặc định là ô tô/xe máy
+var selectedTransport = "driving";
 
 // ==============================
 // 2. Chức năng Hiển thị & Tuyến đường
 // ==============================
 
-// Hiển thị bảng thông tin bên trái (Google Maps Style)
 function displayInfo(p) {
     const panel = document.getElementById("info-panel");
     const content = document.getElementById("info-content");
@@ -36,46 +34,66 @@ function displayInfo(p) {
             <p><strong>ℹ️ Mô tả:</strong> ${p.description || p.desc || 'Không có mô tả.'}</p>
             <hr>
             <div style="display: flex; gap: 5px;">
-                <button onclick="showRoute(${p.latitude}, ${p.longitude})" style="flex:1; padding:10px; cursor:pointer; background:#1a73e8; color:white; border:none; border-radius:4px;">🚗 Chỉ đường</button>
+                <button onclick="showRouteGoogle(${p.latitude}, ${p.longitude})" style="flex:1; padding:10px; cursor:pointer; background:#1a73e8; color:white; border:none; border-radius:4px;">🚗 Chỉ đường</button>
                 <button onclick="map.setView([${p.latitude}, ${p.longitude}], 18)" style="flex:1; padding:10px; cursor:pointer;">🔍 Phóng to</button>
             </div>
         </div>
     `;
 }
 
-// Hàm vẽ tuyến đường thật dùng OSRM API
-function showRoute(destLat, destLng) {
+function showRouteGoogle(destLat, destLng) {
     if (!userMarker) {
-        alert("Vui lòng nhấn 'Vị trí của tôi' để bật định vị trước khi xem chỉ đường!");
+        alert("Vui lòng bật định vị trước khi xem chỉ đường!");
         return;
     }
 
     let userLatLng = userMarker.getLatLng();
-    if (routeLine) map.removeLayer(routeLine);
 
-    // Gọi API OSRM để lấy đường đi thực tế theo đường phố
-    let url = `https://router.project-osrm.org/route/v1/${selectedTransport}/${userLatLng.lng},${userLatLng.lat};${destLng},${destLat}?overview=full&geometries=geojson`;
+    let mode = "driving";
+    switch (selectedTransport) {
+        case "walking":   mode = "walking"; break;
+        case "car":       mode = "driving"; break;
+        case "motorbike": mode = "driving"; break; 
+        case "bus":       mode = "transit"; break;
+    }
 
-    fetch(url)
-      .then(res => res.json())
-      .then(data => {
-          if (data.routes && data.routes.length > 0) {
-              let route = data.routes[0];
-              let coords = route.geometry.coordinates.map(c => [c[1], c[0]]);
-              
-              routeLine = L.polyline(coords, { color: '#1a73e8', weight: 5, opacity: 0.8 }).addTo(map);
-              map.fitBounds(routeLine.getBounds(), { padding: [50, 50] });
+    const directionsService = new google.maps.DirectionsService();
 
-              let distanceKm = (route.distance / 1000).toFixed(2);
-              let durationMin = (route.duration / 60).toFixed(1);
-              alert(`📏 Khoảng cách: ${distanceKm} km\n⏱ Thời gian dự kiến: ${durationMin} phút`);
-          } else {
-              alert("Không tìm thấy tuyến đường!");
-          }
-      })
-      .catch(err => alert("Lỗi kết nối dịch vụ chỉ đường!"));
+    directionsService.route({
+        origin: { lat: userLatLng.lat, lng: userLatLng.lng },
+        destination: { lat: destLat, lng: destLng },
+        travelMode: mode.toUpperCase()
+    }, (result, status) => {
+        if (status === "OK") {
+            let leg = result.routes[0].legs[0];
+            let distanceKm = leg.distance.value / 1000;
+            let distanceText = leg.distance.text;
+            let durationText = leg.duration.text;
+
+            if (selectedTransport === "motorbike") {
+                let durationMin = ((distanceKm / 30) * 60).toFixed(1);
+                durationText = durationMin + " phút (ước lượng xe máy)";
+            }
+
+            let path = google.maps.geometry.encoding.decodePath(result.routes[0].overview_polyline.points);
+            let coords = path.map(p => [p.lat(), p.lng()]);
+
+            if (routeLine) map.removeLayer(routeLine);
+            routeLine = L.polyline(coords, { color: '#1a73e8', weight: 5 }).addTo(map);
+            map.fitBounds(routeLine.getBounds(), { padding: [50, 50] });
+
+            document.getElementById("route-summary").innerText = `📏 ${distanceText} | ⏱ ${durationText}`;
+            document.getElementById("route-detail").innerHTML = `
+                <h4>Thông tin di chuyển</h4>
+                <p><strong>Phương tiện:</strong> ${selectedTransport}</p>
+                <p><strong>Khoảng cách:</strong> ${distanceText}</p>
+                <p><strong>Thời gian dự kiến:</strong> ${durationText}</p>
+            `;
+        } else {
+            alert("Không tìm thấy tuyến đường!");
+        }
+    });
 }
-
 // ==============================
 // 3. Chức năng Tìm kiếm & Lọc
 // ==============================
@@ -106,9 +124,7 @@ document.getElementById("searchBox").addEventListener("keypress", function(e) {
 });
 
 function selectTransport(type, el) {
-    // Chuyển đổi type sang định dạng OSRM (foot, driving)
-    if (type === "walking") selectedTransport = "foot";
-    else selectedTransport = "driving";
+    selectedTransport = type;
 
     document.querySelectorAll("#sidebar li").forEach(li => li.classList.remove("active"));
     el.classList.add("active");
@@ -116,7 +132,6 @@ function selectTransport(type, el) {
 }
 
 function filterCategory(category) {
-    // Xóa tất cả marker hiện tại trừ userMarker
     map.eachLayer(function (layer) {
         if (layer instanceof L.Marker && layer !== userMarker) map.removeLayer(layer);
     });
@@ -157,7 +172,6 @@ function locateUser() {
 
     document.getElementById("loading").style.display = "block";
 
-    // Xóa Watch cũ nếu có
     if (watchId !== null) navigator.geolocation.clearWatch(watchId);
 
     navigator.geolocation.getCurrentPosition(
@@ -179,7 +193,6 @@ function locateUser() {
             map.setView([lat, lng], 15);
             document.getElementById("loading").style.display = "none";
 
-            // Theo dõi vị trí liên tục
             watchId = navigator.geolocation.watchPosition(function (pos) {
                 userMarker.setLatLng([pos.coords.latitude, pos.coords.longitude]);
             }, null, { enableHighAccuracy: true });
@@ -191,26 +204,3 @@ function locateUser() {
         { enableHighAccuracy: true, timeout: 15000 }
     );
 }
-
-// Khởi tạo: Load toàn bộ GeoJSON khi vào trang
-fetch("/static/data/data.geojson")
-  .then(res => res.json())
-  .then(data => {
-      geojsonLayer = L.geoJSON(data, {
-          onEachFeature: function (feature, layer) {
-              layer.on('click', function() {
-                  let p = feature.properties;
-                  displayInfo({
-                      name: p.name,
-                      img: p.img,
-                      rating: p.rating,
-                      address: p.address,
-                      open_hours: p.open_hours,
-                      description: p.desc,
-                      latitude: feature.geometry.coordinates[1],
-                      longitude: feature.geometry.coordinates[0]
-                  });
-              });
-          }
-      }).addTo(map);
-  }).catch(err => console.log("Sử dụng dữ liệu từ Database."));
