@@ -17,11 +17,17 @@
             {% for point in points %}
             <div class="col-md-4 mb-4">
                 <div class="card h-100 shadow-sm">
-                    {% if point.img %}
-                        <img src="{{ point.img }}" class="card-img-top" alt="{{ point.name }}">
-                    {% else %}
-                        <img src="{% static 'images/default.jpg' %}" class="card-img-top" alt="No image">
-                    {% endif %}
+                   <div class="img-wrapper">
+                        {% if point.img %}
+                            <img src="{% static 'images/' %}{{ point.img }}" 
+                                class="card-img-top destination-img" 
+                                alt="{{ point.name }}">
+                        {% else %}
+                            <img src="{% static 'images/default.jpg' %}" 
+                                class="card-img-top destination-img" 
+                                alt="No image">
+                        {% endif %}
+                    </div>
                     <div class="card-body">
                         <h5 class="card-title">{{ point.name }}</h5>
                         <p class="card-text">{{ point.description|truncatewords:25 }}</p>
