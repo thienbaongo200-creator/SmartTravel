@@ -1,6 +1,9 @@
 // ==============================
 // 1. Khởi tạo bản đồ
 // ==============================
+if (typeof map !== "undefined") {
+    map.remove(); // xóa bản đồ cũ nếu đã tồn tại
+}
 var map = L.map('map').setView([10.762622, 106.660172], 13);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap'
@@ -16,27 +19,25 @@ var selectedTransport = "driving";
 // ==============================
 // 2. Chức năng Hiển thị & Tuyến đường
 // ==============================
-
 function displayInfo(p) {
     const panel = document.getElementById("info-panel");
     const content = document.getElementById("info-content");
 
+    // Nếu DB trả về "images/..." thì loại bỏ tiền tố
+    let imgFile = p.img ? p.img.replace("images/", "") : "no-image.jpg";
+    let imgPath = "/static/images/" + imgFile;
+
     panel.style.display = "block";
     content.innerHTML = `
         <div class="info-header">
-            <img src="${p.img || 'https://via.placeholder.com/300x180?text=No+Image'}" alt="${p.name}">
+            <img src="${imgPath}" alt="${p.name}">
         </div>
         <div class="info-body">
             <h2>${p.name}</h2>
             <p><strong>⭐ Đánh giá:</strong> ${p.rating || 'Chưa có'}</p>
             <p><strong>📍 Địa chỉ:</strong> ${p.address || 'Đang cập nhật'}</p>
             <p><strong>⏰ Giờ mở cửa:</strong> ${p.open_hours || '8:00 - 21:00'}</p>
-            <p><strong>ℹ️ Mô tả:</strong> ${p.description || p.desc || 'Không có mô tả.'}</p>
-            <hr>
-            <div style="display: flex; gap: 5px;">
-                <button onclick="showRouteGoogle(${p.latitude}, ${p.longitude})" style="flex:1; padding:10px; cursor:pointer; background:#1a73e8; color:white; border:none; border-radius:4px;">🚗 Chỉ đường</button>
-                <button onclick="map.setView([${p.latitude}, ${p.longitude}], 18)" style="flex:1; padding:10px; cursor:pointer;">🔍 Phóng to</button>
-            </div>
+            <p><strong>ℹ️ Mô tả:</strong> ${p.description || 'Không có mô tả.'}</p>
         </div>
     `;
 }

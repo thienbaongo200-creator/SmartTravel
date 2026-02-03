@@ -183,11 +183,13 @@ footer ul li a:hover {
 MAP CONTAINER 
 ========================= */ 
 .map-container {
-  display: flex; 
-  max-width: 1200px; 
-  margin: 30px auto; 
-  gap: 20px; /* khoảng cách giữa sidebar và map */ 
-} 
+  position: relative;         /* để info-panel định vị tuyệt đối */
+  display: flex;
+  width: 100%;                /* cho phép map mở rộng toàn trang */
+  max-width: none;
+  margin: 0;
+  gap: 0;
+}
 
 /* ========================= 
 SIDEBAR (Transport Options) 
@@ -245,12 +247,14 @@ SIDEBAR (Transport Options)
 /* ========================= 
   MAP
 ========================= */ 
-#map { 
-  flex: 1; /* chiếm hết phần còn lại */ 
-  height: 600px;
-  border-radius: 12px; 
-  box-shadow: 0 6px 15px rgba(0,0,0,0.1); 
-} 
+#map {
+  flex: 1;
+  height: 700px;              /* tăng chiều cao */
+  min-width: 0;
+  width: 100%;                /* chiếm toàn bộ chiều ngang */
+  border-radius: 12px;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+}
 /* ========================= 
 TOGGLE BUTTON 
 ========================= */ 
@@ -909,4 +913,32 @@ body { font-family: 'Roboto', sans-serif; margin:0; padding:0; background:#f9f9f
 
 #search-bar button i {
   color: #3498db; 
+}
+
+/* =========================
+   INFO PANEL IMAGE
+========================= */
+.info-header img {
+  width: 300px;       /* chiều rộng mong muốn */
+  height: 300px;      /* chiều cao cố định */
+  object-fit: cover;  /* giữ tỷ lệ, không méo */
+  border-radius: 8px; /* bo góc */
+  display: block;
+  margin: 0 auto;     /* căn giữa */
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+/* =========================
+   INFO PANEL (overlay on map)
+========================= */
+#info-panel {
+  position: absolute;   /* đè lên bản đồ */
+  top: 50px;            /* khoảng cách từ trên xuống */
+  left: 20px;          /* khoảng cách từ trái vào */
+  width: 350px;         /* chiều rộng panel */
+  background: #fff;     /* nền trắng */
+  border-radius: 12px;  /* bo góc */
+  box-shadow: 0 6px 15px rgba(0,0,0,0.2); /* bóng đổ */
+  padding: 15px;
+  z-index: 1000;        /* đảm bảo nằm trên bản đồ */
+  display: none;        /* mặc định ẩn, chỉ hiện khi tìm kiếm */
 }
