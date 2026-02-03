@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Nhà hàng - Smart Travel Map{% endblock %}
+
+{% block content %}
+<section class="service-detail" style="padding:40px;">
+    <h2 style="text-align:center; margin-bottom:30px;">Danh sách Nhà hàng</h2>
+    <div class="restaurant-list" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:20px;">
+        {% for restaurant in restaurants %}
+        <div class="restaurant-item" style="background:white; padding:20px; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.1);">
+            <img src="{{ restaurant.img|default:'https://via.placeholder.com/300x180?text=No+Image' }}" 
+                 alt="{{ restaurant.name }}" 
+                 style="width:100%; height:180px; object-fit:cover; border-radius:8px;">
+            <h3 style="margin-top:10px;">{{ restaurant.name }}</h3>
+            <p><strong>Địa chỉ:</strong> {{ restaurant.address|default:"Đang cập nhật" }}</p>
+            <p><strong>⭐ Đánh giá:</strong> {{ restaurant.rating|default:"Chưa có" }}</p>
+            <p><strong>Giờ mở cửa:</strong> {{ restaurant.open_hours|default:"8:00 - 21:00" }}</p>
+            <p>{{ restaurant.description|default:"Không có mô tả." }}</p>
+        </div>
+        {% empty %}
+        <p>Không có nhà hàng nào trong cơ sở dữ liệu.</p>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}
