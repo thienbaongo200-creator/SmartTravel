@@ -30,15 +30,15 @@
         <ul> 
             <li onclick="selectTransport('walking', this)"><i class="fa-solid fa-person-walking"></i> Đi bộ</li> 
             <li onclick="selectTransport('motorbike', this)"><i class="fa-solid fa-motorcycle"></i> Xe máy</li> 
-            <li onclick="selectTransport('car', this)"><i class="fa-solid fa-car"></i> Ô tô</li> 
+            <li onclick="selectTransport('car', this)" class="active"><i class="fa-solid fa-car"></i> Ô tô</li> 
             <li onclick="selectTransport('bus', this)"><i class="fa-solid fa-bus"></i> Xe buýt</li> 
-            
         </ul> 
     </div> 
 
     <div id="info-panel">
         <span class="close-btn" onclick="document.getElementById('info-panel').style.display='none'">×</span>
-        <div id="info-content"></div>
+        <div id="info-content">
+        </div>
     </div>
 
     <div id="map"></div> 
@@ -53,4 +53,11 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script src="{% static 'js/map.js' %}"></script>
+<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAWEpFE68pYvA48EXRM_MWwV4Mq3tF6pjw&libraries=places,geometry"></script>
+<script>
+    var selectedTransport = "car";
+    document.addEventListener("DOMContentLoaded", function() {
+        console.log("Phương tiện mặc định: Ô tô 🚗");
+    });
+</script>
 {% endblock %}
