@@ -786,6 +786,9 @@ body {
     .social-links a:hover {
       color: #2980b9;
     }
+/* ==========================
+   DESTINATION SECTION
+========================= */
 body { font-family: 'Roboto', sans-serif; margin:0; padding:0; background:#f9f9f9; }
     .destination_section { max-width: 1000px; margin: 50px auto; padding: 20px; }
     .destination_section h2 { text-align:center; color:#3498db; margin-bottom:30px; }
@@ -800,6 +803,20 @@ body { font-family: 'Roboto', sans-serif; margin:0; padding:0; background:#f9f9f
     border-top-left-radius: 0.5rem;
     border-top-right-radius: 0.5rem;
 }
+.img-wrapper {
+    width: 100%;
+    height: 220px;         
+    overflow: hidden;    
+    border-top-left-radius: .5rem;
+    border-top-right-radius: .5rem;
+}
+.destination-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;      
+    display: block;
+}
+
 .service_section {
     padding: 60px 20px;
     background: #f9f9f9;
