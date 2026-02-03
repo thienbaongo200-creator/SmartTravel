@@ -11,19 +11,33 @@
         <input type="text" name="name" placeholder="Tên của bạn" required>
         <input type="email" name="email" placeholder="Email" required>
         <textarea name="message" placeholder="Tin nhắn" rows="5" required></textarea>
-        <button type="submit">Gửi</button>
+        
+        <button type="submit" class="btn" 
+                style="background: linear-gradient(45deg, #0d6efd, #6610f2); 
+                       color: white; 
+                       border-radius: 30px; 
+                       padding: 10px 25px; 
+                       font-weight: 600;">
+            Gửi
+        </button>
     </form>
 
-    <div class="contact-info">
+    <div class="contact-info mt-4">
         <p><strong>Email:</strong> support@smarttourism.vn</p>
         <p><strong>Điện thoại:</strong> +84 2245426</p>
         <p><strong>Địa chỉ:</strong> Trung tâm hỗ trợ du lịch, TP.HCM</p>
     </div>
 
-    <div class="social-links">
-        <a href="#"><i class="fa-brands fa-facebook"></i></a>
-        <a href="#"><i class="fa-brands fa-instagram"></i></a>
-        <a href="#"><i class="fa-brands fa-twitter"></i></a>
+    <div class="social-links mt-4">
+        <a href="https://www.facebook.com/" target="_blank" class="me-3">
+            <i class="fa-brands fa-facebook fs-4 text-primary"></i>
+        </a>
+        <a href="https://www.instagram.com/" target="_blank" class="me-3">
+            <i class="fa-brands fa-instagram fs-4 text-danger"></i>
+        </a>
+        <a href="https://x.com/" target="_blank" class="me-3">
+            <i class="fa-brands fa-twitter fs-4 text-info"></i>
+        </a>
     </div>
 </section>
 {% endblock %}
