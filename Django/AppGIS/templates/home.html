@@ -25,21 +25,23 @@
 </div>
 
 <div class="map-container"> 
-    <div id="sidebar"> 
-        <h3>Phương tiện</h3> 
-        <ul> 
-            <li onclick="selectTransport('walking', this)"><i class="fa-solid fa-person-walking"></i> Đi bộ</li> 
-            <li onclick="selectTransport('motorbike', this)"><i class="fa-solid fa-motorcycle"></i> Xe máy</li> 
-            <li onclick="selectTransport('car', this)" class="active"><i class="fa-solid fa-car"></i> Ô tô</li> 
-            <li onclick="selectTransport('bus', this)"><i class="fa-solid fa-bus"></i> Xe buýt</li> 
-        </ul> 
-    </div> 
 
     <div id="info-panel">
         <span class="close-btn" onclick="document.getElementById('info-panel').style.display='none'">×</span>
         <div id="info-content"></div>
 
-        <!-- Tóm tắt và chi tiết tuyến đường -->
+        <!-- Chọn phương tiện sau khi có địa điểm --> 
+        <div class="transport-selector" style="display:none;"> 
+            <label for="transport">Chọn phương tiện di chuyển:</label> 
+            <select id="transport"> 
+                <option value="DRIVING">🚗 Ô tô</option> 
+                <option value="WALKING">🚶 Đi bộ</option> 
+                <option value="BICYCLING">🚴 Xe đạp</option> 
+                <option value="TRANSIT">🚌 Xe buýt</option> 
+            </select> 
+            <button id="direction-btn"><i class="fa-solid fa-route"></i> Hướng đi</button> 
+        </div>
+        
         <div id="route-summary"></div>
         <div id="route-detail"></div>
         <button id="save-route-btn" style="display:none;">💾 Lưu tuyến đường</button>
