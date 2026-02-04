@@ -42,15 +42,14 @@ function displayInfo(p) {
                 <option value="BICYCLING">🚴 Xe đạp</option>
                 <option value="TRANSIT">🚌 Xe buýt</option>
             </select>
-            <button onclick="showRouteGoogle(${p.latitude}, ${p.longitude})" class="btn-direction">
+            <button onclick="showRouteORS(${p.latitude}, ${p.longitude})" class="btn-direction">
                 <i class="fa-solid fa-route"></i> Hướng đi
             </button>
         </div>
     `;
 }
-
-// Hàm vẽ tuyến đường
-function showRouteGoogle(destLat, destLng) {
+//API Key: eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjlkNWI2M2RiODZmNzQzODA5ODM0NDVjOTZkYTFmMGRkIiwiaCI6Im11cm11cjY0In0=
+async function showRouteORS(destLat, destLng) {
     if (!userMarker) {
         alert("Vui lòng bật định vị trước khi xem chỉ đường!");
         return;
@@ -60,57 +59,81 @@ function showRouteGoogle(destLat, destLng) {
     const transportSelect = document.getElementById("transport");
     let mode = transportSelect ? transportSelect.value : "DRIVING";
 
-    if (!directionsService) {
-        directionsService = new google.maps.DirectionsService();
+    let orsProfile = "driving-car";
+    if (mode === "WALKING") orsProfile = "foot-walking";
+    else if (mode === "BICYCLING") orsProfile = "cycling-regular";
+    else if (mode === "TRANSIT") {
+        alert("ORS chưa hỗ trợ phương tiện công cộng!");
+        return;
     }
 
-    directionsService.route({
-        origin: { lat: userLatLng.lat, lng: userLatLng.lng },
-        destination: { lat: destLat, lng: destLng },
-        travelMode: mode
-    }, (result, status) => {
-        if (status === "OK") {
-            let leg = result.routes[0].legs[0];
-            let distanceText = leg.distance.text;
-            let durationText = leg.duration.text;
-
-            // Ước lượng riêng cho xe máy
-            if (mode === "DRIVING" && transportSelect.value === "motorbike") {
-                let distanceKm = leg.distance.value / 1000;
-                let durationMin = ((distanceKm / 30) * 60).toFixed(1);
-                durationText = durationMin + " phút (ước lượng xe máy)";
+    try {
+        let response = await fetch(
+            `https://api.openrouteservice.org/v2/directions/${orsProfile}`,
+            {
+                method: "POST",
+                headers: {
+                    "Authorization": "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjlkNWI2M2RiODZmNzQzODA5ODM0NDVjOTZkYTFmMGRkIiwiaCI6Im11cm11cjY0In0=", 
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    coordinates: [
+                        [userLatLng.lng, userLatLng.lat], 
+                        [destLng, destLat]               
+                    ]
+                })
             }
+        );
 
-            let path = google.maps.geometry.encoding.decodePath(result.routes[0].overview_polyline.points);
-            let coords = path.map(p => [p.lat(), p.lng()]);
+        let data = await response.json();
+        console.log("ORS data:", data);
 
+        if (!data.routes || data.routes.length === 0) {
+            alert("Không tìm thấy tuyến đường!");
+            return;
+        }
+
+        let route = data.routes[0];
+        let distanceKm = (route.summary.distance / 1000).toFixed(2);
+        let durationMin = (route.summary.duration / 60).toFixed(1);
+
+        if (route.geometry) {
+            let coords = polyline.decode(route.geometry).map(c => [c[0], c[1]]);
             if (routeLine) map.removeLayer(routeLine);
             routeLine = L.polyline(coords, { color: '#1a73e8', weight: 5 }).addTo(map);
             map.fitBounds(routeLine.getBounds(), { padding: [50, 50] });
-
-            document.getElementById("route-summary").innerText = `📏 ${distanceText} | ⏱ ${durationText}`;
-            document.getElementById("route-detail").innerHTML = `
-                <h4>Thông tin di chuyển</h4>
-                <p><strong>Phương tiện:</strong> ${mode}</p>
-                <p><strong>Khoảng cách:</strong> ${distanceText}</p>
-                <p><strong>Thời gian dự kiến:</strong> ${durationText}</p>
-            `;
-
-            // Hiển thị nút lưu
-            const saveBtn = document.getElementById("save-route-btn");
-            saveBtn.style.display = "block";
-            saveBtn.onclick = function() {
-                saveRoute({
-                    transport: mode,
-                    distance: distanceText,
-                    duration: durationText,
-                    destination: { lat: destLat, lng: destLng }
-                });
-            };
         } else {
-            alert("Không tìm thấy tuyến đường!");
+            console.error("Không có geometry:", route);
+            alert("ORS không trả về dữ liệu hình học!");
+            return;
         }
-    });
+
+        // Hiển thị thông tin
+        document.getElementById("info-panel").style.display = "block";
+        document.getElementById("route-summary").innerText = `📏 ${distanceKm} km | ⏱ ${durationMin} phút`;
+        document.getElementById("route-detail").innerHTML = `
+            <h4>Thông tin di chuyển</h4>
+            <p><strong>Phương tiện:</strong> ${mode}</p>
+            <p><strong>Khoảng cách:</strong> ${distanceKm} km</p>
+            <p><strong>Thời gian dự kiến:</strong> ${durationMin} phút</p>
+        `;
+
+        // Nút lưu
+        const saveBtn = document.getElementById("save-route-btn");
+        saveBtn.style.display = "block";
+        saveBtn.onclick = function() {
+            saveRoute({
+                transport: mode,
+                distance: distanceKm + " km",
+                duration: durationMin + " phút",
+                destination: { lat: destLat, lng: destLng }
+            });
+        };
+
+    } catch (err) {
+        console.error("ORS error:", err);
+        alert("Có lỗi khi gọi OpenRouteService!");
+    }
 }
 
 // Hàm lưu tuyến đường vào localStorage

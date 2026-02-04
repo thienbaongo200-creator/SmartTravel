@@ -18,14 +18,13 @@
     <button onclick="locateUser()"><i class="fa-solid fa-location-crosshairs"></i> Vị trí của tôi</button>
     <button onclick="filterCategory('restaurant')"><i class="fa-solid fa-utensils"></i> Nhà hàng</button>
     <button onclick="filterCategory('hotel')"><i class="fa-solid fa-bed"></i> Khách sạn</button>
-    <button onclick="filterCategory('attraction')"><i class="fa-solid fa-masks-theater "></i> Khu vui chơi</button>
+    <button onclick="filterCategory('attraction')"><i class="fa-solid fa-masks-theater"></i> Khu vui chơi</button>
     <button onclick="filterCategory('museum')"><i class="fa-solid fa-landmark"></i> Di tích</button>
     <button onclick="filterCategory('pharmacy')"><i class="fa-solid fa-prescription-bottle-medical"></i> Hiệu thuốc</button>
     <button onclick="filterCategory('atm')"><i class="fa-solid fa-credit-card"></i> ATM</button>
 </div>
 
 <div class="map-container"> 
-
     <div id="info-panel">
         <span class="close-btn" onclick="document.getElementById('info-panel').style.display='none'">×</span>
         <div id="info-content"></div>
@@ -41,7 +40,8 @@
             </select> 
             <button id="direction-btn"><i class="fa-solid fa-route"></i> Hướng đi</button> 
         </div>
-        
+
+        <!-- Khu vực hiển thị thông tin tuyến đường -->
         <div id="route-summary"></div>
         <div id="route-detail"></div>
         <button id="save-route-btn" style="display:none;">💾 Lưu tuyến đường</button>
@@ -58,8 +58,14 @@
 {% block scripts %}
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<!-- Nếu muốn dùng ORS client JS -->
+<script src="https://unpkg.com/openrouteservice-js/dist/ors-js-client.min.js"></script>
+
+<!-- Polyline decode -->
+<script src="https://unpkg.com/@mapbox/polyline"></script>
+
 <script src="{% static 'js/map.js' %}"></script>
-<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAWEpFE68pYvA48EXRM_MWwV4Mq3tF6pjw&libraries=places,geometry"></script>
 <script>
     var selectedTransport = "car";
     document.addEventListener("DOMContentLoaded", function() {
