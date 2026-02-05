@@ -174,10 +174,20 @@ function searchPlace() {
               let p = data[0];
               if (searchMarker) map.removeLayer(searchMarker);
 
-              map.setView([p.latitude, p.longitude], 16);
+              map.flyTo([p.latitude, p.longitude], 16);
               searchMarker = L.marker([p.latitude, p.longitude]).addTo(map)
-                              .bindPopup(`<b>${p.name}</b>`).openPopup();
-              displayInfo(p);
+                               .bindPopup(`<b>${p.name}</b>`).openPopup();
+              
+              displayInfo({
+                  name: p.name,
+                  img: p.img,
+                  rating: p.rating,
+                  address: p.address,
+                  open_hours: p.open_hours,
+                  description: p.description || p.desc,
+                  latitude: p.latitude,
+                  longitude: p.longitude
+              });
           } else {
               alert("Không tìm thấy địa điểm này!");
           }
@@ -269,3 +279,24 @@ function locateUser() {
         { enableHighAccuracy: true, timeout: 15000 }
     );
 }
+// ==============================
+// 5. Tự động xử lý tìm kiếm từ URL (Kết nối với trang Hotels)
+// ==============================
+function checkURLParameters() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const searchQuery = urlParams.get('search');
+
+    if (searchQuery) {
+        const searchBox = document.getElementById("searchBox");
+        if (searchBox) {
+            searchBox.value = decodeURIComponent(searchQuery);
+
+            // Đợi bản đồ ổn định rồi tự động thực hiện tìm kiếm
+            setTimeout(() => {
+                searchPlace(); 
+            }, 1000);
+        }
+    }
+}
+
+document.addEventListener("DOMContentLoaded", checkURLParameters);
