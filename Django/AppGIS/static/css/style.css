@@ -374,12 +374,11 @@ MAP (Bản đồ bên trong khung)
   position: absolute; 
   top: 0; 
   left: 0; 
-  width: 100%;               /* phủ toàn bộ chiều ngang khung */ 
-  height: 100%;              /* phủ toàn bộ chiều cao khung */ 
+  width: 100%;              
+  height: 100%;              
   border: none; 
-  overflow: hidden;           /* không cho xuất hiện thanh cuộn */
+  overflow: hidden;        
 }
-
 /* =========================
 SIDEBAR (Transport Options)
 ========================= */
