@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Trang Chủ - Bản đồ du lịch{% endblock %}
+{% block title %}Trang Chủ - Bản đồ du lịch thông minh{% endblock %}
 
 {% block content %}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -17,6 +17,7 @@
             <button onclick="locateUser()" class="btn-locate">
                 <i class="fa-solid fa-location-crosshairs"></i> Vị trí của tôi
             </button>
+            
             <div class="filter-title">Khám phá theo danh mục</div>
             <div class="filter-buttons">
                 <button onclick="filterCategory('restaurant')"><i class="fa-solid fa-utensils"></i> Nhà hàng</button>
@@ -29,45 +30,89 @@
         </div>
     </aside>
 
-    <main class="map-wrapper">
+    <main class="map-wrapper" style="position: relative; height: 70vh;">
         <div id="search-bar-overlay">
             <input type="text" id="searchBox" placeholder="Tìm địa điểm, khách sạn...">
             <button onclick="searchPlace()" class="btn-search"><i class="fa-solid fa-magnifying-glass"></i></button>
         </div>
 
-        <div id="info-panel" class="floating-info-panel">
-            <span class="close-btn" onclick="document.getElementById('info-panel').style.display='none'">×</span>
+        <div id="info-panel" class="floating-info-panel" style="display:none;">
+            <span class="close-btn" onclick="this.parentElement.style.display='none'">×</span>
+            <div id="info-content"></div>
             
-            <div id="info-content">
-                </div>
-
-            <div class="transport-selector" style="display:none;"> 
-                <label>Phương tiện:</label> 
-                <select id="transport"> 
-                    <option value="DRIVING">🚗 Ô tô</option> 
-                    <option value="WALKING">🚶 Đi bộ</option> 
-                    <option value="BICYCLING">🚴 Xe đạp</option> 
-                </select> 
-                <button id="direction-btn" class="btn-route">Tìm đường</button> 
+            <div id="route-result-area" style="padding:10px; border-top:1px solid #ddd;">
+                <div id="route-summary" style="font-weight:bold; color:#1a73e8; margin-bottom:5px;"></div>
+                <div id="route-detail" style="font-size:0.85rem; color:#555;"></div>
+                <button id="save-route-btn" style="display:none; margin-top:10px; width:100%;" class="btn btn-success btn-sm">
+                    <i class="fa-solid fa-bookmark"></i> Lưu tuyến đường này
+                </button>
             </div>
-
-            <div id="route-summary"></div>
-            <div id="route-detail"></div>
         </div>
 
-        <div id="map"></div>
+        <div id="map" style="height: 100%; width: 100%;"></div>
     </main>
 </div>
 
-<div id="loading" style="display:none;">
-    <i class="fa-solid fa-spinner fa-spin"></i> Đang xác định vị trí...
+<div id="loading" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); z-index:9999; background:rgba(255,255,255,0.8); padding:20px; border-radius:10px;">
+    <i class="fa-solid fa-spinner fa-spin"></i> Đang xử lý...
 </div>
 {% endblock %}
 
 {% block scripts %}
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-<script src="https://unpkg.com/openrouteservice-js/dist/ors-js-client.min.js"></script>
 <script src="https://unpkg.com/@mapbox/polyline"></script>
+
 <script src="{% static 'js/map.js' %}"></script>
+
+<script>
+    /**
+     * Hàm tự động kích hoạt tìm kiếm và hiển thị thông tin khi chuyển từ Hotels sang
+     */
+   function focusPlaceFromURL() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const lat = urlParams.get('lat');
+    const lng = urlParams.get('lng');
+    const name = urlParams.get('name');
+    const img = urlParams.get('img'); // Lấy thêm ảnh
+    const address = urlParams.get('address');
+    const desc = urlParams.get('desc');
+    const rating = urlParams.get('rating');
+
+    let retryCount = 0;
+    const checkMapReady = setInterval(() => {
+        if (typeof map !== 'undefined' && typeof displayInfo === 'function') {
+            clearInterval(checkMapReady);
+
+            if (lat && lng) {
+                const targetLatLng = [parseFloat(lat), parseFloat(lng)];
+                const decodedName = decodeURIComponent(name);
+
+                // 1. Bay đến vị trí khách sạn
+                map.flyTo(targetLatLng, 17);
+
+                // 2. Tạo Marker
+                if (window.searchMarker) map.removeLayer(window.searchMarker);
+                window.searchMarker = L.marker(targetLatLng).addTo(map)
+                    .bindPopup(`<b>${decodedName}</b>`)
+                    .openPopup();
+
+                // 3. Gọi hàm hiển thị bảng thông tin với đầy đủ dữ liệu ảnh
+                displayInfo({
+                    name: decodedName,
+                    img: img ? decodeURIComponent(img) : "no-image.jpg", // Truyền ảnh sang đây
+                    latitude: lat,
+                    longitude: lng,
+                    address: address ? decodeURIComponent(address) : "Đang cập nhật",
+                    description: desc ? decodeURIComponent(desc) : "Không có mô tả.",
+                    rating: rating || "5.0"
+                });
+            }
+        }
+        if (++retryCount > 50) clearInterval(checkMapReady);
+    }, 100);
+}
+
+    window.addEventListener('load', focusPlaceFromURL);
+</script>
 {% endblock %}
