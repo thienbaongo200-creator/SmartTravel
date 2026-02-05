@@ -254,7 +254,7 @@ function locateUser() {
                     })
                 }).addTo(map).bindPopup("Vị trí của bạn").openPopup();
             }
-
+            
             map.setView([lat, lng], 15);
             document.getElementById("loading").style.display = "none";
 
