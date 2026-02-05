@@ -4,23 +4,170 @@
 {% block title %}Nhà hàng - Smart Travel Map{% endblock %}
 
 {% block content %}
-<section class="service-detail" style="padding:40px;">
-    <h2 style="text-align:center; margin-bottom:30px;">Danh sách Nhà hàng</h2>
-    <div class="restaurant-list" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:20px;">
-        {% for restaurant in restaurants %}
-        <div class="restaurant-item" style="background:white; padding:20px; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.1);">
-            <img src="{{ restaurant.img|default:'https://via.placeholder.com/300x180?text=No+Image' }}" 
-                 alt="{{ restaurant.name }}" 
-                 style="width:100%; height:180px; object-fit:cover; border-radius:8px;">
-            <h3 style="margin-top:10px;">{{ restaurant.name }}</h3>
-            <p><strong>Địa chỉ:</strong> {{ restaurant.address|default:"Đang cập nhật" }}</p>
-            <p><strong>⭐ Đánh giá:</strong> {{ restaurant.rating|default:"Chưa có" }}</p>
-            <p><strong>Giờ mở cửa:</strong> {{ restaurant.open_hours|default:"8:00 - 21:00" }}</p>
-            <p>{{ restaurant.description|default:"Không có mô tả." }}</p>
+<style>
+    /* Đồng bộ tone màu với trang khách sạn */
+    .restaurants-section { background-color: #f8f9fa; padding: 60px 0; }
+    
+    .restaurant-card {
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        background: #fff;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .restaurant-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.1) !important;
+    }
+
+    .restaurant-img-container {
+        position: relative;
+        overflow: hidden;
+        height: 250px; /* Chiều cao vừa phải cho ảnh món ăn */
+    }
+
+    .restaurant-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+
+    .restaurant-card:hover .restaurant-img {
+        transform: scale(1.08);
+    }
+
+    .rating-badge {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: rgba(255, 255, 255, 0.95);
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-weight: bold;
+        color: #e67e22; /* Màu cam đặc trưng cho ẩm thực */
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .restaurant-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-top: 10px;
+        /* Giới hạn tên nhà hàng trong 1 dòng để đều khung */
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .info-list {
+        list-style: none;
+        padding: 0;
+        font-size: 0.9rem;
+        color: #555;
+    }
+
+    .info-list li {
+        margin-bottom: 8px;
+        display: flex;
+        align-items: flex-start;
+    }
+
+    .info-list i {
+        color: #e67e22; /* Màu cam icon */
+        margin-right: 10px;
+        margin-top: 3px;
+        width: 18px;
+        text-align: center;
+    }
+
+    .btn-view-map {
+        border-radius: 25px;
+        padding: 8px 20px;
+        font-weight: 600;
+        transition: all 0.3s;
+        background-color: #e67e22;
+        color: white;
+        border: none;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .btn-view-map:hover {
+        background-color: #d35400;
+        color: white;
+        transform: scale(1.05);
+    }
+
+    .empty-msg {
+        text-align: center;
+        padding: 50px;
+        color: #888;
+        font-style: italic;
+    }
+</style>
+
+<section class="restaurants-section">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold text-uppercase">Khám phá Ẩm thực</h2>
+            <div style="width: 80px; height: 3px; background: #e67e22; margin: 10px auto;"></div>
+            <p class="text-muted">Những nhà hàng tinh hoa và không gian ẩm thực độc đáo</p>
         </div>
-        {% empty %}
-        <p>Không có nhà hàng nào trong cơ sở dữ liệu.</p>
-        {% endfor %}
+
+        <div class="row">
+            {% for restaurant in restaurants %}
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card restaurant-card shadow-sm">
+                    <div class="restaurant-img-container">
+                        {% if restaurant.img %}
+                            <img src="{% static 'images/' %}{{ restaurant.img }}" class="restaurant-img" alt="{{ restaurant.name }}">
+                        {% else %}
+                            <img src="{% static 'images/default-restaurant.jpg' %}" class="restaurant-img" alt="No image">
+                        {% endif %}
+                        <div class="rating-badge">
+                            <i class="fas fa-star"></i> {{ restaurant.rating|default:"4.5" }}
+                        </div>
+                    </div>
+
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="restaurant-title" title="{{ restaurant.name }}">{{ restaurant.name }}</h5>
+                        
+                        <ul class="info-list mt-2">
+                            <li>
+                                <i class="fas fa-map-marker-alt"></i> 
+                                <span>{{ restaurant.address|default:"Đang cập nhật địa chỉ" }}</span>
+                            </li>
+                            <li>
+                                <i class="fas fa-utensils"></i> 
+                                <span>{{ restaurant.open_hours|default:"09:00 - 22:00" }}</span>
+                            </li>
+                        </ul>
+
+                        <p class="card-text text-muted small">
+                            {{ restaurant.description|default:"Trải nghiệm hương vị ẩm thực đặc sắc trong không gian ấm cúng và sang trọng."|truncatewords:18 }}
+                        </p>
+                        
+                        <div class="mt-auto pt-3 border-top text-center">
+                            <a href="{% url 'home' %}?lat={{ restaurant.latitude }}&lng={{ restaurant.longitude }}&name={{ restaurant.name|urlencode }}&img={{ restaurant.img|urlencode }}&address={{ restaurant.address|urlencode }}" class="btn-view-map">
+                                <i class="fas fa-map-marked-alt me-2"></i> Chỉ đường ngay
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12">
+                <p class="empty-msg">Hiện chưa có dữ liệu nhà hàng nào để hiển thị.</p>
+            </div>
+            {% endfor %}
+        </div>
     </div>
 </section>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 {% endblock %}
