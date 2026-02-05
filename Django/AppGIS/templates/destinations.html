@@ -13,50 +13,49 @@
             </p>
         </div>
 
-        <div class="row">
-            {% for point in points %}
-            <div class="col-md-4 mb-4">
-                <div class="card h-100 shadow-sm">
-                   <div class="img-wrapper">
-                        {% if point.img %}
-                            <img src="{% static 'images/' %}{{ point.img }}" 
-                                class="card-img-top destination-img" 
-                                alt="{{ point.name }}">
-                        {% else %}
-                            <img src="{% static 'images/default.jpg' %}" 
-                                class="card-img-top destination-img" 
-                                alt="No image">
-                        {% endif %}
-                    </div>
-                    <div class="card-body">
-                        <h5 class="card-title">{{ point.name }}</h5>
-                        <p class="card-text">{{ point.description|truncatewords:25 }}</p>
-                        <ul>
-                            {% if point.address %}
-                                <li><strong>Địa chỉ:</strong> {{ point.address }}</li>
-                            {% endif %}
-                            {% if point.open_hours %}
-                                <li><strong>Giờ mở cửa:</strong> {{ point.open_hours }}</li>
-                            {% endif %}
-                            {% if point.type %}
-                                <li><strong>Loại hình:</strong> {{ point.type }}</li>
-                            {% endif %}
-                            {% if point.rating %}
-                                <li><strong>Đánh giá:</strong> ⭐ {{ point.rating }}</li>
-                            {% endif %}
-                        </ul>
-                    </div>
+        {% for point in points %}
+        <div class="row mb-4 align-items-center">
+            <div class="col-md-6">
+                {% if point.img %}
+                    <img src="{% static 'images/' %}{{ point.img }}" 
+                         class="img-fluid destination-img" 
+                         alt="{{ point.name }}">
+                {% else %}
+                    <img src="{% static 'images/default.jpg' %}" 
+                         class="img-fluid destination-img" 
+                         alt="No image">
+                {% endif %}
+            </div>
+            <div class="col-md-6 d-flex flex-column justify-content-center">
+                <h5 class="fw-bold">{{ point.name }}</h5>
+                <p class="text-muted">{{ point.description|truncatewords:25 }}</p>
+                <ul class="list-unstyled small mb-3">
+                    {% if point.address %}
+                        <li><strong>Địa chỉ:</strong> {{ point.address }}</li>
+                    {% endif %}
+                    {% if point.open_hours %}
+                        <li><strong>Giờ mở cửa:</strong> {{ point.open_hours }}</li>
+                    {% endif %}
+                    {% if point.type %}
+                        <li><strong>Loại hình:</strong> {{ point.type }}</li>
+                    {% endif %}
+                    {% if point.rating %}
+                        <li><strong>Đánh giá:</strong> ⭐ {{ point.rating }}</li>
+                    {% endif %}
+                </ul>
+                <div>
+                    <a href="/destination/{{ point.id }}" class="btn btn-primary btn-sm me-2">Xem đánh giá</a>
+                    {% if point.address %}
+                    <a href="https://unpkg.com/@mapbox/polyline" target="_blank" class="btn btn-outline-secondary btn-sm">
+                        Xem bản đồ
+                    </a>
+                    {% endif %}
                 </div>
             </div>
-            {% empty %}
-            <p class="text-center">Chưa có điểm đến nào được thêm vào hệ thống.</p>
-            {% endfor %}
         </div>
-
-        <div class="text-center mt-5">
-            <h4 class="fw-bold">Còn nhiều điểm đến hấp dẫn khác</h4>
-            <p class="text-muted">Hãy tiếp tục khám phá để có trải nghiệm du lịch trọn vẹn cùng Smart Travel Map.</p>
-        </div>
+        {% empty %}
+        <p class="text-center">Chưa có điểm đến nào được thêm vào hệ thống.</p>
+        {% endfor %}
     </div>
 </section>
 {% endblock %}
