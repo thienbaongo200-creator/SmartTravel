@@ -43,14 +43,6 @@
                         <li><strong>Đánh giá:</strong> ⭐ {{ point.rating }}</li>
                     {% endif %}
                 </ul>
-                <div>
-                    <a href="/destination/{{ point.id }}" class="btn btn-primary btn-sm me-2">Xem đánh giá</a>
-                    {% if point.address %}
-                    <a href="https://unpkg.com/@mapbox/polyline" target="_blank" class="btn btn-outline-secondary btn-sm">
-                        Xem bản đồ
-                    </a>
-                    {% endif %}
-                </div>
             </div>
         </div>
         {% empty %}
