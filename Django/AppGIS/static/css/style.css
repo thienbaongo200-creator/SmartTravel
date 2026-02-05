@@ -689,6 +689,9 @@ body, html {
         footer ul li a:hover {
             color: #3498db;
         }
+/* =========================
+   ABOUT
+========================= */
 .about_section {
     background: linear-gradient(135deg, #f9f9f9, #eef7ff);
     animation: fadeIn 1s ease-in-out;
@@ -776,7 +779,9 @@ body {
   padding: 0;
   background: #f9f9f9;
 }
-
+/* =========================
+   EVENTS
+========================= */
 .events_section {
   max-width: 1200px;
   margin: 50px auto;
