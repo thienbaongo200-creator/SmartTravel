@@ -205,36 +205,6 @@ function selectTransport(type, el) {
     el.classList.add("active");
     alert("Phương tiện đã chọn: " + type);
 }
-
-function filterCategory(category) {
-    map.eachLayer(function (layer) {
-        if (layer instanceof L.Marker && layer !== userMarker) map.removeLayer(layer);
-    });
-
-    fetch("/static/data/data.geojson")
-      .then(res => res.json())
-      .then(data => {
-          geojsonLayer = L.geoJSON(data, {
-              filter: function (f) { return f.properties.type === category; },
-              onEachFeature: function (feature, layer) {
-                  layer.on('click', function() {
-                      let p = feature.properties;
-                      displayInfo({
-                          name: p.name,
-                          img: p.img,
-                          rating: p.rating,
-                          address: p.address,
-                          open_hours: p.open_hours,
-                          description: p.desc,
-                          latitude: feature.geometry.coordinates[1],
-                          longitude: feature.geometry.coordinates[0]
-                      });
-                  });
-              }
-          }).addTo(map);
-      });
-}
-
 // ==============================
 // 4. Định vị & Dữ liệu GeoJSON
 // ==============================
