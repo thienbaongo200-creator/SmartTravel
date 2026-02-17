@@ -624,6 +624,62 @@ SIDEBAR (Transport Options)
   box-shadow: 0 6px 18px rgba(106,17,203,0.12);
 }
 
+/* ==========================
+   CONTACT SUCCESS PAGE
+========================== */
+.success-container {
+  max-width: 600px;
+  margin: 80px auto;
+  text-align: center;
+}
+
+.success-alert {
+  background: linear-gradient(135deg, #4caf50, #2ecc71);
+  color: #fff;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+  animation: fadeInUp 0.8s ease;
+}
+
+.success-alert h2 {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 15px;
+}
+
+.success-alert p {
+  font-size: 16px;
+  margin-bottom: 20px;
+}
+
+.success-alert .btn {
+  background: #fff;
+  color: #2ecc71;
+  padding: 10px 25px;
+  border-radius: 30px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.success-alert .btn:hover {
+  background: #2ecc71;
+  color: #fff;
+}
+
+/* Hiệu ứng xuất hiện */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* =========================
    DROPDOWN MENU (accessible)
 ========================= */

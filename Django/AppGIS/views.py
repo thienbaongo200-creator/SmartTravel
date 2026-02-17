@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse
 from .models import TodoItem, TourismPoint
 from geopy.distance import geodesic
@@ -21,8 +21,20 @@ def events(request):
 def services(request):
     return render(request, 'services.html')
 
-def contact(request):
-    return render(request, 'contact.html')
+def contact(request): 
+    if request.method == "POST": 
+        name = request.POST.get("name") 
+        email = request.POST.get("email") 
+        message = request.POST.get("message") 
+
+        # TODO: xử lý dữ liệu (lưu DB, gửi email, log ra console...) 
+        print(f"Liên hệ từ {name} - {email}: {message}") 
+
+        # Sau khi xử lý xong thì chuyển sang trang thành công 
+        return redirect("contact_success") 
+    
+    # Nếu là GET thì chỉ hiển thị form 
+    return render(request, "contact.html")
 
 def contact_success(request):
     return render(request, 'contact_success.html')
