@@ -474,13 +474,6 @@ SIDEBAR (Transport Options)
 /* =========================
    LỚP RIÊNG CHO MỖI SECTION (tùy chỉnh nếu cần)
 ========================= */
-.about    { /* ví dụ: nền nhẹ cho About */ }
-.events   { /* ví dụ: border-top khác màu */ }
-.destinations { /* ví dụ: highlight */ }
-.services { /* ví dụ: background gradient nhẹ */ }
-.contact  { /* ví dụ: padding-bottom lớn hơn */ }
-
-/* Ví dụ tùy biến (bạn có thể chỉnh màu hoặc xóa) */
 .about { background: linear-gradient(180deg, #fff, #fbfdff); }
 .events { border-top: 4px solid rgba(37,117,252,0.08); }
 .destinations { background: #fff; }
@@ -949,7 +942,7 @@ a, button, input, textarea {
 .step-number {
     font-size: 5rem;
     font-weight: 900;
-    color: rgba(52, 152, 219, 0.07); /* Số chìm nghệ thuật hơn */
+    color: rgba(52, 152, 219, 0.07); 
     position: absolute;
     top: -5px;
     left: 50%;
@@ -974,7 +967,6 @@ a, button, input, textarea {
     line-height: 1.6;
 }
 
-/* Nút CTA cuối trang */
 .cta-wrapper {
     text-align: center;
     margin: 80px 0;
@@ -984,7 +976,7 @@ a, button, input, textarea {
     background: var(--primary-grad);
     color: var(--white) !important;
     padding: 20px 50px;
-    border-radius: 100px; /* Nút hình con nhộng sang hơn */
+    border-radius: 100px; 
     text-decoration: none;
     font-weight: 700;
     font-size: 1.15rem;
@@ -1096,38 +1088,20 @@ a, button, input, textarea {
     line-height: 1.6;
 }
 /* ==========================================================================
-   CHỈNH SỬA LẠI PHẦN DESTINATION & SERVICE CHO GỌN
+   CHỈNH SỬA LẠI PHẦN SERVICE CHO GỌN
    ========================================================================== */
-
-/* Tận dụng lại hệ thống Grid bạn đã có ở trên */
-.destination-list, 
 .service-list {
-    @extend .grid; /* Nếu dùng CSS thuần thì copy thuộc tính của .grid vào đây */
+    @extend .grid;
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 30px;
     max-width: 1200px;
     margin: 0 auto;
 }
-
-/* DESTINATION ITEM (Thừa hưởng từ .card) */
-.destination-item {
-    background: #fff;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-    transition: transform 0.3s ease;
-}
-
-.destination-item:hover {
-    transform: translateY(-5px);
-}
-
-/* SERVICE ITEM (Thừa hưởng từ .card nhưng bo tròn hơn) */
 .service-item {
     background: #fff;
     padding: 35px 25px;
-    border-radius: 20px; /* Bo góc riêng cho Service */
+    border-radius: 20px; 
     text-align: center;
     border: 1px solid rgba(0,0,0,0.03);
     transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -1141,12 +1115,12 @@ a, button, input, textarea {
    INFO PANEL IMAGE
 ========================= */
 .info-header img {
-  width: 300px;       /* chiều rộng ảnh */
-  height: 300px;      /* chiều cao cố định */
-  object-fit: cover;  /* giữ tỷ lệ, không méo */
-  border-radius: 8px; /* bo góc */
+  width: 300px;      
+  height: 300px;     
+  object-fit: cover;  
+  border-radius: 8px; 
   display: block;
-  margin: 0 auto;     /* căn giữa */
+  margin: 0 auto;     
   box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 
@@ -1221,5 +1195,3 @@ a, button, input, textarea {
 #save-route-btn:hover {
   background: linear-gradient(135deg, #6a11cb, #2575fc);
 }
-
-
