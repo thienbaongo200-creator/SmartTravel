@@ -1,8 +1,8 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse
-from .models import TodoItem, TourismPoint
+from .models import TodoItem, TourismPoint 
 from geopy.distance import geodesic
-from django.http import JsonResponse
+
 # ==============================
 # Các trang tĩnh
 # ==============================
@@ -13,7 +13,8 @@ def about(request):
     return render(request, 'about.html')
 
 def destinations(request):
-    return render(request, 'destinations.html')
+    points = TourismPoint.objects.all() 
+    return render(request, "destinations.html", {"points": points})
 
 def events(request):
     return render(request, 'events.html')
@@ -26,14 +27,8 @@ def contact(request):
         name = request.POST.get("name") 
         email = request.POST.get("email") 
         message = request.POST.get("message") 
-
-        # TODO: xử lý dữ liệu (lưu DB, gửi email, log ra console...) 
         print(f"Liên hệ từ {name} - {email}: {message}") 
-
-        # Sau khi xử lý xong thì chuyển sang trang thành công 
         return redirect("contact_success") 
-    
-    # Nếu là GET thì chỉ hiển thị form 
     return render(request, "contact.html")
 
 def contact_success(request):
@@ -60,6 +55,28 @@ def search(request):
         })
     return JsonResponse(data, safe=False)
 
+def get_places_by_category(request):
+    category_slug = request.GET.get('category', '')
+    category_map = {
+        'restaurant': 'Nhà hàng',
+        'hotel': 'Khách sạn',
+        'attraction': 'Khu vui chơi',
+        'museum': 'Di tích',
+        'pharmacy': 'Hiệu thuốc',
+        'atm': 'ATM'
+    }
+    
+    target_type = category_map.get(category_slug, category_slug)
+    places = TourismPoint.objects.filter(type__icontains=target_type).values(
+        'name', 'latitude', 'longitude', 'address', 'description', 'rating'
+    )
+    data = list(places)
+    for item in data:
+        item['image'] = item.get('img', '') 
+
+    return JsonResponse(data, safe=False)
+# ------------------------------
+
 def distance(request):
     start = request.GET.get("start")
     end = request.GET.get("end")
@@ -75,11 +92,8 @@ def get_distance(request, point_id):
     try:
         user_lat = float(request.GET.get("lat"))
         user_lng = float(request.GET.get("lng"))
-
         point = TourismPoint.objects.get(id=point_id)
-
         info = point.distance_from(user_lat, user_lng, speed_kmh=40)
-
         return JsonResponse({
             "point": point.name,
             "distance_km": info["distance_km"],
@@ -87,20 +101,17 @@ def get_distance(request, point_id):
             "latitude": point.latitude,
             "longitude": point.longitude,
         })
-    except TourismPoint.DoesNotExist:
-        return JsonResponse({"error": "Không tìm thấy địa điểm"}, status=404)
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=400)
-# ==============================
-def destinations(request):
-    points = TourismPoint.objects.all() 
-    return render(request, "destinations.html", {"points": points})
+
 def hotels_list(request):
     hotels = TourismPoint.objects.filter(type="Khách sạn")
     return render(request, "hotels.html", {"hotels": hotels})
+
 def restaurants_list(request):
     restaurants = TourismPoint.objects.filter(type="Nhà hàng")
     return render(request, "restaurants.html", {"restaurants": restaurants})
+
 def tour_list(request):
     tours = [
         {"title": "Tour Sài Gòn trong ngày", "desc": "Khám phá các điểm nổi bật ở TP.HCM", "price": "1.200.000 VND"},
@@ -108,12 +119,10 @@ def tour_list(request):
         {"title": "Tour Đà Lạt 3 ngày 2 đêm", "desc": "Khám phá thành phố ngàn hoa", "price": "3.800.000 VND"},
     ]
     return render(request, "tours.html", {"tours": tours})
+
 def transport_list(request):
     transports = [
-        {"title": "Taxi", "desc": "Đặt taxi nhanh chóng, tích hợp định vị GPS.", "price": "Theo km"},
-        {"title": "Xe buýt", "desc": "Thông tin tuyến xe buýt, giờ chạy và trạm dừng.", "price": "5.000 VND/lượt"},
-        {"title": "Thuê xe máy", "desc": "Thuê xe máy theo ngày, có sẵn bản đồ chỉ đường.", "price": "150.000 VND/ngày"},
-        {"title": "Thuê ô tô", "desc": "Xe 4-7 chỗ, có tài xế hoặc tự lái.", "price": "800.000 VND/ngày"},
+        {"title": "Taxi", "desc": "Đặt taxi nhanh chóng.", "price": "Theo km"},
+        {"title": "Xe buýt", "desc": "Thông tin tuyến xe buýt.", "price": "5.000 VND/lượt"},
     ]
     return render(request, "transport.html", {"transports": transports})
-

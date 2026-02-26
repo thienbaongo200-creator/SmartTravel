@@ -66,52 +66,112 @@
 <script src="{% static 'js/map.js' %}"></script>
 
 <script>
+    // Khởi tạo Layer Group để quản lý marker theo danh mục
+    let categoryLayerGroup = L.layerGroup();
+
     /**
-     * Hàm tự động kích hoạt tìm kiếm và hiển thị thông tin khi chuyển từ Hotels sang
+     * CHỨC NĂNG 1: Lọc và hiển thị địa điểm theo danh mục (Restaurant, Hotel,...)
      */
-   function focusPlaceFromURL() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const lat = urlParams.get('lat');
-    const lng = urlParams.get('lng');
-    const name = urlParams.get('name');
-    const img = urlParams.get('img'); // Lấy thêm ảnh
-    const address = urlParams.get('address');
-    const desc = urlParams.get('desc');
-    const rating = urlParams.get('rating');
+    async function filterCategory(category) {
+        console.log("Đang lấy dữ liệu cho mục:", category);
+        const loading = document.getElementById('loading');
+        
+        if (loading) loading.style.display = 'block';
 
-    let retryCount = 0;
-    const checkMapReady = setInterval(() => {
-        if (typeof map !== 'undefined' && typeof displayInfo === 'function') {
-            clearInterval(checkMapReady);
+        if (typeof map !== 'undefined') {
+            categoryLayerGroup.clearLayers();
+        } else {
+            alert("Lỗi: Bản đồ chưa được tải xong.");
+            if (loading) loading.style.display = 'none';
+            return;
+        }
 
-            if (lat && lng) {
+        try {
+            const response = await fetch(`/api/places/?category=${category}`);
+            if (!response.ok) throw new Error("Lỗi kết nối server");
+            
+            const data = await response.json();
+
+            if (data.length === 0) {
+                alert("Không tìm thấy địa điểm nào thuộc danh mục này.");
+            }
+
+data.forEach(place => {
+    const lat = parseFloat(place.latitude);
+    const lng = parseFloat(place.longitude);
+
+    if (!isNaN(lat) && !isNaN(lng)) {
+        const marker = L.marker([lat, lng])
+            .bindPopup(`<b>${place.name}</b>`);
+        
+        marker.on('click', () => {
+        displayInfo({
+            name: place.name,
+            img: place.img || "",
+            latitude: lat,
+            longitude: lng,
+            address: place.address || "Đang cập nhật",
+            description: place.description || "Không có mô tả.",
+            rating: place.rating || "5.0"
+            });
+        });
+        categoryLayerGroup.addLayer(marker);
+    }
+});
+
+            categoryLayerGroup.addTo(map);
+
+            if (data.length > 0) {
+                const group = new L.featureGroup(categoryLayerGroup.getLayers());
+                map.fitBounds(group.getBounds().pad(0.2));
+            }
+
+        } catch (error) {
+            console.error("Lỗi Fetch:", error);
+            alert("Không thể tải dữ liệu. Vui lòng kiểm tra lại Backend.");
+        } finally {
+            if (loading) loading.style.display = 'none';
+        }
+    }
+
+    /**
+     * CHỨC NĂNG 2: Xử lý khi được chuyển hướng từ trang khác (ví dụ: Hotel List)
+     */
+    function focusPlaceFromURL() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const lat = urlParams.get('lat');
+        const lng = urlParams.get('lng');
+        
+        if (!lat || !lng) return;
+
+        let retryCount = 0;
+        const checkMapReady = setInterval(() => {
+            if (typeof map !== 'undefined' && typeof displayInfo === 'function') {
+                clearInterval(checkMapReady);
+
                 const targetLatLng = [parseFloat(lat), parseFloat(lng)];
-                const decodedName = decodeURIComponent(name);
+                const decodedName = decodeURIComponent(urlParams.get('name') || "Địa điểm");
 
-                // 1. Bay đến vị trí khách sạn
                 map.flyTo(targetLatLng, 17);
 
-                // 2. Tạo Marker
                 if (window.searchMarker) map.removeLayer(window.searchMarker);
                 window.searchMarker = L.marker(targetLatLng).addTo(map)
                     .bindPopup(`<b>${decodedName}</b>`)
                     .openPopup();
 
-                // 3. Gọi hàm hiển thị bảng thông tin với đầy đủ dữ liệu ảnh
                 displayInfo({
                     name: decodedName,
-                    img: img ? decodeURIComponent(img) : "no-image.jpg", // Truyền ảnh sang đây
+                    img: urlParams.get('img') ? decodeURIComponent(urlParams.get('img')) : "",
                     latitude: lat,
                     longitude: lng,
-                    address: address ? decodeURIComponent(address) : "Đang cập nhật",
-                    description: desc ? decodeURIComponent(desc) : "Không có mô tả.",
-                    rating: rating || "5.0"
+                    address: urlParams.get('address') ? decodeURIComponent(urlParams.get('address')) : "Đang cập nhật",
+                    description: urlParams.get('desc') ? decodeURIComponent(urlParams.get('desc')) : "Không có mô tả.",
+                    rating: urlParams.get('rating') || "5.0"
                 });
             }
-        }
-        if (++retryCount > 50) clearInterval(checkMapReady);
-    }, 100);
-}
+            if (++retryCount > 50) clearInterval(checkMapReady);
+        }, 100);
+    }
 
     window.addEventListener('load', focusPlaceFromURL);
 </script>

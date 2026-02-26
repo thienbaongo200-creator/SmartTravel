@@ -25,6 +25,8 @@ urlpatterns = [
     path("search/", views.search, name="search"),
     path("distance/", views.distance, name="distance"),
     path("distance/<int:point_id>/", views.get_distance, name="get_distance"),
+
+    path('api/places/', views.get_places_by_category, name='api_places'),
 ] 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
