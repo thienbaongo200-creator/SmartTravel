@@ -64,7 +64,22 @@
 <script src="https://unpkg.com/@mapbox/polyline"></script>
 
 <script src="{% static 'js/map.js' %}"></script>
+<style>
+    .custom-marker-label {
+        background-color: rgba(255, 255, 255, 0.85); 
+        border: 1px solid #1a73e8;
+        border-radius: 4px;
+        color: #333;
+        font-weight: bold;
+        padding: 2px 6px;
+        font-size: 11px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    }
 
+    .leaflet-tooltip-top:before {
+        border-top-color: #1a73e8;
+    }
+</style>
 <script>
     // Khởi tạo Layer Group để quản lý marker theo danh mục
     let categoryLayerGroup = L.layerGroup();
@@ -103,7 +118,12 @@ data.forEach(place => {
     if (!isNaN(lat) && !isNaN(lng)) {
         const marker = L.marker([lat, lng])
             .bindPopup(`<b>${place.name}</b>`);
-        
+        marker.bindTooltip(place.name, {
+            permanent: true, 
+            direction: 'top',  
+            offset: [0, -10],  
+            className: 'custom-marker-label' 
+        }).openTooltip();
         marker.on('click', () => {
         displayInfo({
             name: place.name,
