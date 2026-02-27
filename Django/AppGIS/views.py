@@ -68,7 +68,7 @@ def get_places_by_category(request):
     
     target_type = category_map.get(category_slug, category_slug)
     places = TourismPoint.objects.filter(type__icontains=target_type).values(
-        'name', 'latitude', 'longitude', 'address', 'description', 'rating'
+        'name', 'latitude', 'longitude', 'address', 'description', 'rating', 'img'
     )
     data = list(places)
     for item in data:
