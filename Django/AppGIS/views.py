@@ -114,9 +114,54 @@ def restaurants_list(request):
 
 def tour_list(request):
     tours = [
-        {"title": "Tour Sài Gòn trong ngày", "desc": "Khám phá các điểm nổi bật ở TP.HCM", "price": "1.200.000 VND"},
-        {"title": "Tour miền Tây sông nước", "desc": "Trải nghiệm chợ nổi và văn hóa miền Tây", "price": "2.500.000 VND"},
-        {"title": "Tour Đà Lạt 3 ngày 2 đêm", "desc": "Khám phá thành phố ngàn hoa", "price": "3.800.000 VND"},
+        {
+            "id": 1,
+            "title": "Hành trình Di sản Lịch sử", 
+            "desc": "Tham quan Dinh Độc Lập, Nhà thờ Đức Bà, Bưu điện Thành phố và Bảo tàng Chứng tích Chiến tranh.", 
+            "price": "850.000 VND",
+            "duration": "1 ngày",
+            "tag": "Lịch sử"
+        },
+        {
+            "id": 2,
+            "title": "Sài Gòn Street Food & Motorbike", 
+            "desc": "Ngồi sau xe máy len lỏi qua các con hẻm, thưởng thức bánh xèo, cơm tấm và cà phê vợt huyền thoại.", 
+            "price": "1.100.000 VND",
+            "duration": "4 tiếng (Tối)",
+            "tag": "Ẩm thực"
+        },
+        {
+            "id": 3,
+            "title": "Khám phá Địa đạo Củ Chi", 
+            "desc": "Trải nghiệm hệ thống địa đạo kỳ vĩ dưới lòng đất và tìm hiểu về tinh thần thép của quân dân Việt Nam.", 
+            "price": "950.000 VND",
+            "duration": "Nửa ngày",
+            "tag": "Khám phá"
+        },
+        {
+            "id": 4,
+            "title": "Ngắm hoàng hôn trên Sông Sài Gòn", 
+            "desc": "Du ngoạn bằng du thuyền hạng sang, ngắm nhìn Landmark 81 và các tòa nhà lung linh ánh đèn từ mặt sông.", 
+            "price": "1.500.000 VND",
+            "duration": "2 tiếng",
+            "tag": "Nghỉ dưỡng"
+        },
+        {
+            "id": 5,
+            "title": "Tour Sinh thái Cần Giờ", 
+            "desc": "Rời xa khói bụi để đến với 'lá phổi xanh' của TP.HCM, thăm Đảo Khỉ và chèo xuồng qua rừng ngập mặn.", 
+            "price": "1.350.000 VND",
+            "duration": "1 ngày",
+            "tag": "Thiên nhiên"
+        },
+        {
+            "id": 6,
+            "title": "Chinatown - Chợ Lớn Sầm uất", 
+            "desc": "Khám phá văn hóa người Hoa tại Quận 5, tham quan Chùa Bà Thiên Hậu và chợ sỉ Bình Tây.", 
+            "price": "700.000 VND",
+            "duration": "Nửa ngày",
+            "tag": "Văn hóa"
+        }
     ]
     return render(request, "tours.html", {"tours": tours})
 
