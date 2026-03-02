@@ -165,6 +165,78 @@ def tour_list(request):
     ]
     return render(request, "tours.html", {"tours": tours})
 
+def book_tour(request, tour_id):
+    tours = [
+        {
+            "id": 1,
+            "title": "Hành trình Di sản Lịch sử", 
+            "desc": "Tham quan Dinh Độc Lập, Nhà thờ Đức Bà, Bưu điện Thành phố và Bảo tàng Chứng tích Chiến tranh.", 
+            "price": "850.000 VND",
+            "duration": "1 ngày",
+            "tag": "Lịch sử"
+        },
+        {
+            "id": 2,
+            "title": "Sài Gòn Street Food & Motorbike", 
+            "desc": "Ngồi sau xe máy len lỏi qua các con hẻm, thưởng thức bánh xèo, cơm tấm và cà phê vợt huyền thoại.", 
+            "price": "1.100.000 VND",
+            "duration": "4 tiếng (Tối)",
+            "tag": "Ẩm thực"
+        },
+        {
+            "id": 3,
+            "title": "Khám phá Địa đạo Củ Chi", 
+            "desc": "Trải nghiệm hệ thống địa đạo kỳ vĩ dưới lòng đất và tìm hiểu về tinh thần thép của quân dân Việt Nam.", 
+            "price": "950.000 VND",
+            "duration": "Nửa ngày",
+            "tag": "Khám phá"
+        },
+        {
+            "id": 4,
+            "title": "Ngắm hoàng hôn trên Sông Sài Gòn", 
+            "desc": "Du ngoạn bằng du thuyền hạng sang, ngắm nhìn Landmark 81 và các tòa nhà lung linh ánh đèn từ mặt sông.", 
+            "price": "1.500.000 VND",
+            "duration": "2 tiếng",
+            "tag": "Nghỉ dưỡng"
+        },
+        {
+            "id": 5,
+            "title": "Tour Sinh thái Cần Giờ", 
+            "desc": "Rời xa khói bụi để đến với 'lá phổi xanh' của TP.HCM, thăm Đảo Khỉ và chèo xuồng qua rừng ngập mặn.", 
+            "price": "1.350.000 VND",
+            "duration": "1 ngày",
+            "tag": "Thiên nhiên"
+        },
+        {
+            "id": 6,
+            "title": "Chinatown - Chợ Lớn Sầm uất", 
+            "desc": "Khám phá văn hóa người Hoa tại Quận 5, tham quan Chùa Bà Thiên Hậu và chợ sỉ Bình Tây.", 
+            "price": "700.000 VND",
+            "duration": "Nửa ngày",
+            "tag": "Văn hóa"
+        }
+    ]
+    tour = next((t for t in tours if t["id"] == tour_id), None)
+    if not tour:
+        return HttpResponse("Không tìm thấy tour")
+
+    if request.method == "POST":
+        name = request.POST.get("name")
+        email = request.POST.get("email")
+        phone = request.POST.get("phone")
+        people = request.POST.get("people")
+        note = request.POST.get("note")
+
+        # TODO: xử lý dữ liệu (lưu DB, gửi email, log ra console...)
+        print(f"Khách {name} ({email}, {phone}) đặt tour {tour['title']} cho {people} người. Ghi chú: {note}")
+
+        return redirect("booking_success")  # chuyển sang trang xác nhận đặt thành công
+
+    return render(request, "book_tour.html", {"tour": tour})
+
+def booking_success(request):
+    return render(request, "booking_success.html")
+
 def transport_list(request):
     transports = [
         {"title": "Taxi", "desc": "Đặt taxi nhanh chóng.", "price": "Theo km"},
