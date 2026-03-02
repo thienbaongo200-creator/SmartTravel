@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Đặt Tour{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h2 class="text-center mb-4">Đặt Tour: {{ tour.title }}</h2>
+    <p class="text-center text-muted">{{ tour.desc }}</p>
+    <p class="text-center"><strong>Giá:</strong> {{ tour.price }} | <strong>Thời lượng:</strong> {{ tour.duration }}</p>
+
+    <form method="post" class="mt-4 shadow p-4 rounded bg-light">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label class="form-label">Họ và tên</label>
+            <input type="text" name="name" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Email liên hệ</label>
+            <input type="email" name="email" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Số điện thoại</label>
+            <input type="text" name="phone" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Số lượng người</label>
+            <input type="number" name="people" class="form-control" min="1" value="1" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Ghi chú thêm</label>
+            <textarea name="note" class="form-control" rows="3"></textarea>
+        </div>
+        <button type="submit" class="btn btn-success w-100">Xác nhận đặt tour</button>
+    </form>
+</div>
+{% endblock %}
