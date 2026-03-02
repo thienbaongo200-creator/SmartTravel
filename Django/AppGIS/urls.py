@@ -15,6 +15,9 @@ urlpatterns = [
     path("hotels/", views.hotels_list, name="hotels"),
     path("restaurants/", views.restaurants_list, name="restaurants"),
     path("tours/", views.tour_list, name="tours"),
+    path("tours/<int:tour_id>/book/", views.book_tour, name="book_tour"),
+    path("booking_success/", views.booking_success, name="booking_success"),
+
     path("transport/", views.transport_list, name="transport"),
 
     # Liên hệ

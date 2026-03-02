@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Đặt tour thành công{% endblock %}
+
+{% block content %}
+<div class="container text-center my-5">
+    <div class="alert alert-success p-4 rounded shadow-sm">
+        <h2 class="fw-bold">Đặt tour thành công!</h2>
+        <p>Cảm ơn bạn đã đặt tour. Chúng tôi sẽ liên hệ xác nhận trong thời gian sớm nhất.</p>
+        <a href="{% url 'tours' %}" class="btn btn-primary mt-3">Quay lại danh sách tour</a>
+    </div>
+</div>
+{% endblock %}
