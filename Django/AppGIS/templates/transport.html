@@ -4,29 +4,207 @@
 {% block title %}Phương tiện di chuyển - Smart Travel Map{% endblock %}
 
 {% block content %}
-<section class="transport_section" style="padding:60px 20px; background:#f4f6f9;">
-    <h2 style="text-align:center; font-size:32px; margin-bottom:40px; color:#2c3e50;">
-        <i class="fa-solid fa-bus"></i> Phương tiện di chuyển
-    </h2>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <div class="transport-list" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:30px; max-width:1200px; margin:0 auto;">
-        {% for t in transports %}
-        <div class="transport-item" style="background:white; padding:25px; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.1); transition:transform 0.3s, box-shadow 0.3s;">
-            <h3 style="margin-bottom:10px; color:#9b59b6;">{{ t.title }}</h3>
-            <p>{{ t.desc }}</p>
-            <p><strong>Giá:</strong> {{ t.price }}</p>
-            <button style="margin-top:10px; padding:8px 16px; background:#9b59b6; color:white; border:none; border-radius:6px; cursor:pointer;">
-                Đặt ngay
-            </button>
+<section class="transport_section" style="padding:60px 20px; background:#f4f6f9; min-height: 100vh; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+    <div style="max-width:1200px; margin:0 auto;">
+        
+        <div style="text-align:center; margin-bottom:40px;">
+            <h2 style="font-size:36px; color:#2c3e50; margin-bottom:10px; font-weight: 700;">
+                <i class="fa-solid fa-bus-simple" style="color: #9b59b6;"></i> Phương tiện di chuyển
+            </h2>
+            <p style="color: #7f8c8d; font-size: 18px;">Khám phá Sài Gòn theo cách của riêng bạn</p>
         </div>
-        {% endfor %}
+
+        <div style="display: flex; justify-content: center; gap: 15px; margin-bottom: 40px; flex-wrap: wrap;">
+            <button class="filter-btn active">Tất cả</button>
+            <button class="filter-btn">Xe Buýt</button>
+            <button class="filter-btn">Xe Máy</button>
+            <button class="filter-btn">Ô tô</button>
+            <button class="filter-btn">Đường thủy</button>
+        </div>
+
+        <div class="transport-list" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:30px;">
+            {% for t in transports %}
+            <div class="transport-card" style="background:white; border-radius:20px; overflow:hidden; box-shadow:0 10px 20px rgba(0,0,0,0.05); transition: 0.3s; position: relative;">
+                
+                <span style="position: absolute; top: 15px; right: 15px; background: rgba(155, 89, 182, 0.9); color: white; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; z-index: 1;">
+                    {{ t.type }}
+                </span>
+
+                <div style="height: 200px; background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%); display: flex; align-items: center; justify-content: center; font-size: 60px; color: white;">
+                    {% if "bus" in t.title|lower or "buýt" in t.title|lower %}
+                        <i class="fa-solid fa-bus"></i>
+                    {% elif "máy" in t.title|lower %}
+                        <i class="fa-solid fa-motorcycle"></i>
+                    {% elif "tô" in t.title|lower %}
+                        <i class="fa-solid fa-car-side"></i>
+                    {% else %}
+                        <i class="fa-solid fa-ferry"></i>
+                    {% endif %}
+                </div>
+
+                <div style="padding: 25px;">
+                    <h3 style="margin: 0 0 10px 0; color:#2c3e50; font-size: 22px;">{{ t.title }}</h3>
+                    <p style="color: #636e72; font-size: 15px; line-height: 1.5; margin-bottom: 20px; height: 45px; overflow: hidden;">
+                        {{ t.desc }}
+                    </p>
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #eee; padding-top: 20px;">
+                        <div>
+                            <span style="display: block; font-size: 12px; color: #95a5a6; text-transform: uppercase;">Giá chỉ từ</span>
+                            <span style="color: #e74c3c; font-weight: 700; font-size: 20px;">{{ t.price }}</span>
+                        </div>
+                        <button onclick="openBookingModal('{{ t.title }}', '{{ t.price }}')" class="book-btn">
+                            Đặt ngay
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
     </div>
 </section>
 
+<div id="bookingModal" class="modal-overlay">
+    <div class="modal-content">
+        <button class="close-modal" onclick="closeModal()">&times;</button>
+        
+        <div style="text-align: center; margin-bottom: 25px;">
+            <h3 style="color: #9b59b6; font-size: 24px; margin-bottom: 5px;">Xác nhận đặt chỗ</h3>
+            <p id="modalVehicleName" style="font-weight: 600; color: #34495e;"></p>
+        </div>
+
+        <form id="bookingForm">
+            <div class="form-group">
+                <label><i class="fa-solid fa-user"></i> Họ và tên</label>
+                <input type="text" placeholder="Nhập tên của bạn" required>
+            </div>
+            <div class="form-group">
+                <label><i class="fa-solid fa-phone"></i> Số điện thoại</label>
+                <input type="tel" placeholder="Nhập số điện thoại" required>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="form-group">
+                    <label><i class="fa-solid fa-calendar"></i> Ngày đi</label>
+                    <input type="date" required>
+                </div>
+                <div class="form-group">
+                    <label><i class="fa-solid fa-users"></i> Số người</label>
+                    <input type="number" min="1" value="1">
+                </div>
+            </div>
+            <button type="submit" class="confirm-btn">GỬI YÊU CẦU ĐẶT CHỖ</button>
+        </form>
+    </div>
+</div>
+
 <style>
-.transport-item:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-}
+    /* Hiệu ứng Card */
+    .transport-card:hover {
+        transform: translateY(-12px);
+        box-shadow: 0 15px 35px rgba(155, 89, 182, 0.2);
+    }
+
+    /* Nút bấm */
+    .filter-btn {
+        padding: 10px 25px;
+        border-radius: 30px;
+        border: 1px solid #ddd;
+        background: white;
+        cursor: pointer;
+        transition: 0.3s;
+        font-weight: 600;
+        color: #7f8c8d;
+    }
+    .filter-btn:hover, .filter-btn.active {
+        background: #9b59b6;
+        color: white;
+        border-color: #9b59b6;
+    }
+
+    .book-btn {
+        padding: 12px 25px;
+        background: #9b59b6;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: 0.3s;
+    }
+    .book-btn:hover {
+        background: #8e44ad;
+        box-shadow: 0 5px 15px rgba(142, 68, 173, 0.3);
+    }
+
+    /* Modal Styling */
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.7);
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(5px);
+    }
+    .modal-content {
+        background: white;
+        padding: 40px;
+        border-radius: 25px;
+        width: 100%;
+        max-width: 450px;
+        position: relative;
+        animation: slideUp 0.4s ease;
+    }
+    @keyframes slideUp {
+        from { transform: translateY(50px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+    .close-modal {
+        position: absolute;
+        top: 20px; right: 20px;
+        border: none; background: none;
+        font-size: 28px; cursor: pointer; color: #95a5a6;
+    }
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; margin-bottom: 5px; font-size: 14px; color: #7f8c8d; }
+    .form-group input {
+        width: 100%; padding: 12px; border: 1px solid #eee;
+        border-radius: 8px; box-sizing: border-box; outline: none;
+    }
+    .form-group input:focus { border-color: #9b59b6; }
+    .confirm-btn {
+        width: 100%; padding: 15px; background: #2ecc71;
+        color: white; border: none; border-radius: 10px;
+        font-weight: 700; cursor: pointer; margin-top: 10px;
+    }
+    .confirm-btn:hover { background: #27ae60; }
 </style>
+
+<script>
+    function openBookingModal(name, price) {
+        document.getElementById('bookingModal').style.display = 'flex';
+        document.getElementById('modalVehicleName').innerText = name + " (" + price + ")";
+    }
+
+    function closeModal() {
+        document.getElementById('bookingModal').style.display = 'none';
+    }
+
+    // Xử lý gửi form
+    document.getElementById('bookingForm').onsubmit = function(e) {
+        e.preventDefault();
+        alert("🎉 Chúc mừng! Yêu cầu đặt chỗ của bạn đã được gửi thành công. Tư vấn viên sẽ gọi cho bạn trong ít phút.");
+        closeModal();
+    }
+
+    // Đóng khi click ngoài vùng modal
+    window.onclick = function(event) {
+        if (event.target == document.getElementById('bookingModal')) {
+            closeModal();
+        }
+    }
+</script>
 {% endblock %}

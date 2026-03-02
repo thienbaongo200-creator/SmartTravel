@@ -167,7 +167,50 @@ def tour_list(request):
 
 def transport_list(request):
     transports = [
-        {"title": "Taxi", "desc": "Đặt taxi nhanh chóng.", "price": "Theo km"},
-        {"title": "Xe buýt", "desc": "Thông tin tuyến xe buýt.", "price": "5.000 VND/lượt"},
+        {
+            "id": 1,
+            "title": "Xe máy điện (VinFast)",
+            "desc": "Tiện lợi, bảo vệ môi trường, phù hợp len lỏi hẻm nhỏ Sài Gòn.",
+            "price": "150.000 VND/ngày",
+            "type": "Xe máy",
+            "capacity": "2 người",
+            "rating": 4.8
+        },
+        {
+            "id": 2,
+            "title": "Xe Ô tô 7 chỗ (Xpander)",
+            "desc": "Xe đời mới, rộng rãi, phù hợp cho gia đình hoặc nhóm bạn.",
+            "price": "1.200.000 VND/ngày",
+            "type": "Ô tô",
+            "capacity": "7 người",
+            "rating": 4.9
+        },
+        {
+            "id": 3,
+            "title": "Xe buýt sông (Saigon Waterbus)",
+            "desc": "Trải nghiệm ngắm thành phố từ sông Sài Gòn vô cùng thú vị.",
+            "price": "15.000 VND/lượt",
+            "type": "Đường thủy",
+            "capacity": "60 người",
+            "rating": 4.7
+        },
+        {
+            "id": 4,
+            "title": "Xe Buýt 2 Tầng (Hop-on Hop-off)",
+            "desc": "Tour ngắm toàn cảnh Sài Gòn từ tầng 2, đi qua các điểm di tích nổi tiếng.",
+            "price": "150.000 VND/vé",
+            "type": "Xe buýt",
+            "capacity": "50 người",
+            "rating": 4.9
+        },
+        {
+            "id": 5,
+            "title": "Xe Buýt Điện (D4)",
+            "desc": "Tuyến xe buýt điện hiện đại, máy lạnh, chạy êm ái qua các quận trung tâm.",
+            "price": "7.000 VND/lượt",
+            "type": "Xe buýt",
+            "capacity": "25 chỗ",
+            "rating": 4.8
+        },
     ]
     return render(request, "transport.html", {"transports": transports})
