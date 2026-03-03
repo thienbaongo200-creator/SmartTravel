@@ -35,11 +35,14 @@
             <input type="text" id="searchBox" placeholder="Tìm địa điểm, khách sạn...">
             <button onclick="searchPlace()" class="btn-search"><i class="fa-solid fa-magnifying-glass"></i></button>
         </div>
+        
+        <!-- Bản đồ -->
+        <div id="map" style="height: 100%; width: 100%;"></div>
 
+        <!-- Panel thông tin -->
         <div id="info-panel" class="floating-info-panel" style="display:none;">
             <span class="close-btn" onclick="this.parentElement.style.display='none'">×</span>
             <div id="info-content"></div>
-            
             <div id="route-result-area" style="padding:10px; border-top:1px solid #ddd;">
                 <div id="route-summary" style="font-weight:bold; color:#1a73e8; margin-bottom:5px;"></div>
                 <div id="route-detail" style="font-size:0.85rem; color:#555;"></div>
@@ -49,7 +52,8 @@
             </div>
         </div>
 
-        <div id="map" style="height: 100%; width: 100%;"></div>
+        <!-- Control chọn lớp -->
+        <div id="layer-switcher"></div>
     </main>
 </div>
 
