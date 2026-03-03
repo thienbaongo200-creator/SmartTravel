@@ -66,10 +66,14 @@ def get_places_by_category(request):
         'atm': 'ATM'
     }
     
-    target_type = category_map.get(category_slug, category_slug)
-    places = TourismPoint.objects.filter(type__icontains=target_type).values(
+    target_type_vn = category_map.get(category_slug, '')
+    from django.db.models import Q
+    places = TourismPoint.objects.filter(
+        Q(type__icontains=target_type_vn) | Q(type__icontains=category_slug)
+    ).values(
         'name', 'latitude', 'longitude', 'address', 'description', 'rating', 'img'
     )
+    
     data = list(places)
     for item in data:
         item['image'] = item.get('img', '') 
