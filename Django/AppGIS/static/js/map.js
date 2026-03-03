@@ -1,13 +1,36 @@
 // ==============================
-// 1. Khởi tạo bản đồ
+// 1. Khởi tạo bản đồ với nhiều lớp
 // ==============================
 if (typeof map !== "undefined") {
-    map.remove(); // xóa bản đồ cũ nếu đã tồn tại
+    map.remove();
 }
-var map = L.map('map').setView([10.762622, 106.660172], 13);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap'
-}).addTo(map);
+
+var streetLayer = L.tileLayer(
+  'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+  { attribution: '© OpenStreetMap contributors' }
+);
+
+var satelliteLayer = L.tileLayer(
+  'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+  { attribution: 'Tiles © Esri' }
+);
+
+var map = L.map('map', {
+    center: [10.762622, 106.660172],
+    zoom: 13,
+    layers: [streetLayer] // mặc định là bản đồ đường phố
+});
+
+var layerControl = L.control.layers({
+    "Bản đồ đường phố": streetLayer,
+    "Ảnh vệ tinh": satelliteLayer
+}, null);
+
+layerControl.addTo(map);
+
+// Di chuyển phần tử vào div tùy chỉnh
+var controlElement = document.querySelector('.leaflet-control-layers');
+document.getElementById("layer-switcher").appendChild(controlElement);
 
 var searchMarker = null;
 var userMarker = null;
