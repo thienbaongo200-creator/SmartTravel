@@ -9,32 +9,47 @@
     background: #f4f7f6;
 }
 
+/* Sidebar trái */
 .sidebar-left {
     width: 280px; 
     padding: 20px;
-    background: #ffffff;
+    background: #f8f9fa;
     display: flex;
     flex-direction: column;
-    box-shadow: 4px 0 15px rgba(0,0,0,0.08);
+    border-right: 1px solid #e0e0e0;
+    box-shadow: 2px 0 8px rgba(0,0,0,0.08);
+    border-radius: 0 12px 12px 0; /* bo góc bên phải cho mềm mại */
     z-index: 10;
     overflow-y: auto;
-    border-right: 1px solid #e0e6ed;
+    transition: all 0.3s ease;
 }
 
 .sidebar-left::-webkit-scrollbar {
     width: 6px;
 }
 .sidebar-left::-webkit-scrollbar-thumb {
-    background: #ccc;
+    background: #bbb;
     border-radius: 10px;
 }
 
+/* Nhóm control */
 .control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
     padding: 20px;
-    background: #fff;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
     position: sticky;
     top: 0;
     z-index: 5;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.control-group:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.1);
 }
 
 /* ===================================================
