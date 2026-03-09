@@ -293,3 +293,47 @@ function checkURLParameters() {
 }
 
 document.addEventListener("DOMContentLoaded", checkURLParameters);
+
+// ==============================
+// 6. Tìm địa điểm gần vị trí người dùng
+// ==============================
+var nearbyMarkers = [];
+
+function findNearby() {
+    if (!userMarker) {
+        alert("Vui lòng bật định vị trước!");
+        return;
+    }
+
+    // Xóa marker cũ
+    nearbyMarkers.forEach(m => map.removeLayer(m));
+    nearbyMarkers = [];
+
+    let pos = userMarker.getLatLng();
+    fetch(`/nearby/?lat=${pos.lat}&lng=${pos.lng}&radius=2`)
+      .then(res => res.json())
+      .then(data => {
+          if (data.error) {
+              alert("Lỗi server: " + data.error);
+              return;
+          }
+          if (data.length === 0) {
+              alert("Không có địa điểm nào gần bạn trong phạm vi 2km!");
+          } else {
+              data.forEach(p => {
+                  let m = L.marker([p.latitude, p.longitude])
+                    .addTo(map)
+                    .bindPopup(`<b>${p.name}</b><br>📏 ${p.distance_km} km`);
+                  nearbyMarkers.push(m);
+              });
+
+              // Zoom để thấy hết các điểm gần
+              let group = new L.featureGroup(nearbyMarkers);
+              map.fitBounds(group.getBounds().pad(0.2));
+          }
+      })
+      .catch(err => {
+          console.error("Fetch nearby error:", err);
+          alert("Không thể tải dữ liệu địa điểm gần.");
+      });
+}
