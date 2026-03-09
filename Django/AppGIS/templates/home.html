@@ -72,6 +72,101 @@
 
 <script src="{% static 'js/map.js' %}"></script>
 <style>
+    .sidebar-left {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-right: 1px solid #e0e0e0;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+}
+
+.control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.btn-locate, .btn-nearby {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+}
+
+.btn-locate {
+    background-color: #1a73e8;
+    color: white;
+}
+
+.btn-locate:hover {
+    background-color: #1557b0;
+    box-shadow: 0 4px 8px rgba(26, 115, 232, 0.3);
+}
+
+.btn-nearby {
+    background-color: #34a853;
+    color: white;
+}
+
+.btn-nearby:hover {
+    background-color: #2d8e47;
+    box-shadow: 0 4px 8px rgba(52, 168, 83, 0.3);
+}
+
+.filter-title {
+    margin-top: 10px;
+    font-weight: 700;
+    color: #444;
+    font-size: 1rem;
+    border-bottom: 2px solid #1a73e8;
+    padding-bottom: 5px;
+    margin-bottom: 10px;
+}
+
+.filter-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Chia làm 2 cột */
+    gap: 10px;
+}
+
+.filter-buttons button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 5px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.8rem;
+    color: #555;
+}
+
+.filter-buttons button i {
+    font-size: 1.2rem;
+    margin-bottom: 5px;
+    color: #1a73e8;
+}
+
+.filter-buttons button:hover {
+    background-color: #e8f0fe;
+    border-color: #1a73e8;
+    color: #1a73e8;
+    transform: translateY(-2px);
+}
+
+.filter-buttons button:active {
+    transform: scale(0.95);
+}
     .custom-marker-label {
         background-color: rgba(255, 255, 255, 0.85); 
         border: 1px solid #1a73e8;
