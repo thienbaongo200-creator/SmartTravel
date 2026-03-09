@@ -295,30 +295,24 @@ def nearby_places(request):
     try:
         user_lat = float(request.GET.get("lat"))
         user_lng = float(request.GET.get("lng"))
-        radius_km = float(request.GET.get("radius", 2))
+        radius_km = float(request.GET.get("radius", 2))  # mặc định 2km
 
         points = TourismPoint.objects.all()
         nearby = []
 
         for p in points:
-            try:
-                lat = float(p.latitude)
-                lng = float(p.longitude)
-            except (TypeError, ValueError):
-                continue  # bỏ qua nếu dữ liệu không hợp lệ
-
-            dist = geodesic((user_lat, user_lng), (lat, lng)).km
+            dist = geodesic((user_lat, user_lng), (p.latitude, p.longitude)).km
             if dist <= radius_km:
                 nearby.append({
                     "name": p.name,
                     "description": p.description,
-                    "latitude": lat,
-                    "longitude": lng,
+                    "latitude": p.latitude,
+                    "longitude": p.longitude,
                     "type": p.type,
                     "address": p.address,
                     "open_hours": p.open_hours,
                     "rating": p.rating,
-                    "img": getattr(p.img, "url", p.img if p.img else ""),
+                    "img": p.img.url if p.img else "",
                     "distance_km": round(dist, 2)
                 })
 
