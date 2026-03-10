@@ -18,8 +18,9 @@ class TourismPoint(models.Model):
     address = models.CharField(max_length=255, blank=True, null=True) 
     open_hours = models.CharField(max_length=100, blank=True, null=True) 
     rating = models.FloatField(blank=True, null=True) 
-    img = models.URLField(blank=True, null=True)
+    img = models.CharField(max_length=500, blank=True, null=True)
     menu_imgs = models.JSONField(default=list, blank=True)
+
 
     def __str__(self): 
         return self.name

@@ -1,9 +1,13 @@
-from django.shortcuts import render, redirect
+from django.conf import settings
+from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, JsonResponse
 from .models import TodoItem, TourismPoint 
 from geopy.distance import geodesic
 import re
 import unicodedata
+import json
+from django.views.decorators.csrf import csrf_exempt
+from django.db.models import Q
 # ==============================
 # Các trang tĩnh
 # ==============================
@@ -78,7 +82,6 @@ def get_places_by_category(request):
     }
     
     target_type_vn = category_map.get(category_slug, '')
-    from django.db.models import Q
     places = TourismPoint.objects.filter(
         Q(type__icontains=target_type_vn) | Q(type__icontains=category_slug)
     ).values(
@@ -90,7 +93,6 @@ def get_places_by_category(request):
         item['image'] = item.get('img', '') 
 
     return JsonResponse(data, safe=False)
-# ------------------------------
 
 def distance(request):
     start = request.GET.get("start")
@@ -129,123 +131,26 @@ def restaurants_list(request):
 
 def tour_list(request):
     tours = [
-        {
-            "id": 1,
-            "title": "Hành trình Di sản Lịch sử", 
-            "desc": "Tham quan Dinh Độc Lập, Nhà thờ Đức Bà, Bưu điện Thành phố và Bảo tàng Chứng tích Chiến tranh.", 
-            "price": "850.000 VND",
-            "duration": "1 ngày",
-            "tag": "Lịch sử"
-        },
-        {
-            "id": 2,
-            "title": "Sài Gòn Street Food & Motorbike", 
-            "desc": "Ngồi sau xe máy len lỏi qua các con hẻm, thưởng thức bánh xèo, cơm tấm và cà phê vợt huyền thoại.", 
-            "price": "1.100.000 VND",
-            "duration": "4 tiếng (Tối)",
-            "tag": "Ẩm thực"
-        },
-        {
-            "id": 3,
-            "title": "Khám phá Địa đạo Củ Chi", 
-            "desc": "Trải nghiệm hệ thống địa đạo kỳ vĩ dưới lòng đất và tìm hiểu về tinh thần thép của quân dân Việt Nam.", 
-            "price": "950.000 VND",
-            "duration": "Nửa ngày",
-            "tag": "Khám phá"
-        },
-        {
-            "id": 4,
-            "title": "Ngắm hoàng hôn trên Sông Sài Gòn", 
-            "desc": "Du ngoạn bằng du thuyền hạng sang, ngắm nhìn Landmark 81 và các tòa nhà lung linh ánh đèn từ mặt sông.", 
-            "price": "1.500.000 VND",
-            "duration": "2 tiếng",
-            "tag": "Nghỉ dưỡng"
-        },
-        {
-            "id": 5,
-            "title": "Tour Sinh thái Cần Giờ", 
-            "desc": "Rời xa khói bụi để đến với 'lá phổi xanh' của TP.HCM, thăm Đảo Khỉ và chèo xuồng qua rừng ngập mặn.", 
-            "price": "1.350.000 VND",
-            "duration": "1 ngày",
-            "tag": "Thiên nhiên"
-        },
-        {
-            "id": 6,
-            "title": "Chinatown - Chợ Lớn Sầm uất", 
-            "desc": "Khám phá văn hóa người Hoa tại Quận 5, tham quan Chùa Bà Thiên Hậu và chợ sỉ Bình Tây.", 
-            "price": "700.000 VND",
-            "duration": "Nửa ngày",
-            "tag": "Văn hóa"
-        }
+        {"id": 1, "title": "Hành trình Di sản Lịch sử", "desc": "Tham quan Dinh Độc Lập...", "price": "850.000 VND", "duration": "1 ngày", "tag": "Lịch sử"},
+        {"id": 2, "title": "Sài Gòn Street Food & Motorbike", "desc": "Thưởng thức ẩm thực...", "price": "1.100.000 VND", "duration": "4 tiếng (Tối)", "tag": "Ẩm thực"},
+        {"id": 3, "title": "Khám phá Địa đạo Củ Chi", "desc": "Hệ thống địa đạo...", "price": "950.000 VND", "duration": "Nửa ngày", "tag": "Khám phá"},
+        {"id": 4, "title": "Ngắm hoàng hôn trên Sông Sài Gòn", "desc": "Du thuyền hạng sang...", "price": "1.500.000 VND", "duration": "2 tiếng", "tag": "Nghỉ dưỡng"},
+        {"id": 5, "title": "Tour Sinh thái Cần Giờ", "desc": "Lá phổi xanh...", "price": "1.350.000 VND", "duration": "1 ngày", "tag": "Thiên nhiên"},
+        {"id": 6, "title": "Chinatown - Chợ Lớn Sầm uất", "desc": "Văn hóa người Hoa...", "price": "700.000 VND", "duration": "Nửa ngày", "tag": "Văn hóa"}
     ]
     return render(request, "tours.html", {"tours": tours})
 
 def book_tour(request, tour_id):
-    tours = [
-        {
-            "id": 1,
-            "title": "Hành trình Di sản Lịch sử", 
-            "desc": "Tham quan Dinh Độc Lập, Nhà thờ Đức Bà, Bưu điện Thành phố và Bảo tàng Chứng tích Chiến tranh.", 
-            "price": "850.000 VND",
-            "duration": "1 ngày",
-            "tag": "Lịch sử"
-        },
-        {
-            "id": 2,
-            "title": "Sài Gòn Street Food & Motorbike", 
-            "desc": "Ngồi sau xe máy len lỏi qua các con hẻm, thưởng thức bánh xèo, cơm tấm và cà phê vợt huyền thoại.", 
-            "price": "1.100.000 VND",
-            "duration": "4 tiếng (Tối)",
-            "tag": "Ẩm thực"
-        },
-        {
-            "id": 3,
-            "title": "Khám phá Địa đạo Củ Chi", 
-            "desc": "Trải nghiệm hệ thống địa đạo kỳ vĩ dưới lòng đất và tìm hiểu về tinh thần thép của quân dân Việt Nam.", 
-            "price": "950.000 VND",
-            "duration": "Nửa ngày",
-            "tag": "Khám phá"
-        },
-        {
-            "id": 4,
-            "title": "Ngắm hoàng hôn trên Sông Sài Gòn", 
-            "desc": "Du ngoạn bằng du thuyền hạng sang, ngắm nhìn Landmark 81 và các tòa nhà lung linh ánh đèn từ mặt sông.", 
-            "price": "1.500.000 VND",
-            "duration": "2 tiếng",
-            "tag": "Nghỉ dưỡng"
-        },
-        {
-            "id": 5,
-            "title": "Tour Sinh thái Cần Giờ", 
-            "desc": "Rời xa khói bụi để đến với 'lá phổi xanh' của TP.HCM, thăm Đảo Khỉ và chèo xuồng qua rừng ngập mặn.", 
-            "price": "1.350.000 VND",
-            "duration": "1 ngày",
-            "tag": "Thiên nhiên"
-        },
-        {
-            "id": 6,
-            "title": "Chinatown - Chợ Lớn Sầm uất", 
-            "desc": "Khám phá văn hóa người Hoa tại Quận 5, tham quan Chùa Bà Thiên Hậu và chợ sỉ Bình Tây.", 
-            "price": "700.000 VND",
-            "duration": "Nửa ngày",
-            "tag": "Văn hóa"
-        }
-    ]
+    # Dữ liệu tour giả lập để phục vụ logic render/post
+    tours = [{"id": i, "title": f"Tour {i}"} for i in range(1, 7)]
     tour = next((t for t in tours if t["id"] == tour_id), None)
     if not tour:
         return HttpResponse("Không tìm thấy tour")
 
     if request.method == "POST":
         name = request.POST.get("name")
-        email = request.POST.get("email")
-        phone = request.POST.get("phone")
-        people = request.POST.get("people")
-        note = request.POST.get("note")
-
-        # TODO: xử lý dữ liệu (lưu DB, gửi email, log ra console...)
-        print(f"Khách {name} ({email}, {phone}) đặt tour {tour['title']} cho {people} người. Ghi chú: {note}")
-
-        return redirect("booking_success")  # chuyển sang trang xác nhận đặt thành công
+        print(f"Đã đặt tour: {tour['title']} cho khách {name}")
+        return redirect("booking_success")
 
     return render(request, "book_tour.html", {"tour": tour})
 
@@ -254,61 +159,19 @@ def booking_success(request):
 
 def transport_list(request):
     transports = [
-        {
-            "id": 1,
-            "title": "Xe máy điện (VinFast)",
-            "desc": "Tiện lợi, bảo vệ môi trường, phù hợp len lỏi hẻm nhỏ Sài Gòn.",
-            "price": "150.000 VND/ngày",
-            "type": "Xe máy",
-            "capacity": "2 người",
-            "rating": 4.8
-        },
-        {
-            "id": 2,
-            "title": "Xe Ô tô 7 chỗ (Xpander)",
-            "desc": "Xe đời mới, rộng rãi, phù hợp cho gia đình hoặc nhóm bạn.",
-            "price": "1.200.000 VND/ngày",
-            "type": "Ô tô",
-            "capacity": "7 người",
-            "rating": 4.9
-        },
-        {
-            "id": 3,
-            "title": "Xe buýt sông (Saigon Waterbus)",
-            "desc": "Trải nghiệm ngắm thành phố từ sông Sài Gòn vô cùng thú vị.",
-            "price": "15.000 VND/lượt",
-            "type": "Đường thủy",
-            "capacity": "60 người",
-            "rating": 4.7
-        },
-        {
-            "id": 4,
-            "title": "Xe Buýt 2 Tầng (Hop-on Hop-off)",
-            "desc": "Tour ngắm toàn cảnh Sài Gòn từ tầng 2, đi qua các điểm di tích nổi tiếng.",
-            "price": "150.000 VND/vé",
-            "type": "Xe buýt",
-            "capacity": "50 người",
-            "rating": 4.9
-        },
-        {
-            "id": 5,
-            "title": "Xe Buýt Điện (D4)",
-            "desc": "Tuyến xe buýt điện hiện đại, máy lạnh, chạy êm ái qua các quận trung tâm.",
-            "price": "7.000 VND/lượt",
-            "type": "Xe buýt",
-            "capacity": "25 chỗ",
-            "rating": 4.8
-        },
+        {"id": 1, "title": "Xe máy điện (VinFast)", "desc": "Tiện lợi...", "price": "150.000 VND/ngày", "type": "Xe máy", "capacity": "2 người", "rating": 4.8},
+        {"id": 2, "title": "Xe Ô tô 7 chỗ (Xpander)", "desc": "Rộng rãi...", "price": "1.200.000 VND/ngày", "type": "Ô tô", "capacity": "7 người", "rating": 4.9},
+        {"id": 3, "title": "Xe buýt sông (Saigon Waterbus)", "desc": "Ngắm cảnh sông...", "price": "15.000 VND/lượt", "type": "Đường thủy", "capacity": "60 người", "rating": 4.7},
+        {"id": 4, "title": "Xe Buýt 2 Tầng (Hop-on Hop-off)", "desc": "Toàn cảnh Sài Gòn...", "price": "150.000 VND/vé", "type": "Xe buýt", "capacity": "50 người", "rating": 4.9},
+        {"id": 5, "title": "Xe Buýt Điện (D4)", "desc": "Hiện đại...", "price": "7.000 VND/lượt", "type": "Xe buýt", "capacity": "25 chỗ", "rating": 4.8}
     ]
     return render(request, "transport.html", {"transports": transports})
 
 def nearby_places(request):
-    # Lấy tham số từ query string
     lat_str = request.GET.get("lat")
     lng_str = request.GET.get("lng")
     radius_str = request.GET.get("radius", "2")
 
-    # Kiểm tra tham số bắt buộc
     if not lat_str or not lng_str:
         return JsonResponse({"error": "Thiếu tham số lat hoặc lng"}, status=400)
 
@@ -316,31 +179,96 @@ def nearby_places(request):
         user_lat = float(lat_str)
         user_lng = float(lng_str)
         radius_km = float(radius_str)
-    except ValueError:
-        return JsonResponse({"error": "Tham số không hợp lệ"}, status=400)
 
-    # Tìm các điểm trong bán kính
-    points = TourismPoint.objects.all()
-    nearby = []
+        points = TourismPoint.objects.all()
+        nearby = []
 
-    for p in points:
-        try:
+        for p in points:
             dist = geodesic((user_lat, user_lng), (p.latitude, p.longitude)).km
-        except Exception:
-            continue  # bỏ qua nếu dữ liệu không hợp lệ
+            if dist <= radius_km:
+                nearby.append({
+                    "name": p.name,
+                    "description": p.description,
+                    "latitude": p.latitude,
+                    "longitude": p.longitude,
+                    "type": p.type,
+                    "address": p.address,
+                    "open_hours": p.open_hours,
+                    "rating": p.rating,
+                    "img": p.img if p.img else "",
+                    "distance_km": round(dist, 2)
+                })
 
-        if dist <= radius_km:
-            nearby.append({
+        return JsonResponse(nearby, safe=False)
+
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=400)
+
+# ==============================
+# API Admin & Quản lý địa điểm
+# ==============================
+def admin_places_view(request):
+    return render(request, 'admin_places.html')
+
+@csrf_exempt
+def api_places(request):
+    if request.method == "GET":
+        places = TourismPoint.objects.all().order_by('-id')
+        data = []
+        for p in places:
+            img_value = p.img if p.img else ""
+            if img_value and not img_value.startswith(('http', '/')):
+                img_url = settings.STATIC_URL + "images/" + img_value
+            else:
+                img_url = img_value
+
+            data.append({
+                "id": p.id,
                 "name": p.name,
-                "description": p.description,
-                "latitude": p.latitude,
-                "longitude": p.longitude,
-                "type": p.type,
-                "address": p.address,
-                "open_hours": p.open_hours,
-                "rating": p.rating,
-                "img": p.img.url if p.img else "",
-                "distance_km": round(dist, 2)
+                "latitude": float(p.latitude) if p.latitude else 0,
+                "longitude": float(p.longitude) if p.longitude else 0,
+                "category": p.type if p.type else "Khác",
+                "address": p.address if p.address else "Chưa có địa chỉ",
+                "rating": p.rating if p.rating else 0,
+                "img": img_url,
+                "raw_img": p.img 
             })
+        return JsonResponse(data, safe=False)
 
-    return JsonResponse(nearby, safe=False)
+    elif request.method == "POST":
+        try:
+            raw_data = json.loads(request.body)
+            new_place = TourismPoint.objects.create(
+                name=raw_data.get('name'),
+                latitude=float(raw_data.get('latitude')),
+                longitude=float(raw_data.get('longitude')),
+                type=raw_data.get('category'), 
+                address=raw_data.get('address', ''),
+                img=raw_data.get('img', ''), 
+                rating=5.0
+            )
+            return JsonResponse({"message": "Thêm thành công"}, status=201)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=400)
+
+@csrf_exempt
+def api_place_detail(request, pk):
+    place = get_object_or_404(TourismPoint, pk=pk)
+    
+    if request.method == "DELETE":
+        place.delete()
+        return JsonResponse({"message": "Xóa thành công"}, status=204)
+    
+    elif request.method == "PUT":
+        try:
+            raw_data = json.loads(request.body)
+            place.name = raw_data.get('name', place.name)
+            place.latitude = raw_data.get('latitude', place.latitude)
+            place.longitude = raw_data.get('longitude', place.longitude)
+            place.type = raw_data.get('type', place.type)
+            place.address = raw_data.get('address', place.address)
+            place.save()
+            return JsonResponse({"message": "Cập nhật thành công"})
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=400)
+
