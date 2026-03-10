@@ -118,7 +118,7 @@ function displayInfo(p) {
 }
 
 // ==============================
-// 3. Chỉ đường OpenRouteService (Fix lỗi Polyline)
+// 3. Chỉ đường OpenRouteService 
 // ==============================
 async function showRouteORS(destLat, destLng) {
     if (!userMarker) {
@@ -237,47 +237,62 @@ function locateUser() {
 }
 
 // ==============================
-// 5. Tìm địa điểm gần đây (Fix lỗi JSON/500)
+// 5. Tìm địa điểm gần đây 
 // ==============================
+let bufferLayer = null; // lưu vòng tròn buffer
+
 function findNearby() {
     if (!userMarker) return alert("Vui lòng bật định vị trước!");
 
+    // Xóa marker cũ
     nearbyMarkers.forEach(m => map.removeLayer(m));
     nearbyMarkers = [];
 
+    // Xóa buffer cũ
+    if (bufferLayer) {
+        map.removeLayer(bufferLayer);
+        bufferLayer = null;
+    }
+
     let pos = userMarker.getLatLng();
-    fetch(`/nearby/?lat=${pos.lat}&lng=${pos.lng}&radius=2`)
+    fetch(`/nearby_places?lat=${pos.lat}&lng=${pos.lng}&radius=2`)
       .then(res => {
           if (!res.ok) throw new Error("Lỗi Server 500");
           return res.json();
       })
       .then(data => {
-          if (data.length === 0) return alert("Không tìm thấy địa điểm nào trong bán kính 2km.");
-          
-          data.forEach(p => {
-              let m = L.marker([p.latitude, p.longitude])
-                .addTo(map)
-                .bindPopup(`<b>${p.name}</b><br>${p.distance_km} km`);
-              nearbyMarkers.push(m);
-          });
-          let group = new L.featureGroup(nearbyMarkers);
-          map.fitBounds(group.getBounds().pad(0.2));
+          // Nếu backend trả về lỗi
+          if (data.error) {
+              alert("Backend báo lỗi: " + data.error);
+              return;
+          }
+
+          // Luôn vẽ buffer polygon (màu cam nhạt)
+          bufferLayer = L.geoJSON(data.buffer, {
+              style: { 
+                  color: 'orange',        
+                  fillColor: 'orange',   
+                  fillOpacity: 0.3        
+              }
+          }).addTo(map);
+
+          // Vẽ các điểm nearby (nếu có)
+          if (data.nearby.length === 0) {
+              alert("Không tìm thấy địa điểm nào trong bán kính 2km.");
+              // Fit bản đồ theo buffer nếu không có marker
+              if (bufferLayer) {
+                  map.fitBounds(bufferLayer.getBounds().pad(0.2));
+              }
+          } else {
+              data.nearby.forEach(p => {
+                  let m = L.marker([p.latitude, p.longitude])
+                    .addTo(map)
+                    .bindPopup(`<b>${p.name}</b><br>${p.distance_km} km`);
+                  nearbyMarkers.push(m);
+              });
+              let group = new L.featureGroup(nearbyMarkers);
+              map.fitBounds(group.getBounds().pad(0.2));
+          }
       })
       .catch(err => alert("Không thể tải dữ liệu gần đây. Kiểm tra Backend!"));
 }
-
-function saveRoute(routeData) {
-    let routes = JSON.parse(localStorage.getItem("savedRoutes")) || [];
-    routes.push(routeData);
-    localStorage.setItem("savedRoutes", JSON.stringify(routes));
-    alert("✅ Đã lưu tuyến đường!");
-}
-
-// Khởi chạy khi trang load
-document.addEventListener("DOMContentLoaded", function() {
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('search')) {
-        document.getElementById("searchBox").value = decodeURIComponent(urlParams.get('search'));
-        setTimeout(searchPlace, 1000);
-    }
-});

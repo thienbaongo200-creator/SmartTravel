@@ -8,6 +8,7 @@ import unicodedata
 import json
 from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Q
+import math
 # ==============================
 # Các trang tĩnh
 # ==============================
@@ -188,22 +189,44 @@ def nearby_places(request):
             if dist <= radius_km:
                 nearby.append({
                     "name": p.name,
-                    "description": p.description,
                     "latitude": p.latitude,
                     "longitude": p.longitude,
-                    "type": p.type,
                     "address": p.address,
-                    "open_hours": p.open_hours,
                     "rating": p.rating,
-                    "img": p.img if p.img else "",
                     "distance_km": round(dist, 2)
                 })
 
-        return JsonResponse(nearby, safe=False)
+        # Tạo polygon buffer (GeoJSON circle)
+        buffer_coords = []
+        steps = 36  # số điểm để vẽ vòng tròn
+        for i in range(steps):
+            angle = 2 * math.pi * i / steps
+            dlat = (radius_km / 111) * math.cos(angle)  # 1 độ lat ~111km
+            dlng = (radius_km / (111 * math.cos(math.radians(user_lat)))) * math.sin(angle)
+            buffer_coords.append([user_lng + dlng, user_lat + dlat])
+
+        # Khép kín polygon (thêm điểm đầu vào cuối)
+        buffer_coords.append(buffer_coords[0])
+
+        buffer_geojson = {
+            "type": "Feature",
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [buffer_coords]
+            },
+            "properties": {"radius_km": radius_km}
+        }
+
+        return JsonResponse({
+            "center": {"lat": user_lat, "lng": user_lng},
+            "radius_km": radius_km,
+            "nearby": nearby,
+            "buffer": buffer_geojson
+        })
 
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=400)
-
+    
 # ==============================
 # API Admin & Quản lý địa điểm
 # ==============================
