@@ -15,6 +15,14 @@ var satelliteLayer = L.tileLayer(
     { attribution: 'Tiles © Esri' }
 );
 
+var labelsLayer = L.tileLayer(
+    'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
+    { attribution: 'Labels © Esri' }
+);
+
+// Gom ảnh vệ tinh + nhãn thành một layer group
+var satelliteWithLabels = L.layerGroup([satelliteLayer, labelsLayer]);
+
 var map = L.map('map', {
     center: [10.762622, 106.660172],
     zoom: 13,
@@ -23,7 +31,7 @@ var map = L.map('map', {
 
 var layerControl = L.control.layers({
     "Bản đồ đường phố": streetLayer,
-    "Ảnh vệ tinh": satelliteLayer
+    "Ảnh vệ tinh": satelliteWithLabels
 }, null).addTo(map);
 
 // Di chuyển phần tử vào div tùy chỉnh (Đảm bảo ID 'layer-switcher' tồn tại trong HTML)
@@ -67,10 +75,56 @@ function closeImageModal() {
     document.getElementById("image-modal").style.display = "none";
 }
 
+// ==============================
+// Weather API
+// ==============================
+async function showWeather(lat, lng) {
+    const apiKey = "0a34bc50ed55b44c50527935679b9f79"; // thay bằng key thật
+    if (!lat || !lng) {
+        document.getElementById("info-content").innerHTML += `
+            <p><strong>🌦 Thời tiết:</strong> Chưa có tọa độ để tải dữ liệu.</p>
+        `;
+        return;
+    }
+
+    try {
+        let res = await fetch(
+            `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lng}&units=metric&lang=vi&appid=${apiKey}`
+        );
+        let data = await res.json();
+
+        if (data.cod !== 200) {
+            document.getElementById("info-content").innerHTML += `
+                <p><strong>🌦 Thời tiết:</strong> Không thể tải dữ liệu (${data.message})</p>
+            `;
+            return;
+        }
+
+        document.getElementById("info-content").innerHTML += `
+            <p><strong>🌦 Thời tiết:</strong> ${data.weather[0].description}, ${data.main.temp}°C</p>
+        `;
+    } catch (err) {
+        console.error("Weather API error:", err);
+        document.getElementById("info-content").innerHTML += `
+            <p><strong>🌦 Thời tiết:</strong> Lỗi khi tải dữ liệu</p>
+        `;
+    }
+}
+
+// ==============================
+// Info Panel
+// ==============================
 function displayInfo(p) {
     const panel = document.getElementById("info-panel");
     const content = document.getElementById("info-content");
     if (!panel || !content) return;
+
+    // Nếu chưa có dữ liệu địa điểm
+    if (!p || !p.latitude || !p.longitude) {
+        panel.style.display = "block";
+        content.innerHTML = "<p><strong>ℹ️ Thông tin:</strong> Chưa chọn địa điểm.</p>";
+        return;
+    }
 
     let imgFile = p.img ? p.img.replace("images/", "") : "no-image.jpg";
     let imgPath = "/static/images/" + imgFile;
@@ -101,6 +155,10 @@ function displayInfo(p) {
         </div>
     `;
 
+    // Gọi Weather API
+    showWeather(p.latitude, p.longitude);
+
+    // Nếu có menu ảnh thì thêm carousel
     if (p.menu_imgs && p.menu_imgs.length > 0) {
         currentMenuImgs = p.menu_imgs;
         currentMenuIndex = 0;
@@ -116,7 +174,6 @@ function displayInfo(p) {
         content.innerHTML += menuHtml;
     }
 }
-
 // ==============================
 // 3. Chỉ đường OpenRouteService 
 // ==============================
