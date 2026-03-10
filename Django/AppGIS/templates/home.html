@@ -63,6 +63,12 @@
 <div id="loading" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); z-index:9999; background:rgba(255,255,255,0.8); padding:20px; border-radius:10px;">
     <i class="fa-solid fa-spinner fa-spin"></i> Đang xử lý...
 </div>
+<!--Modal xem ảnh-->
+<div id="image-modal" class="image-modal" style="display:none;">
+  <span class="close-modal" onclick="closeImageModal()">×</span>
+  <img id="modal-img" src="" alt="Xem ảnh">
+</div>
+
 {% endblock %}
 
 {% block scripts %}

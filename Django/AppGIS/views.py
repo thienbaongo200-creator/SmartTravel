@@ -2,7 +2,8 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse
 from .models import TodoItem, TourismPoint 
 from geopy.distance import geodesic
-
+import re
+import unicodedata
 # ==============================
 # Các trang tĩnh
 # ==============================
@@ -37,11 +38,20 @@ def contact_success(request):
 # ==============================
 # Tool WebGIS
 # ==============================
+def slugify(value):
+    # chuyển unicode có dấu thành không dấu
+    value = unicodedata.normalize('NFD', value)
+    value = value.encode('ascii', 'ignore').decode('utf-8')
+    # loại bỏ ký tự đặc biệt, khoảng trắng
+    value = re.sub(r'[^\w\s-]', '', value).strip().lower()
+    return re.sub(r'[-\s]+', '', value)
+
 def search(request):
     query = request.GET.get("q", "")
     results = TourismPoint.objects.filter(name__icontains=query)
     data = [] 
     for p in results: 
+        folder = slugify(p.name)  # tên thư mục theo tên nhà hàng
         data.append({ 
             "name": p.name, 
             "description": p.description, 
@@ -52,6 +62,7 @@ def search(request):
             "open_hours": p.open_hours, 
             "rating": p.rating, 
             "img": p.img, 
+            "menu_imgs": [f"/static/images/menus/{folder}/{img}" for img in (p.menu_imgs or [])]
         })
     return JsonResponse(data, safe=False)
 
@@ -292,31 +303,44 @@ def transport_list(request):
     return render(request, "transport.html", {"transports": transports})
 
 def nearby_places(request):
+    # Lấy tham số từ query string
+    lat_str = request.GET.get("lat")
+    lng_str = request.GET.get("lng")
+    radius_str = request.GET.get("radius", "2")
+
+    # Kiểm tra tham số bắt buộc
+    if not lat_str or not lng_str:
+        return JsonResponse({"error": "Thiếu tham số lat hoặc lng"}, status=400)
+
     try:
-        user_lat = float(request.GET.get("lat"))
-        user_lng = float(request.GET.get("lng"))
-        radius_km = float(request.GET.get("radius", 2))  # mặc định 2km
+        user_lat = float(lat_str)
+        user_lng = float(lng_str)
+        radius_km = float(radius_str)
+    except ValueError:
+        return JsonResponse({"error": "Tham số không hợp lệ"}, status=400)
 
-        points = TourismPoint.objects.all()
-        nearby = []
+    # Tìm các điểm trong bán kính
+    points = TourismPoint.objects.all()
+    nearby = []
 
-        for p in points:
+    for p in points:
+        try:
             dist = geodesic((user_lat, user_lng), (p.latitude, p.longitude)).km
-            if dist <= radius_km:
-                nearby.append({
-                    "name": p.name,
-                    "description": p.description,
-                    "latitude": p.latitude,
-                    "longitude": p.longitude,
-                    "type": p.type,
-                    "address": p.address,
-                    "open_hours": p.open_hours,
-                    "rating": p.rating,
-                    "img": p.img.url if p.img else "",
-                    "distance_km": round(dist, 2)
-                })
+        except Exception:
+            continue  # bỏ qua nếu dữ liệu không hợp lệ
 
-        return JsonResponse(nearby, safe=False)
+        if dist <= radius_km:
+            nearby.append({
+                "name": p.name,
+                "description": p.description,
+                "latitude": p.latitude,
+                "longitude": p.longitude,
+                "type": p.type,
+                "address": p.address,
+                "open_hours": p.open_hours,
+                "rating": p.rating,
+                "img": p.img.url if p.img else "",
+                "distance_km": round(dist, 2)
+            })
 
-    except Exception as e:
-        return JsonResponse({"error": str(e)}, status=400)
+    return JsonResponse(nearby, safe=False)
