@@ -1,7 +1,11 @@
+from django.conf import settings
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse
 from .models import TodoItem, TourismPoint 
 from geopy.distance import geodesic
+import json
+from django.views.decorators.csrf import csrf_exempt
+from django.shortcuts import get_object_or_404
 
 # ==============================
 # Các trang tĩnh
@@ -326,3 +330,67 @@ def nearby_places(request):
 
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=400)
+def admin_places_view(request):
+    return render(request, 'admin_places.html')
+@csrf_exempt
+def api_places(request):
+    if request.method == "GET":
+        places = TourismPoint.objects.all().order_by('-id')
+        data = []
+        for p in places:
+            img_value = p.img if p.img else ""
+            if img_value and not img_value.startswith(('http', '/')):
+                img_url = settings.STATIC_URL + "images/" + img_value
+            else:
+                img_url = img_value
+
+            data.append({
+                "id": p.id,
+                "name": p.name,
+                "latitude": float(p.latitude) if p.latitude else 0,
+                "longitude": float(p.longitude) if p.longitude else 0,
+                "category": p.type if p.type else "Khác",
+                "address": p.address if p.address else "Chưa có địa chỉ",
+                "rating": p.rating if p.rating else 0,
+                "img": img_url,
+                "raw_img": p.img 
+            })
+        return JsonResponse(data, safe=False)
+
+    elif request.method == "POST":
+        try:
+            raw_data = json.loads(request.body)
+            new_place = TourismPoint.objects.create(
+                name=raw_data.get('name'),
+                latitude=raw_data.get('latitude'),
+                longitude=raw_data.get('longitude'),
+                type=raw_data.get('category'), 
+                address=raw_data.get('address', ''),
+                img=raw_data.get('img', ''), 
+                rating=5.0
+            )
+            return JsonResponse({"message": "Thêm thành công"}, status=201)
+        except Exception as e:
+            print(f"LỖI TẠI VIEW: {str(e)}") 
+            return JsonResponse({"error": str(e)}, status=400)
+
+@csrf_exempt
+def api_place_detail(request, pk):
+    place = get_object_or_404(TourismPoint, pk=pk)
+    
+    if request.method == "DELETE":
+        place.delete()
+        return JsonResponse({"message": "Xóa thành công"}, status=204)
+    
+    elif request.method == "PUT":
+        try:
+            raw_data = json.loads(request.body)
+            place.name = raw_data.get('name', place.name)
+            place.latitude = raw_data.get('latitude', place.latitude)
+            place.longitude = raw_data.get('longitude', place.longitude)
+            place.type = raw_data.get('type', place.type)
+            place.address = raw_data.get('address', place.address)
+            place.save()
+            return JsonResponse({"message": "Cập nhật thành công"})
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=400)
