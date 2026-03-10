@@ -66,6 +66,152 @@
 {% endblock %}
 
 {% block scripts %}
+<style>
+    /* Tổng thể Sidebar Left */
+    .sidebar-left {
+        background: #ffffff;
+        padding: 15px;
+        border-right: 1px solid #e0e0e0;
+        box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+    }
+
+    .control-group {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    /* Nút Vị trí của tôi */
+    .btn-locate {
+        background-color: #ffffff;
+        color: #444;
+        border: 1px solid #dcdcdc;
+        padding: 12px;
+        border-radius: 10px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+
+    .btn-locate:hover {
+        background-color: #f0f0f0;
+        border-color: #bbb;
+        color: #000;
+    }
+
+    /* NÚT ĐỊA ĐIỂM GẦN TÔI - HIỆU ỨNG HIỆN ĐẠI */
+    .btn-nearby {
+        background: linear-gradient(135deg, #28a745, #218838); /* Màu xanh lá tạo cảm giác an toàn/gần gũi */
+        color: white;
+        border: none;
+        padding: 15px;
+        border-radius: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 0.8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-nearby i {
+        font-size: 1.2rem;
+    }
+
+    .btn-nearby:hover {
+        transform: scale(1.02);
+        box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+        background: linear-gradient(135deg, #218838, #1e7e34);
+    }
+
+    .btn-nearby:active {
+        transform: scale(0.98);
+    }
+
+    /* Hiệu ứng nhấp nháy nhẹ để gây chú ý */
+    @keyframes pulse-green {
+        0% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7); }
+        70% { box-shadow: 0 0 0 10px rgba(40, 167, 69, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0); }
+    }
+
+    .btn-nearby {
+        animation: pulse-green 2s infinite;
+    }
+
+    /* Tiêu đề danh mục */
+    .filter-title {
+        margin-top: 20px;
+        font-weight: 800;
+        color: #2c3e50;
+        font-size: 0.95rem;
+        text-transform: uppercase;
+        border-left: 4px solid #007bff;
+        padding-left: 10px;
+        margin-bottom: 15px;
+    }
+
+    /* Lưới danh mục 2 cột */
+    .filter-buttons {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+
+    .filter-buttons button {
+        background: #fdfdfd;
+        border: 1px solid #eaeaea;
+        padding: 12px 5px;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #555;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s ease;
+    }
+
+    .filter-buttons button i {
+        font-size: 1.4rem;
+        color: #007bff; /* Màu chủ đạo của icon */
+    }
+
+    .filter-buttons button:hover {
+        background: #007bff;
+        color: white;
+        border-color: #007bff;
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0, 123, 255, 0.2);
+    }
+
+    .filter-buttons button:hover i {
+        color: white;
+    }
+
+    /* Label trên bản đồ */
+    .custom-marker-label {
+        background: white;
+        border: 1px solid #28a745;
+        border-radius: 20px;
+        padding: 3px 10px;
+        font-weight: bold;
+        color: #218838;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+</style>
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script src="https://unpkg.com/@mapbox/polyline"></script>
