@@ -1,0 +1,158 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin - Quản lý Tourism Point</title>
+    <style>
+        body { font-family: sans-serif; margin: 20px; background: #f9f9f9; }
+        .container { max-width: 1000px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background: #eee; }
+        img { border-radius: 5px; object-fit: cover; background: #f0f0f0; display: block; }
+        .input-group { display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+        input { padding: 8px; border: 1px solid #ccc; border-radius: 4px; flex: 1; min-width: 150px; }
+        button { cursor: pointer; padding: 8px 15px; border: none; border-radius: 4px; font-weight: bold; }
+        .btn-add { background: #28a745; color: white; }
+        .btn-delete { background: #dc3545; color: white; }
+        .btn-edit { background: #ffc107; color: #000; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Quản lý Địa điểm Du lịch</h1>
+
+       <form id="addForm">
+            <div class="input-group">
+                <input type="text" name="name" placeholder="Tên địa điểm" required>
+                <input type="text" name="category" placeholder="Loại (Ví dụ: Nhà hàng)" required> <input type="text" name="address" placeholder="Địa chỉ">
+            </div>
+            <div class="input-group">
+                <input type="number" step="any" name="latitude" placeholder="Vĩ độ" required>
+                <input type="number" step="any" name="longitude" placeholder="Kinh độ" required>
+                <input type="text" name="img" placeholder="Tên file ảnh (ví dụ: NhaHatTP.jpg)">
+                <button type="submit" class="btn-add">Thêm mới</button>
+            </div>
+        </form>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Ảnh</th>
+                    <th>Thông tin</th>
+                    <th>Tọa độ</th>
+                    <th>Hành động</th>
+                </tr>
+            </thead>
+            <tbody id="placesTable"></tbody>
+        </table>
+    </div>
+
+    <script>
+    // 1. Hàm load danh sách (Sửa lỗi hiển thị cột Thông tin)
+    async function loadPlaces() {
+        const res = await fetch("/api/admin/places/");
+        const data = await res.json();
+        const tbody = document.getElementById("placesTable");
+        tbody.innerHTML = "";
+
+        data.forEach(p => {
+            tbody.innerHTML += `
+                <tr>
+                    <td>
+                        <img src="${p.img}" 
+                             style="width:80px; height:60px; object-fit:cover; border-radius:5px;"
+                             onerror="this.src='/static/images/default.jpg'">
+                    </td>
+                    <td>
+                        <strong>${p.name}</strong> <br>
+                        <small>Loại: ${p.category} | Rating: ${p.rating || 5.0}</small> <br>
+                        <small>Đ/C: ${p.address || 'N/A'}</small>
+                    </td>
+                    <td>${p.latitude}, ${p.longitude}</td>
+                    <td>
+                        <button class="btn-edit" 
+                            onclick="editPlace(${p.id}, '${p.name}', '${p.category}', '${p.address}', ${p.latitude}, ${p.longitude}, '${p.img || ''}')">
+                            Sửa
+                        </button>
+                        <button class="btn-delete" onclick="deletePlace(${p.id})">Xóa</button>
+                    </td>
+                </tr>
+            `;
+        });
+    }
+
+    // 2. Thêm mới (Đảm bảo gửi đúng JSON)
+    document.getElementById("addForm").addEventListener("submit", async e => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const data = Object.fromEntries(formData.entries());
+
+        // Ép kiểu số cho tọa độ để tránh lỗi 400
+        data.latitude = parseFloat(data.latitude);
+        data.longitude = parseFloat(data.longitude);
+
+        const response = await fetch("/api/admin/places/", {
+            method: "POST",
+            headers: { 
+                "Content-Type": "application/json",
+                "X-CSRFToken": "{{ csrf_token }}" 
+            },
+            body: JSON.stringify(data)
+        });
+
+        if (response.ok) {
+            e.target.reset();
+            loadPlaces();
+            alert("Thêm thành công!");
+        } else {
+            const errorData = await response.json();
+            alert("Lỗi 400: " + errorData.error);
+        }
+    });
+
+    // 3. Xóa
+    async function deletePlace(id) {
+        if (confirm("Bạn có muốn xóa địa điểm này?")) {
+            const res = await fetch(`/api/admin/places/${id}/`, { 
+                method: "DELETE",
+                headers: { "X-CSRFToken": "{{ csrf_token }}" }
+            });
+            if (res.ok) loadPlaces();
+        }
+    }
+
+    // 4. Sửa (Dùng PATCH như View yêu cầu hoặc PUT tùy bạn)
+    async function editPlace(id, oldName, oldCategory, oldAddress, oldLat, oldLng, oldImg) {
+    const newName = prompt("Tên mới:", oldName);
+    const newCategory = prompt("Loại mới:", oldCategory);
+    const newAddress = prompt("Địa chỉ mới:", oldAddress);
+    const newLat = parseFloat(prompt("Vĩ độ mới:", oldLat));
+    const newLng = parseFloat(prompt("Kinh độ mới:", oldLng));
+    const newImg = prompt("Tên file ảnh mới:", oldImg);
+
+    if (!newName) return;
+
+    await fetch(`/api/admin/places/${id}/`, {
+        method: "PUT",
+        headers: { 
+            "Content-Type": "application/json",
+            "X-CSRFToken": "{{ csrf_token }}"
+        },
+        body: JSON.stringify({
+            name: newName,
+            type: newCategory,
+            address: newAddress,
+            latitude: newLat,
+            longitude: newLng,
+            img: newImg
+        })
+    });
+    loadPlaces();
+    }
+
+    loadPlaces();
+</script>
+</body>
+</html>
