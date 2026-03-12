@@ -442,3 +442,22 @@ function closeImageModal() {
     const modal = document.getElementById("image-modal");
     if (modal) modal.style.display = "none";
 }
+
+// Tạo Custom Control cho nút Định vị
+var LocateControl = L.Control.extend({
+    options: { position: 'topleft' }, // Cùng vị trí với Zoom control
+
+    onAdd: function (map) {
+        var container = L.DomUtil.create('div', 'locate-control leaflet-bar');
+        container.innerHTML = '<i class="fa-solid fa-location-crosshairs"></i>'; // Dùng icon FontAwesome
+        container.title = "Vị trí của tôi";
+
+        container.onclick = function () {
+            locateUser(); // Gọi hàm locateUser() bạn đã có sẵn
+        };
+        return container;
+    }
+});
+
+// Thêm nút vào bản đồ
+map.addControl(new LocateControl());
