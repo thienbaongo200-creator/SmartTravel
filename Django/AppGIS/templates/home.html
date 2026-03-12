@@ -57,40 +57,52 @@
         </div>
 
         <!-- Form chọn tuyến đường (modal) -->
-        <div id="route-modal" class="route-modal" style="display:none;">
+        <div id="route-modal" class="route-modal">
             <div class="modal-content">
-                <span class="close-modal" onclick="document.getElementById('route-modal').style.display='none'">×</span>
-                <h3>Chỉ đường</h3>
-
-                <label for="startPoint">Vị trí xuất phát:</label>
-                <div style="display:flex; gap:8px; align-items:center;">
-                    <input type="text" id="startPoint" placeholder="Nhập địa chỉ hoặc lat,lng" style="flex:1;">
-                    <button type="button" onclick="useMyLocation()" style="padding:6px 10px; background:#28a745; color:#fff; border:none; border-radius:4px; cursor:pointer;">
-                        📍 Vị trí của tôi
-                    </button>
+                <div class="modal-header">
+                    <h3><i class="fa-solid fa-route"></i> Tìm đường đi</h3>
+                    <span class="close-modal" onclick="document.getElementById('route-modal').style.display='none'">&times;</span>
                 </div>
 
-                <label for="endPoint" style="margin-top:10px;">Điểm đến:</label>
-                <input type="text" id="endPoint" placeholder="Nhập địa chỉ hoặc lat,lng">
+                <div class="modal-body">
+                    <div class="input-group">
+                        <label for="startPoint">Vị trí xuất phát</label>
+                        <div class="input-with-button">
+                            <input type="text" id="startPoint" placeholder="Nhập địa chỉ hoặc tọa độ...">
+                            <button type="button" class="btn-my-location" onclick="useMyLocation()" title="Lấy vị trí hiện tại">
+                                <i class="fa-solid fa-location-crosshairs"></i>
+                            </button>
+                        </div>
+                    </div>
 
-                <label for="transportMode" style="margin-top:10px;">Phương tiện:</label>
-                <select id="transportMode">
-                    <option value="DRIVING">🚗 Ô tô</option>
-                    <option value="WALKING">🚶 Đi bộ</option>
-                    <option value="BICYCLING">🚴 Xe đạp</option>
-                </select>
+                    <div class="input-group">
+                        <label for="endPoint">Điểm đến</label>
+                        <input type="text" id="endPoint" placeholder="Địa điểm cần đến...">
+                    </div>
 
-                <button onclick="calculateRoute()" style="margin-top:12px;">Tìm tuyến ngắn nhất</button>
+                    <div class="input-group">
+                        <label for="transportMode">Phương tiện di chuyển</label>
+                        <select id="transportMode">
+                            <option value="DRIVING">🚗 Ô tô / Xe máy</option>
+                            <option value="WALKING">🚶 Đi bộ</option>
+                            <option value="BICYCLING">🚴 Xe đạp</option>
+                        </select>
+                    </div>
 
-                <div id="route-modal-result" style="margin-top:12px;">
-                    <div id="route-modal-summary" style="font-weight:bold; color:#1a73e8; margin-bottom:6px;"></div>
-                    <div id="route-modal-detail" style="font-size:0.9rem; color:#333;"></div>
-                    <button id="route-modal-save" style="display:none; margin-top:8px; width:100%; background:linear-gradient(135deg,#3498db,#2980b9); color:#fff; border:none; padding:8px; border-radius:6px; cursor:pointer;">
-                        <i class="fa-solid fa-bookmark"></i> Lưu tuyến đường
+                    <button class="btn-calculate" onclick="calculateRoute()">
+                        TÌM TUYẾN NGẮN NHẤT
                     </button>
+
+                    <div id="route-modal-result" class="route-result-area">
+                        <div id="route-modal-summary"></div>
+                        <div id="route-modal-detail"></div>
+                        <button id="route-modal-save" class="btn-save-route">
+                            <i class="fa-solid fa-bookmark"></i> Lưu tuyến đường
+                        </button>
+                    </div>
                 </div>
             </div>
-        </div>
+        </div>        
 
         <!-- Modal danh sách đã lưu -->
         <div id="saved-routes-modal" class="route-modal" style="display:none;">
