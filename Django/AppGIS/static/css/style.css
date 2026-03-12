@@ -126,76 +126,234 @@
     text-transform: uppercase;
 }
 /* ===================================================
-   BẢNG THÔNG TIN CHI TIẾT (INFO PANEL - TRONG SIDEBAR)
+   HỢP NHẤT INFO PANEL & CAROUSEL (Dùng cho map.js)
    =================================================== */
+
+/* Khung panel thông tin */
 #info-panel {
     position: absolute;
     top: 85px;    
     right: 20px;
     width: 350px; 
-    
     z-index: 1050;
     background: white;
     display: none; 
-    
     border-radius: 15px;
     padding: 20px;
     box-shadow: 0 8px 25px rgba(0,0,0,0.15);
     max-height: calc(100% - 120px);
     overflow-y: auto;
-    
     animation: slideDown 0.3s ease-out;
-}
-.floating-info-panel {
-    position: absolute;
-    top: 85px; 
-    right: 20px;
-    width: 350px;
-    max-height: calc(100% - 120px);
-    background: white;
-    z-index: 1050;
-    border-radius: 15px;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-    padding: 20px;
-    overflow-y: auto;
-    display: none; 
-    animation: slideDown 0.3s ease-out;
-}
-#info-panel.active {
-    display: block;
 }
 
-.info-header-img {
+/* Ảnh đại diện bên trong panel */
+.info-header img {
     width: 100%;
-    height: 180px;
+    height: 200px;
     object-fit: cover;
-    border-radius: 10px;
-    margin-bottom: 15px;
+    border-radius: 8px;
+    display: block;
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 
-.info-body h2 {
-    font-size: 22px;
-    color: #2c3e50;
-    margin-bottom: 10px;
-    font-weight: 700;
-}
-/* Phương tiện di chuyển */
-.transport-selector {
-    background: #f1f3f5;
-    padding: 15px;
-    border-radius: 10px;
-    margin: 15px 0;
+/* Các nút bấm Hướng đi / Lưu */
+.button-group {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
 }
 
-.transport-selector select {
-    width: 100%;
-    padding: 8px;
+.btn-direction {
+    flex: 2;
+    background: #1a73e8 !important; /* Ưu tiên màu xanh Google */
+    color: white !important;
+    border: none;
+    padding: 12px;
     border-radius: 5px;
-    border: 1px solid #ced4da;
-    margin-bottom: 10px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.3s;
 }
 
+.btn-save {
+    flex: 1;
+    background: #fff !important;
+    color: #1a73e8 !important;
+    border: 1px solid #1a73e8 !important;
+    padding: 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.btn-save:hover { background: #f1f8ff !important; }
+
+/* Carousel Hình ảnh chi tiết */
+.menu-section {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 2px solid #f1f1f1;
+}
+
+.carousel-box {
+    position: relative;
+    background: #222;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    height: 200px;
+    overflow: hidden;
+}
+
+.carousel-btn {
+    position: absolute;
+    z-index: 10;
+    background: rgba(0,0,0,0.6);
+    color: white;
+    border: none;
+    height: 100%;
+    width: 35px;
+    cursor: pointer;
+    font-size: 20px;
+}
+
+.carousel-btn.prev { left: 0; }
+.carousel-btn.next { right: 0; }
+
+.carousel-image-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 5px;
+}
+
+#menu-img {
+    max-height: 100%;
+    max-width: 100%;
+    object-fit: contain;
+    cursor: zoom-in;
+}
+
+.menu-counter-tag {
+    position: absolute;
+    bottom: 8px;
+    right: 12px;
+    background: rgba(0,0,0,0.7);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+}
+
+/* Summary đường đi */
+#route-summary {
+    margin-top: 10px;
+    font-weight: bold;
+    color: #1a73e8;
+    text-align: center;
+}
+
+/* ===================================================
+   FIX ROUTE PANEL - ĐƯA VỀ BÊN PHẢI DƯỚI THANH TÌM KIẾM
+   =================================================== */
+.route-modal {
+    display: none; 
+    position: absolute; /* Thay đổi từ fixed sang absolute để đi theo khung map-wrapper */
+    
+    /* VỊ TRÍ QUAN TRỌNG: */
+    top: 85px;       /* Cách mép trên 85px (dưới thanh search 20px + cao 55px + gap 10px) */
+    right: 20px;     /* Cách mép phải 20px - Thẳng hàng với thanh tìm kiếm */
+    left: auto;      /* Đảm bảo không bị dính căn lề trái */
+    transform: none; /* XÓA BỎ transform cũ để không bị đẩy ra giữa */
+    
+    width: 350px;    /* Bằng độ rộng thanh search của bạn */
+    z-index: 1100;
+    background: white;
+    border-radius: 15px;
+    padding: 0; 
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    max-height: calc(100% - 120px);
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    animation: slideDown 0.3s ease-out;
+}
+
+/* Các thành phần bên trong giữ nguyên */
+.modal-header {
+    background: #1a73e8;
+    color: white;
+    padding: 12px 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 15px 15px 0 0;
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.modal-body {
+    padding: 15px;
+}
+
+/* Reset lại input cho gọn */
+.input-group input, 
+.input-group select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #dadce0;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    outline: none;
+    margin-top: 5px;
+}
+
+/* Đảm bảo Modal luôn nằm trên tất cả */
+.image-modal {
+    display: none; 
+    position: fixed;
+    z-index: 99999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.9);
+    
+    /* Căn giữa ảnh bằng Flexbox */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+    /* BỎ THANH LĂN */
+    overflow: hidden; 
+}
+
+/* Ảnh hiển thị trong Modal */
+.image-modal img {
+    max-width: 90%;
+    max-height: 90vh; /* Giới hạn chiều cao để không bị tràn */
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    object-fit: contain; /* Đảm bảo ảnh không bị méo */
+}
+
+/* Nút đóng (X) */
+.close-modal {
+    position: absolute;
+    top: 20px;
+    right: 35px;
+    color: #f1f1f1;
+    font-size: 40px;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 100000;
+}
 /* ===================================================
    CỘT PHẢI - BẢN ĐỒ & TÌM KIẾM
    =================================================== */
@@ -1116,222 +1274,4 @@ a, button, input, textarea {
     margin: 0 auto;      
     font-size: 16px;
     line-height: 1.6;
-}
-/* ==========================================================================
-   CHỈNH SỬA LẠI PHẦN SERVICE CHO GỌN
-   ========================================================================== */
-.service-list {
-    @extend .grid;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 30px;
-    max-width: 1200px;
-    margin: 0 auto;
-}
-.service-item {
-    background: #fff;
-    padding: 35px 25px;
-    border-radius: 20px; 
-    text-align: center;
-    border: 1px solid rgba(0,0,0,0.03);
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-.service-item:hover {
-    transform: translateY(-12px);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.08);
-}
-/* =========================
-   INFO PANEL IMAGE
-========================= */
-.info-header img {
-  width: 300px;      
-  height: 300px;     
-  object-fit: cover;  
-  border-radius: 8px; 
-  display: block;
-  margin: 0 auto;     
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-}
-
-/* =========================
-   INFO PANEL BODY
-========================= */
-.info-body {
-  margin-top: 15px;
-}
-.info-body h2 {
-  font-size: 20px;
-  color: #2575fc;
-  margin-bottom: 10px;
-}
-.info-body p {
-  font-size: 14px;
-  color: #555;
-  margin: 6px 0;
-  line-height: 1.4;
-}
-.info-body strong {
-  color: #2c3e50;
-}
-
-/* =========================
-   INFO PANEL CLOSE BUTTON
-========================= */
-#info-panel .close-btn {
-  position: absolute;
-  top: 8px;
-  right: 12px;
-  font-size: 20px;
-  color: #999;
-  cursor: pointer;
-  transition: color 0.3s;
-}
-#info-panel .close-btn:hover {
-  color: #e74c3c;
-}
-
-/* =========================
-   ANIMATIONS
-========================= */
-@keyframes slideIn {
-  from { opacity: 0; transform: translateX(-20px); }
-  to { opacity: 1; transform: translateX(0); }
-}
-
-#route-summary {
-  margin-top: 10px;
-  font-weight: bold;
-  color: #2575fc;
-}
-#route-detail {
-  margin-top: 10px;
-  background: #f9f9f9;
-  padding: 10px;
-  border-radius: 8px;
-  font-size: 14px;
-  color: #333;
-}
-#save-route-btn {
-  margin-top: 10px;
-  background: linear-gradient(135deg, #3498db, #2980b9);
-  color: #fff;
-  border: none;
-  padding: 8px 14px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: bold;
-}
-#save-route-btn:hover {
-  background: linear-gradient(135deg, #6a11cb, #2575fc);
-}
-
-#layer-switcher {
-    position: absolute;
-    bottom: 20px;
-    left: 20px;
-    background: rgba(255,255,255,0.9);
-    border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-    font-size: 14px;
-    padding: 6px 10px;
-    z-index: 999;
-}
-.menu-section {
-    margin-top: 15px;
-    text-align: center;
-    position: relative;
-}
-
-.menu-carousel {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 15px;
-}
-
-.menu-carousel img {
-    max-height: 250px;
-    border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-}
-
-.menu-btn {
-    background: rgba(0,0,0,0.5);
-    color: #fff;
-    border: none;
-    padding: 8px 12px;
-    border-radius: 50%;
-    cursor: pointer;
-    font-size: 20px;
-    transition: background 0.3s;
-}
-
-.menu-btn:hover {
-    background: rgba(0,0,0,0.8);
-}
-
-.image-modal {
-    display: none;
-    position: fixed;
-    z-index: 9999;
-    left: 0; top: 0;
-    width: 100%; height: 100%;
-    background: rgba(0,0,0,0.8);
-    text-align: center;
-}
-.image-modal img {
-    max-width: 90%;
-    max-height: 90%;
-    margin-top: 5%;
-    border-radius: 8px;
-}
-.close-modal {
-    position: absolute;
-    top: 20px; right: 30px;
-    color: #fff;
-    font-size: 30px;
-    cursor: pointer;
-}
-
-.route-modal {
-  position: fixed;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-  padding: 20px;
-  z-index: 2000;
-  width: 320px;
-}
-.route-modal .modal-content label {
-  display: block;
-  margin-top: 10px;
-  font-weight: bold;
-}
-.route-modal input, .route-modal select {
-  width: 100%;
-  padding: 6px;
-  margin-top: 5px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-.route-modal button {
-  margin-top: 15px;
-  width: 100%;
-  background: #1a73e8;
-  color: #fff;
-  border: none;
-  padding: 8px;
-  border-radius: 4px;
-  cursor: pointer;
-}
-.route-modal button:hover {
-  background: #155ab6;
-}
-.close-modal {
-  float: right;
-  cursor: pointer;
-  font-size: 20px;
 }
