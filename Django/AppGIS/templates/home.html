@@ -14,8 +14,11 @@
 <div class="main-layout">
     <aside class="sidebar-left">
         <div class="control-group">
-            <button onclick="locateUser()" class="btn-locate">
-                <i class="fa-solid fa-location-crosshairs"></i> Vị trí của tôi
+            <button onclick="showSavedRoutes()" class="btn-nearby">
+                <i class="fa-solid fa-bookmark"></i> Đã lưu
+            </button>
+            <button onclick="showSearchHistory()" class="btn-history">
+                <i class="fa-solid fa-clock-rotate-left"></i> Lịch sử tìm kiếm
             </button>
             <button onclick="findNearby()" class="btn-nearby">
                 <i class="fa-solid fa-location-dot"></i> Địa điểm gần tôi
@@ -36,9 +39,14 @@
     <main class="map-wrapper" style="position: relative; height: 70vh;">
         <div id="search-bar-overlay">
             <input type="text" id="searchBox" placeholder="Tìm địa điểm, khách sạn...">
-            <button onclick="searchPlace()" class="btn-search"><i class="fa-solid fa-magnifying-glass"></i></button>
+            <button onclick="searchPlace()" class="btn-search">
+                <i class="fa-solid fa-magnifying-glass"></i>
+            </button>
+            <button onclick="showRouteFromSearch()" class="btn-direction" title="Chỉ đường">
+                <i class="fa-solid fa-location-arrow"></i>
+            </button>
         </div>
-        
+
         <!-- Bản đồ -->
         <div id="map" style="height: 100%; width: 100%;"></div>
 
@@ -46,12 +54,59 @@
         <div id="info-panel" class="floating-info-panel" style="display:none;">
             <span class="close-btn" onclick="this.parentElement.style.display='none'">×</span>
             <div id="info-content"></div>
-            <div id="route-result-area" style="padding:10px; border-top:1px solid #ddd;">
-                <div id="route-summary" style="font-weight:bold; color:#1a73e8; margin-bottom:5px;"></div>
-                <div id="route-detail" style="font-size:0.85rem; color:#555;"></div>
-                <button id="save-route-btn" style="display:none; margin-top:10px; width:100%;" class="btn btn-success btn-sm">
-                    <i class="fa-solid fa-bookmark"></i> Lưu tuyến đường này
-                </button>
+        </div>
+
+        <!-- Form chọn tuyến đường (modal) -->
+        <div id="route-modal" class="route-modal" style="display:none;">
+            <div class="modal-content">
+                <span class="close-modal" onclick="document.getElementById('route-modal').style.display='none'">×</span>
+                <h3>Chỉ đường</h3>
+
+                <label for="startPoint">Vị trí xuất phát:</label>
+                <div style="display:flex; gap:8px; align-items:center;">
+                    <input type="text" id="startPoint" placeholder="Nhập địa chỉ hoặc lat,lng" style="flex:1;">
+                    <button type="button" onclick="useMyLocation()" style="padding:6px 10px; background:#28a745; color:#fff; border:none; border-radius:4px; cursor:pointer;">
+                        📍 Vị trí của tôi
+                    </button>
+                </div>
+
+                <label for="endPoint" style="margin-top:10px;">Điểm đến:</label>
+                <input type="text" id="endPoint" placeholder="Nhập địa chỉ hoặc lat,lng">
+
+                <label for="transportMode" style="margin-top:10px;">Phương tiện:</label>
+                <select id="transportMode">
+                    <option value="DRIVING">🚗 Ô tô</option>
+                    <option value="WALKING">🚶 Đi bộ</option>
+                    <option value="BICYCLING">🚴 Xe đạp</option>
+                </select>
+
+                <button onclick="calculateRoute()" style="margin-top:12px;">Tìm tuyến ngắn nhất</button>
+
+                <div id="route-modal-result" style="margin-top:12px;">
+                    <div id="route-modal-summary" style="font-weight:bold; color:#1a73e8; margin-bottom:6px;"></div>
+                    <div id="route-modal-detail" style="font-size:0.9rem; color:#333;"></div>
+                    <button id="route-modal-save" style="display:none; margin-top:8px; width:100%; background:linear-gradient(135deg,#3498db,#2980b9); color:#fff; border:none; padding:8px; border-radius:6px; cursor:pointer;">
+                        <i class="fa-solid fa-bookmark"></i> Lưu tuyến đường
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal danh sách đã lưu -->
+        <div id="saved-routes-modal" class="route-modal" style="display:none;">
+            <div class="modal-content">
+                <span class="close-modal" onclick="document.getElementById('saved-routes-modal').style.display='none'">×</span>
+                <h3>Đã lưu</h3>
+                <div id="saved-routes-list" style="max-height:300px; overflow:auto;"></div>
+            </div>
+        </div>
+
+        <!-- Modal lịch sử tìm kiếm -->
+        <div id="history-modal" class="route-modal" style="display:none;">
+            <div class="modal-content">
+                <span class="close-modal" onclick="document.getElementById('history-modal').style.display='none'">×</span>
+                <h3>Lịch sử tìm kiếm</h3>
+                <div id="search-history-list" style="max-height:300px; overflow:auto;"></div>
             </div>
         </div>
 
@@ -63,7 +118,8 @@
 <div id="loading" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); z-index:9999; background:rgba(255,255,255,0.8); padding:20px; border-radius:10px;">
     <i class="fa-solid fa-spinner fa-spin"></i> Đang xử lý...
 </div>
-<!--Modal xem ảnh-->
+
+<!-- Modal xem ảnh -->
 <div id="image-modal" class="image-modal" style="display:none;">
   <span class="close-modal" onclick="closeImageModal()">×</span>
   <img id="modal-img" src="" alt="Xem ảnh">
@@ -77,6 +133,7 @@
 <script src="https://unpkg.com/@mapbox/polyline"></script>
 
 <script src="{% static 'js/map.js' %}"></script>
+
 <script>
     // Khởi tạo Layer Group để quản lý marker theo danh mục
     let categoryLayerGroup = L.layerGroup();

@@ -75,39 +75,36 @@ function closeImageModal() {
     document.getElementById("image-modal").style.display = "none";
 }
 
+function showSavedRoutes() {
+    alert("Hiển thị danh sách tuyến đường đã lưu (sẽ lấy từ localStorage hoặc backend).");
+    // TODO: render danh sách tuyến đường đã lưu
+}
+
+function showSearchHistory() {
+    alert("Hiển thị lịch sử tìm kiếm (sẽ lấy từ localStorage hoặc backend).");
+    // TODO: render danh sách lịch sử tìm kiếm
+}
+
 // ==============================
 // Weather API
 // ==============================
 async function showWeather(lat, lng) {
-    const apiKey = "0a34bc50ed55b44c50527935679b9f79"; // thay bằng key thật
-    if (!lat || !lng) {
-        document.getElementById("info-content").innerHTML += `
-            <p><strong>🌦 Thời tiết:</strong> Chưa có tọa độ để tải dữ liệu.</p>
-        `;
-        return;
-    }
-
+    const apiKey = "0a34bc50ed55b44c50527935679b9f79";
     try {
         let res = await fetch(
             `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lng}&units=metric&lang=vi&appid=${apiKey}`
         );
         let data = await res.json();
+        let weatherEl = document.getElementById("weather-info");
 
         if (data.cod !== 200) {
-            document.getElementById("info-content").innerHTML += `
-                <p><strong>🌦 Thời tiết:</strong> Không thể tải dữ liệu (${data.message})</p>
-            `;
+            weatherEl.innerText = `☀️ Thời tiết: Không thể tải dữ liệu (${data.message})`;
             return;
         }
-
-        document.getElementById("info-content").innerHTML += `
-            <p><strong>🌦 Thời tiết:</strong> ${data.weather[0].description}, ${data.main.temp}°C</p>
-        `;
+        // Ghi đè trực tiếp, không append
+        weatherEl.innerText = `☀️ Thời tiết: ${data.weather[0].description}, ${data.main.temp}°C`;
     } catch (err) {
-        console.error("Weather API error:", err);
-        document.getElementById("info-content").innerHTML += `
-            <p><strong>🌦 Thời tiết:</strong> Lỗi khi tải dữ liệu</p>
-        `;
+        document.getElementById("weather-info").innerText = "☀️ Thời tiết: Lỗi khi tải dữ liệu";
     }
 }
 
@@ -119,7 +116,6 @@ function displayInfo(p) {
     const content = document.getElementById("info-content");
     if (!panel || !content) return;
 
-    // Nếu chưa có dữ liệu địa điểm
     if (!p || !p.latitude || !p.longitude) {
         panel.style.display = "block";
         content.innerHTML = "<p><strong>ℹ️ Thông tin:</strong> Chưa chọn địa điểm.</p>";
@@ -132,60 +128,108 @@ function displayInfo(p) {
     panel.style.display = "block";
     content.innerHTML = `
         <div class="info-header">
-            <img src="${imgPath}" alt="${p.name}" onerror="this.src='/static/images/no-image.jpg'">
+            <img src="${imgPath}" alt="${p.name}" 
+                 onerror="this.src='/static/images/no-image.jpg'">
         </div>
         <div class="info-body">
             <h2>${p.name}</h2>
-            <p><strong>⭐ Đánh giá:</strong> ${p.rating || 'Chưa có'}</p>
+            <p id="rating-weather">⭐ Đánh giá: ${p.rating || 'Chưa có'}</p>
+            <p id="weather-info">☀️ Thời tiết: đang tải...</p>
             <p><strong>📍 Địa chỉ:</strong> ${p.address || 'Đang cập nhật'}</p>
             <p><strong>⏰ Giờ mở cửa:</strong> ${p.open_hours || '8:00 - 21:00'}</p>
             <p><strong>ℹ️ Mô tả:</strong> ${p.description || 'Không có mô tả.'}</p>
-            <label for="transport">Phương tiện:</label>
-            <select id="transport">
-                <option value="DRIVING">🚗 Ô tô</option>
-                <option value="WALKING">🚶 Đi bộ</option>
-                <option value="BICYCLING">🚴 Xe đạp</option>
-            </select>
-            <button onclick="showRouteORS(${p.latitude}, ${p.longitude})" class="btn-direction">
+        </div>
+        <div id="menu-section"></div>
+        <div class="route-section">
+            <button onclick="showRouteFromSearch(${p.latitude}, ${p.longitude})" class="btn-direction">
                 <i class="fa-solid fa-route"></i> Hướng đi
             </button>
-            <div id="route-summary" style="margin-top:10px; font-weight:bold; color:#1a73e8;"></div>
-            <div id="route-detail"></div>
-            <button id="save-route-btn" style="display:none; margin-top:10px;">Lưu tuyến đường</button>
+            <button id="save-route-btn" style="margin-top:10px;">
+                <i class="fa-solid fa-bookmark"></i> Lưu tuyến đường
+            </button>
         </div>
     `;
 
     // Gọi Weather API
     showWeather(p.latitude, p.longitude);
 
-    // Nếu có menu ảnh thì thêm carousel
+    // Nếu có menu ảnh thì render
     if (p.menu_imgs && p.menu_imgs.length > 0) {
         currentMenuImgs = p.menu_imgs;
         currentMenuIndex = 0;
         let menuHtml = `
         <div class="menu-section">
             <h4>📖 Thực đơn</h4>
-            <div class="menu-carousel" style="display:flex; align-items:center; gap:10px;">
+            <div class="menu-carousel">
                 <button class="menu-btn prev" onclick="prevMenu()">⟨</button>
-                <img id="menu-img" src="${currentMenuImgs[0]}" style="max-width:100%; cursor:pointer;" onclick="openImageModal(this.src)">
+                <img id="menu-img" src="${currentMenuImgs[0]}" onclick="openImageModal(this.src)">
                 <button class="menu-btn next" onclick="nextMenu()">⟩</button>
             </div>
         </div>`;
-        content.innerHTML += menuHtml;
+        document.getElementById("menu-section").innerHTML = menuHtml;
     }
 }
+
 // ==============================
-// 3. Chỉ đường OpenRouteService 
+// Mở form chỉ đường
 // ==============================
-async function showRouteORS(destLat, destLng) {
-    if (!userMarker) {
-        alert("Vui lòng bật định vị trước khi xem chỉ đường!");
+function showRouteFromSearch(destLat=null, destLng=null) {
+    const modal = document.getElementById("route-modal");
+    modal.style.display = "block";
+
+    // Điền điểm đến
+    if (destLat && destLng) {
+        document.getElementById("endPoint").value = `${destLat},${destLng}`;
+    } else if (window.searchMarker) {
+        let latlng = window.searchMarker.getLatLng();
+        document.getElementById("endPoint").value = `${latlng.lat},${latlng.lng}`;
+    }
+
+    // Điền vị trí xuất phát
+    if (window.userMarker) {
+        let pos = window.userMarker.getLatLng();
+        document.getElementById("startPoint").value = `${pos.lat},${pos.lng}`;
+    }
+}
+
+// ==============================
+// Tính toán tuyến đường
+// ==============================
+async function calculateRoute() {
+    let start = document.getElementById("startPoint").value;
+    let end = document.getElementById("endPoint").value;
+    let mode = document.getElementById("transportMode").value;
+
+    if (!start || !end) {
+        alert("Vui lòng nhập đủ vị trí xuất phát và điểm đến!");
         return;
     }
 
-    let userLatLng = userMarker.getLatLng();
-    const transportSelect = document.getElementById("transport");
-    let mode = transportSelect ? transportSelect.value : "DRIVING";
+    let [startLat, startLng] = start.split(",").map(Number);
+    let [endLat, endLng] = end.split(",").map(Number);
+
+    let result = await showRouteORS(endLat, endLng, startLat, startLng, mode);
+
+    // Hiển thị kết quả trong form
+    if (result) {
+        document.getElementById("route-summary").innerText = `📏 ${result.distance} km | ⏱ ${result.duration} phút`;
+        document.getElementById("route-detail").innerHTML = `<p><strong>Phương tiện:</strong> ${mode}</p>`;
+    }
+}
+
+// ==============================
+// Chỉ đường ORS (trả dữ liệu)
+// ==============================
+async function showRouteORS(destLat, destLng, startLat=null, startLng=null, mode="DRIVING") {
+    if (!startLat || !startLng) {
+        if (!userMarker) {
+            alert("Vui lòng bật định vị trước khi xem chỉ đường!");
+            return null;
+        }
+        let userLatLng = userMarker.getLatLng();
+        startLat = userLatLng.lat;
+        startLng = userLatLng.lng;
+    }
 
     let orsProfile = "driving-car";
     if (mode === "WALKING") orsProfile = "foot-walking";
@@ -195,53 +239,71 @@ async function showRouteORS(destLat, destLng) {
         let response = await fetch(`https://api.openrouteservice.org/v2/directions/${orsProfile}`, {
             method: "POST",
             headers: {
-                "Authorization": "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjlkNWI2M2RiODZmNzQzODA5ODM0NDVjOTZkYTFmMGRkIiwiaCI6Im11cm11cjY0In0=", 
+                "Authorization": "YOUR_ORS_KEY",
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                coordinates: [[userLatLng.lng, userLatLng.lat], [destLng, destLat]]
+                coordinates: [[startLng, startLat], [destLng, destLat]]
             })
         });
 
         let data = await response.json();
-
         if (!data.routes || data.routes.length === 0) {
             alert("Không tìm thấy tuyến đường!");
-            return;
+            return null;
         }
 
         let route = data.routes[0];
         let distanceKm = (route.summary.distance / 1000).toFixed(2);
         let durationMin = (route.summary.duration / 60).toFixed(1);
 
-        if (route.geometry) {
-            // FIX: Đảm bảo polyline decode đúng định dạng [lat, lng]
-            let decodedCoords = polyline.decode(route.geometry);
-            let coords = decodedCoords.map(c => [c[0], c[1]]);
+        // Vẽ tuyến đường
+        let coords = route.geometry.coordinates.map(c => [c[1], c[0]]);
+        if (routeLine) map.removeLayer(routeLine);
+        routeLine = L.polyline(coords, { color: '#1a73e8', weight: 5 }).addTo(map);
+        map.fitBounds(routeLine.getBounds(), { padding: [50, 50] });
 
-            if (routeLine) map.removeLayer(routeLine);
-            
-            routeLine = L.polyline(coords, { color: '#1a73e8', weight: 5 }).addTo(map);
-            
-            // Đợi một chút để Leaflet nhận diện layer rồi mới fitBounds
-            setTimeout(() => {
-                map.fitBounds(routeLine.getBounds(), { padding: [50, 50] });
-            }, 100);
-        }
-
-        document.getElementById("route-summary").innerText = `📏 ${distanceKm} km | ⏱ ${durationMin} phút`;
-        document.getElementById("route-detail").innerHTML = `
-            <p><strong>Phương tiện:</strong> ${mode}</p>
-        `;
-
-        const saveBtn = document.getElementById("save-route-btn");
-        saveBtn.style.display = "block";
-        saveBtn.onclick = () => saveRoute({ transport: mode, distance: distanceKm, duration: durationMin, destination: { lat: destLat, lng: destLng } });
-
+        return { distance: distanceKm, duration: durationMin };
     } catch (err) {
         console.error("ORS error:", err);
         alert("Lỗi khi tải chỉ đường. Vui lòng thử lại!");
+        return null;
     }
+}
+
+// ==============================
+// Hàm chỉ đường từ kết quả tìm kiếm
+// ==============================
+function showRouteFromSearch() {
+    const modal = document.getElementById("route-modal");
+    modal.style.display = "block";
+
+    // Điền mặc định điểm đến từ searchMarker nếu có
+    if (window.searchMarker) {
+        let latlng = window.searchMarker.getLatLng();
+        document.getElementById("endPoint").value = `${latlng.lat},${latlng.lng}`;
+    }
+    // Điền mặc định vị trí xuất phát từ userMarker nếu có
+    if (window.userMarker) {
+        let pos = window.userMarker.getLatLng();
+        document.getElementById("startPoint").value = `${pos.lat},${pos.lng}`;
+    }
+}
+
+async function calculateRoute() {
+    let start = document.getElementById("startPoint").value;
+    let end = document.getElementById("endPoint").value;
+    let mode = document.getElementById("transportMode").value;
+
+    if (!start || !end) {
+        alert("Vui lòng nhập đủ vị trí xuất phát và điểm đến!");
+        return;
+    }
+
+    let [startLat, startLng] = start.split(",").map(Number);
+    let [endLat, endLng] = end.split(",").map(Number);
+
+    showRouteORS(endLat, endLng, startLat, startLng, mode);
 }
 
 // ==============================

@@ -205,9 +205,6 @@ def nearby_places(request):
             dlng = (radius_km / (111 * math.cos(math.radians(user_lat)))) * math.sin(angle)
             buffer_coords.append([user_lng + dlng, user_lat + dlat])
 
-        # Khép kín polygon (thêm điểm đầu vào cuối)
-        buffer_coords.append(buffer_coords[0])
-
         buffer_geojson = {
             "type": "Feature",
             "geometry": {

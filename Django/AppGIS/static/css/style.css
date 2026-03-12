@@ -249,6 +249,21 @@
     background: #0056b3;
 }
 
+.btn-direction {
+    background: #28a745; /* xanh lá để khác nút search */
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: background 0.3s;
+    margin-left: 5px;
+}
+
+.btn-direction:hover {
+    background: #1e7e34;
+}
+
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(-10px); }
     to { opacity: 1; transform: translateY(0); }
@@ -1277,4 +1292,46 @@ a, button, input, textarea {
     color: #fff;
     font-size: 30px;
     cursor: pointer;
+}
+
+.route-modal {
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  padding: 20px;
+  z-index: 2000;
+  width: 320px;
+}
+.route-modal .modal-content label {
+  display: block;
+  margin-top: 10px;
+  font-weight: bold;
+}
+.route-modal input, .route-modal select {
+  width: 100%;
+  padding: 6px;
+  margin-top: 5px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+.route-modal button {
+  margin-top: 15px;
+  width: 100%;
+  background: #1a73e8;
+  color: #fff;
+  border: none;
+  padding: 8px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.route-modal button:hover {
+  background: #155ab6;
+}
+.close-modal {
+  float: right;
+  cursor: pointer;
+  font-size: 20px;
 }
