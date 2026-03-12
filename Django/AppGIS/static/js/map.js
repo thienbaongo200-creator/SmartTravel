@@ -85,6 +85,8 @@ function searchPlace() {
     let query = document.getElementById("searchBox").value;
     if (!query) return;
 
+    addToHistory(query);
+    
     fetch(`/search/?q=${encodeURIComponent(query)}`)
       .then(res => res.json())
       .then(data => {
@@ -461,3 +463,49 @@ var LocateControl = L.Control.extend({
 
 // Thêm nút vào bản đồ
 map.addControl(new LocateControl());
+
+// --- LƯU TRỮ DỮ LIỆU ---
+function savePlace(name) {
+    let saved = JSON.parse(localStorage.getItem('myPlaces')) || [];
+    if (!saved.includes(name)) {
+        saved.push(name);
+        localStorage.setItem('myPlaces', JSON.stringify(saved));
+        alert("Đã lưu địa điểm: " + name);
+    } else {
+        alert("Địa điểm này đã có trong danh sách lưu!");
+    }
+}
+
+function addToHistory(query) {
+    let history = JSON.parse(localStorage.getItem('searchHistory')) || [];
+    history = history.filter(item => item !== query); // Xóa bản cũ nếu có
+    history.unshift(query); // Đẩy vào đầu mảng
+    localStorage.setItem('searchHistory', JSON.stringify(history.slice(0, 10))); // Lưu tối đa 10 cái
+}
+
+function showSavedRoutes() {
+    const saved = JSON.parse(localStorage.getItem('myPlaces')) || [];
+    const panel = document.getElementById("info-panel");
+    const content = document.getElementById("info-content");
+
+    let html = `<h3>⭐ Đã lưu (${saved.length})</h3><hr>`;
+    if (saved.length === 0) html += "<p>Chưa có địa điểm nào.</p>";
+    else {
+        html += "<ul>" + saved.map(item => `<li>${item}</li>`).join('') + "</ul>";
+        html += `<button onclick="localStorage.removeItem('myPlaces'); showSavedRoutes()">Xóa tất cả</button>`;
+    }
+    
+    content.innerHTML = html;
+    panel.style.display = "block";
+}
+
+function showSearchHistory() {
+    const history = JSON.parse(localStorage.getItem('searchHistory')) || [];
+    const content = document.getElementById("info-content");
+    
+    let html = `<h3>🕒 Lịch sử tìm kiếm</h3><hr>`;
+    html += "<ul>" + history.map(q => `<li>${q}</li>`).join('') + "</ul>";
+    
+    content.innerHTML = html;
+    document.getElementById("info-panel").style.display = "block";
+}
