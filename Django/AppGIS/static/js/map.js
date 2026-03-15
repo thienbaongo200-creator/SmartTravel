@@ -178,10 +178,9 @@ function findNearby() {
  * ==========================================
  */
 async function showRouteORS(destLat, destLng, startLat = null, startLng = null, modeOverride = null) {
-    // Nếu không truyền startLat/Lng vào, tự động lấy vị trí userMarker
     if (!startLat || !startLng) {
         if (!userMarker) {
-            alert("Vui lòng bật định vị trước khi xem chỉ đường!");
+            alert("Vui lòng bật định vị hoặc nhập tọa độ xuất phát!");
             return null;
         }
         let userLatLng = userMarker.getLatLng();
@@ -189,10 +188,15 @@ async function showRouteORS(destLat, destLng, startLat = null, startLng = null, 
         startLng = userLatLng.lng;
     }
 
-    const modeSelect = document.getElementById("transport");
-    const mode = modeOverride || (modeSelect ? modeSelect.value : "DRIVING");
-
-    const profiles = { "DRIVING": "driving-car", "WALKING": "foot-walking", "BICYCLING": "cycling-regular" };
+    const mode = modeOverride || (document.getElementById("transportMode") ? document.getElementById("transportMode").value : "DRIVING-CAR");
+    
+    // Bản đồ mapping profile cho ORS
+    const profiles = { 
+        "DRIVING-CAR": "driving-car", 
+        "DRIVING-MOTO": "driving-car", // ORS free thường dùng chung car cho moto
+        "WALKING": "foot-walking", 
+        "BICYCLING": "cycling-regular" 
+    };
     const orsProfile = profiles[mode] || "driving-car";
 
     try {
@@ -212,33 +216,47 @@ async function showRouteORS(destLat, destLng, startLat = null, startLng = null, 
 
         const route = data.routes[0];
 
+        // 1. Vẽ đường đi lên bản đồ
         if (route.geometry) {
-            // Yêu cầu thư viện polyline ở file HTML
             const decodedCoords = polyline.decode(route.geometry);
-            
             if (routeLine) map.removeLayer(routeLine);
-            
             routeLine = L.polyline(decodedCoords, { color: '#1a73e8', weight: 5, opacity: 0.8 }).addTo(map);
-            
-            const bounds = routeLine.getBounds();
-            if (bounds.isValid()) {
-                map.fitBounds(bounds, { padding: [50, 50] });
-            }
+            map.fitBounds(routeLine.getBounds(), { padding: [50, 50] });
         }
 
+        // 2. HIỂN THỊ KẾT QUẢ VÀO MODAL (Phần quan trọng nhất)
         const distanceKm = (route.summary.distance / 1000).toFixed(2);
         const durationMin = (route.summary.duration / 60).toFixed(0);
         
-        let summaryDiv = document.getElementById("route-summary");
-        if (summaryDiv) {
-            summaryDiv.innerText = `📏 ${distanceKm} km | ⏱ ${durationMin} phút`;
-        }
+        // Cập nhật vào ID đúng trong HTML của bạn
+        const summaryDiv = document.getElementById("route-modal-summary");
+        const resultArea = document.getElementById("route-modal-result");
 
+        if (summaryDiv) {
+            summaryDiv.innerHTML = `
+                <div style="background: #f0f7ff; padding: 15px; border-radius: 8px; border-left: 5px solid #1a73e8; margin-top: 10px;">
+                    <p style="margin: 0; color: #333;"><i class="fa-solid fa-road"></i> <b>Khoảng cách:</b> ${distanceKm} km</p>
+                    <p style="margin: 5px 0 0 0; color: #333;"><i class="fa-solid fa-clock"></i> <b>Thời gian:</b> ${durationMin} phút</p>
+                </div>
+            `;
+        }
+        
+        if (resultArea) {
+            resultArea.style.display = "block"; // Hiện vùng kết quả và nút lưu
+        }
+        const panelSummary = document.getElementById("route-summary");
+        if (panelSummary) {
+            panelSummary.innerHTML = `
+                <div style="margin-top:10px; padding:10px; border-top:1px solid #ddd; color:#1a73e8; font-weight:bold;">
+                    ${distanceKm} km | ${durationMin} phút
+                </div>
+            `;
+        }
         return { distance: distanceKm, duration: durationMin };
 
     } catch (err) {
         console.error("ORS error:", err);
-        alert("Lỗi khi tải chỉ đường. Kiểm tra kết nối hoặc API Key.");
+        alert("Lỗi: " + err.message);
         return null;
     }
 }
@@ -352,10 +370,10 @@ function displayInfo(p) {
         <div class="info-body">
             <h2>${p.name}</h2>
             <p id="weather-info"><strong>🌦 Thời tiết:</strong> đang tải...</p>
-            <p><strong>📍 Địa chỉ:</strong> ${p.address || 'Đang cập nhật'}</p>
-            <p><strong>⏰ Giờ mở cửa:</strong> ${p.open_hours || '8:00 - 21:00'}</p>
-            <p><strong>⭐ Đánh giá:</strong> ${p.rating || '5.0'}/5</p>
-            <p><strong>ℹ️ Mô tả:</strong> ${p.description || 'Không có mô tả.'}</p>
+            <p><strong>Địa chỉ:</strong> ${p.address || 'Đang cập nhật'}</p>
+            <p><strong>Giờ mở cửa:</strong> ${p.open_hours || '8:00 - 21:00'}</p>
+            <p><strong>Đánh giá:</strong> ${p.rating || '5.0'}/5</p>
+            <p><strong>ℹMô tả:</strong> ${p.description || 'Không có mô tả.'}</p>
             
             <div class="button-group">
                 <button class="btn-direction" onclick="showRouteFromSearch(${p.latitude}, ${p.longitude})">
@@ -488,11 +506,21 @@ function showSavedRoutes() {
     const panel = document.getElementById("info-panel");
     const content = document.getElementById("info-content");
 
-    let html = `<h3>⭐ Đã lưu (${saved.length})</h3><hr>`;
-    if (saved.length === 0) html += "<p>Chưa có địa điểm nào.</p>";
-    else {
-        html += "<ul>" + saved.map(item => `<li>${item}</li>`).join('') + "</ul>";
-        html += `<button onclick="localStorage.removeItem('myPlaces'); showSavedRoutes()">Xóa tất cả</button>`;
+    let html = `<h3><i class="fa-solid fa-star" style="color:#fbbc04"></i> Địa điểm đã lưu</h3>`;
+    if (saved.length === 0) {
+        html += "<p class='text-muted'>Bạn chưa lưu địa điểm nào.</p>";
+    } else {
+        html += "<ul>" + saved.map(item => `
+            <li class="list-item">
+                <div style="display:flex; align-items:center;">
+                    <div class="item-icon icon-saved"><i class="fa-solid fa-bookmark"></i></div>
+                    <div class="item-info">
+                        <span class="item-name">${item}</span>
+                        <span class="item-sub">Địa điểm yêu thích của bạn</span>
+                    </div>
+                </div>
+            </li>`).join('') + "</ul>";
+        html += `<button class="btn-clear-all" onclick="localStorage.removeItem('myPlaces'); showSavedRoutes()">Xóa tất cả đã lưu</button>`;
     }
     
     content.innerHTML = html;
@@ -503,8 +531,22 @@ function showSearchHistory() {
     const history = JSON.parse(localStorage.getItem('searchHistory')) || [];
     const content = document.getElementById("info-content");
     
-    let html = `<h3>🕒 Lịch sử tìm kiếm</h3><hr>`;
-    html += "<ul>" + history.map(q => `<li>${q}</li>`).join('') + "</ul>";
+    let html = `<h3><i class="fa-solid fa-clock-rotate-left"></i> Lịch sử tìm kiếm</h3>`;
+    if (history.length === 0) {
+        html += "<p class='text-muted'>Chưa có lịch sử tìm kiếm.</p>";
+    } else {
+        html += "<ul>" + history.map(q => `
+            <li class="list-item" onclick="document.getElementById('searchBox').value='${q}'; searchPlace();">
+                <div style="display:flex; align-items:center;">
+                    <div class="item-icon icon-history"><i class="fa-solid fa-magnifying-glass"></i></div>
+                    <div class="item-info">
+                        <span class="item-name">${q}</span>
+                    </div>
+                </div>
+                <i class="fa-solid fa-chevron-right" style="color:#ccc; font-size:0.8rem;"></i>
+            </li>`).join('') + "</ul>";
+        html += `<button class="btn-clear-all" onclick="localStorage.removeItem('searchHistory'); showSearchHistory()">Xóa lịch sử</button>`;
+    }
     
     content.innerHTML = html;
     document.getElementById("info-panel").style.display = "block";
