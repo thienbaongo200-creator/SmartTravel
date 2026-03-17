@@ -14,10 +14,16 @@
 <div class="main-layout">
     <aside class="sidebar-left">
         <div class="control-group">
-            <button onclick="locateUser()" class="btn-locate">
-                <i class="fa-solid fa-location-crosshairs"></i> Vị trí của tôi
+            <button onclick="showSavedRoutes()" class="btn-nearby">
+                <i class="fa-solid fa-bookmark"></i> Đã lưu
             </button>
-            
+            <button onclick="showSearchHistory()" class="btn-history">
+                <i class="fa-solid fa-clock-rotate-left"></i> Lịch sử tìm kiếm
+            </button>
+            <button onclick="findNearby()" class="btn-nearby">
+                <i class="fa-solid fa-location-dot"></i> Địa điểm gần tôi
+            </button>
+
             <div class="filter-title">Khám phá theo danh mục</div>
             <div class="filter-buttons">
                 <button onclick="filterCategory('restaurant')"><i class="fa-solid fa-utensils"></i> Nhà hàng</button>
@@ -33,29 +39,102 @@
     <main class="map-wrapper" style="position: relative; height: 70vh;">
         <div id="search-bar-overlay">
             <input type="text" id="searchBox" placeholder="Tìm địa điểm, khách sạn...">
-            <button onclick="searchPlace()" class="btn-search"><i class="fa-solid fa-magnifying-glass"></i></button>
+            <button onclick="searchPlace()" class="btn-search">
+                <i class="fa-solid fa-magnifying-glass"></i>
+            </button>
+            <button onclick="showRouteFromSearch()" class="btn-direction" title="Chỉ đường">
+                <i class="fa-solid fa-location-arrow"></i>
+            </button>
         </div>
 
+        <!-- Bản đồ -->
+        <div id="map" style="height: 100%; width: 100%;"></div>
+
+        <!-- Panel thông tin -->
         <div id="info-panel" class="floating-info-panel" style="display:none;">
             <span class="close-btn" onclick="this.parentElement.style.display='none'">×</span>
             <div id="info-content"></div>
-            
-            <div id="route-result-area" style="padding:10px; border-top:1px solid #ddd;">
-                <div id="route-summary" style="font-weight:bold; color:#1a73e8; margin-bottom:5px;"></div>
-                <div id="route-detail" style="font-size:0.85rem; color:#555;"></div>
-                <button id="save-route-btn" style="display:none; margin-top:10px; width:100%;" class="btn btn-success btn-sm">
-                    <i class="fa-solid fa-bookmark"></i> Lưu tuyến đường này
-                </button>
+        </div>
+
+        <!-- Form chọn tuyến đường (modal) -->
+        <div id="route-modal" class="route-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3><i class="fa-solid fa-route"></i> Tìm đường đi</h3>
+                    <span class="close-modal" onclick="document.getElementById('route-modal').style.display='none'">&times;</span>
+                </div>
+
+                <div class="modal-body">
+                    <div class="input-group">
+                        <label for="startPoint">Vị trí xuất phát</label>
+                        <div class="input-with-button">
+                            <input type="text" id="startPoint" placeholder="Nhập địa chỉ hoặc tọa độ...">
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="endPoint">Điểm đến</label>
+                        <input type="text" id="endPoint" placeholder="Địa điểm cần đến...">
+                    </div>
+
+                    <div class="input-group">
+                        <label for="transportMode">Phương tiện di chuyển</label>
+                        <select id="transportMode">
+                            <option value="DRIVING-CAR">Ô tô</option>
+                            <option value="DRIVING-MOTO">Xe máy</option>
+                            <option value="WALKING">Đi bộ</option>
+                            <option value="BICYCLING">Xe đạp</option>
+                        </select>
+                    </div>
+
+                    <button class="btn-calculate" onclick="calculateRoute()">
+                        TÌM TUYẾN NGẮN NHẤT
+                    </button>
+
+                    <div id="route-modal-result" class="route-result-area" style="display:none;">
+                        <div id="route-modal-summary"></div>
+                        <div id="route-modal-detail"></div>
+                        <button id="route-modal-save" class="btn-save-route">
+                            <i class="fa-solid fa-bookmark"></i> Lưu tuyến đường
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>     
+
+        <!-- Modal danh sách đã lưu -->
+        <div id="saved-routes-modal" class="route-modal" style="display:none;">
+            <div class="modal-content">
+                <span class="close-modal" onclick="document.getElementById('saved-routes-modal').style.display='none'">×</span>
+                <h3>Đã lưu</h3>
+                <div id="saved-routes-list" style="max-height:300px; overflow:auto;"></div>
             </div>
         </div>
 
-        <div id="map" style="height: 100%; width: 100%;"></div>
+        <!-- Modal lịch sử tìm kiếm -->
+        <div id="history-modal" class="route-modal" style="display:none;">
+            <div class="modal-content">
+                <span class="close-modal" onclick="document.getElementById('history-modal').style.display='none'">×</span>
+                <h3>Lịch sử tìm kiếm</h3>
+                <div id="search-history-list" style="max-height:300px; overflow:auto;"></div>
+            </div>
+        </div>
+
+        <!-- Control chọn lớp -->
+        <div id="layer-switcher"></div>
     </main>
 </div>
 
 <div id="loading" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); z-index:9999; background:rgba(255,255,255,0.8); padding:20px; border-radius:10px;">
     <i class="fa-solid fa-spinner fa-spin"></i> Đang xử lý...
 </div>
+
+<!-- Modal xem ảnh -->
+<div id="image-modal" class="image-modal" style="display:none;">
+  <span class="close-modal" onclick="closeImageModal()">×</span>
+  <img id="modal-img" src="" alt="Xem ảnh">
+</div>
+
 {% endblock %}
 
 {% block scripts %}
@@ -66,52 +145,117 @@
 <script src="{% static 'js/map.js' %}"></script>
 
 <script>
+    // Khởi tạo Layer Group để quản lý marker theo danh mục
+    let categoryLayerGroup = L.layerGroup();
+
     /**
-     * Hàm tự động kích hoạt tìm kiếm và hiển thị thông tin khi chuyển từ Hotels sang
+     * CHỨC NĂNG 1: Lọc và hiển thị địa điểm theo danh mục (Restaurant, Hotel,...)
      */
-   function focusPlaceFromURL() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const lat = urlParams.get('lat');
-    const lng = urlParams.get('lng');
-    const name = urlParams.get('name');
-    const img = urlParams.get('img'); // Lấy thêm ảnh
-    const address = urlParams.get('address');
-    const desc = urlParams.get('desc');
-    const rating = urlParams.get('rating');
+    async function filterCategory(category) {
+        console.log("Đang lấy dữ liệu cho mục:", category);
+        const loading = document.getElementById('loading');
+        
+        if (loading) loading.style.display = 'block';
 
-    let retryCount = 0;
-    const checkMapReady = setInterval(() => {
-        if (typeof map !== 'undefined' && typeof displayInfo === 'function') {
-            clearInterval(checkMapReady);
+        if (typeof map !== 'undefined') {
+            categoryLayerGroup.clearLayers();
+        } else {
+            alert("Lỗi: Bản đồ chưa được tải xong.");
+            if (loading) loading.style.display = 'none';
+            return;
+        }
 
-            if (lat && lng) {
+        try {
+            const response = await fetch(`/api/places/?category=${category}`);
+            if (!response.ok) throw new Error("Lỗi kết nối server");
+            
+            const data = await response.json();
+
+            if (data.length === 0) {
+                alert("Không tìm thấy địa điểm nào thuộc danh mục này.");
+            }
+
+data.forEach(place => {
+    const lat = parseFloat(place.latitude);
+    const lng = parseFloat(place.longitude);
+
+    if (!isNaN(lat) && !isNaN(lng)) {
+        const marker = L.marker([lat, lng])
+            .bindPopup(`<b>${place.name}</b>`);
+        marker.bindTooltip(place.name, {
+            permanent: true, 
+            direction: 'top',  
+            offset: [0, -10],  
+            className: 'custom-marker-label' 
+        }).openTooltip();
+        marker.on('click', () => {
+        displayInfo({
+            name: place.name,
+            img: place.img || "",
+            latitude: lat,
+            longitude: lng,
+            address: place.address || "Đang cập nhật",
+            description: place.description || "Không có mô tả.",
+            rating: place.rating || "5.0"
+            });
+        });
+        categoryLayerGroup.addLayer(marker);
+    }
+});
+
+            categoryLayerGroup.addTo(map);
+
+            if (data.length > 0) {
+                const group = new L.featureGroup(categoryLayerGroup.getLayers());
+                map.fitBounds(group.getBounds().pad(0.2));
+            }
+
+        } catch (error) {
+            console.error("Lỗi Fetch:", error);
+            alert("Không thể tải dữ liệu. Vui lòng kiểm tra lại Backend.");
+        } finally {
+            if (loading) loading.style.display = 'none';
+        }
+    }
+
+    /**
+     * CHỨC NĂNG 2: Xử lý khi được chuyển hướng từ trang khác (ví dụ: Hotel List)
+     */
+    function focusPlaceFromURL() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const lat = urlParams.get('lat');
+        const lng = urlParams.get('lng');
+        
+        if (!lat || !lng) return;
+
+        let retryCount = 0;
+        const checkMapReady = setInterval(() => {
+            if (typeof map !== 'undefined' && typeof displayInfo === 'function') {
+                clearInterval(checkMapReady);
+
                 const targetLatLng = [parseFloat(lat), parseFloat(lng)];
-                const decodedName = decodeURIComponent(name);
+                const decodedName = decodeURIComponent(urlParams.get('name') || "Địa điểm");
 
-                // 1. Bay đến vị trí khách sạn
                 map.flyTo(targetLatLng, 17);
 
-                // 2. Tạo Marker
                 if (window.searchMarker) map.removeLayer(window.searchMarker);
                 window.searchMarker = L.marker(targetLatLng).addTo(map)
                     .bindPopup(`<b>${decodedName}</b>`)
                     .openPopup();
 
-                // 3. Gọi hàm hiển thị bảng thông tin với đầy đủ dữ liệu ảnh
                 displayInfo({
                     name: decodedName,
-                    img: img ? decodeURIComponent(img) : "no-image.jpg", // Truyền ảnh sang đây
+                    img: urlParams.get('img') ? decodeURIComponent(urlParams.get('img')) : "",
                     latitude: lat,
                     longitude: lng,
-                    address: address ? decodeURIComponent(address) : "Đang cập nhật",
-                    description: desc ? decodeURIComponent(desc) : "Không có mô tả.",
-                    rating: rating || "5.0"
+                    address: urlParams.get('address') ? decodeURIComponent(urlParams.get('address')) : "Đang cập nhật",
+                    description: urlParams.get('desc') ? decodeURIComponent(urlParams.get('desc')) : "Không có mô tả.",
+                    rating: urlParams.get('rating') || "5.0"
                 });
             }
-        }
-        if (++retryCount > 50) clearInterval(checkMapReady);
-    }, 100);
-}
+            if (++retryCount > 50) clearInterval(checkMapReady);
+        }, 100);
+    }
 
     window.addEventListener('load', focusPlaceFromURL);
 </script>

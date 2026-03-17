@@ -1,53 +1,188 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Điểm đến{% endblock %}
+{% block title %}Điểm đến - Smart Travel Map{% endblock %}
 
 {% block content %}
-<section class="destinations_section py-5">
+<style>
+    /* Đồng bộ với tone màu trang Restaurants */
+    .destinations-section { background-color: #f8f9fa; padding: 60px 0; }
+    
+    .destination-card {
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        background: #fff;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .destination-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.1) !important;
+    }
+
+    .dest-img-container {
+        position: relative;
+        overflow: hidden;
+        height: 250px; /* Chiều cao đồng nhất với trang nhà hàng */
+    }
+
+    .dest-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+
+    .destination-card:hover .dest-img {
+        transform: scale(1.08);
+    }
+
+    .rating-badge {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: rgba(255, 255, 255, 0.95);
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-weight: bold;
+        color: #2575fc; /* Màu xanh đặc trưng cho du lịch */
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        z-index: 2;
+    }
+
+    .dest-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-top: 10px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .info-list {
+        list-style: none;
+        padding: 0;
+        font-size: 0.9rem;
+        color: #555;
+    }
+
+    .info-list li {
+        margin-bottom: 8px;
+        display: flex;
+        align-items: flex-start;
+    }
+
+    .info-list i {
+        color: #2575fc; /* Màu xanh icon */
+        margin-right: 10px;
+        margin-top: 3px;
+        width: 18px;
+        text-align: center;
+    }
+
+    .btn-action {
+        border-radius: 25px;
+        padding: 8px 20px;
+        font-weight: 600;
+        transition: all 0.3s;
+        background: linear-gradient(135deg, #6a11cb, #2575fc);
+        color: white;
+        border: none;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .btn-action:hover {
+        filter: brightness(1.1);
+        color: white;
+        transform: scale(1.05);
+    }
+
+    .empty-msg {
+        text-align: center;
+        padding: 50px;
+        color: #888;
+        font-style: italic;
+    }
+    
+</style>
+
+<section class="destinations-section">
     <div class="container">
         <div class="text-center mb-5">
-            <h2 class="fw-bold">Khám phá các điểm đến nổi bật</h2>
-            <p class="text-muted">
-                Smart Travel Map giới thiệu những địa điểm du lịch hấp dẫn, mang đến trải nghiệm văn hóa, lịch sử và giải trí đa dạng cho du khách.
-            </p>
+            <h2 class="fw-bold text-uppercase">Khám phá Điểm đến</h2>
+            <div style="width: 80px; height: 3px; background: #2575fc; margin: 10px auto;"></div>
+            <p class="text-muted">Hành trình khám phá những địa danh nổi tiếng và vẻ đẹp tiềm ẩn</p>
         </div>
 
-        {% for point in points %}
-        <div class="row mb-4 align-items-center">
-            <div class="col-md-6">
-                {% if point.img %}
-                    <img src="{% static 'images/' %}{{ point.img }}" 
-                         class="img-fluid destination-img" 
-                         alt="{{ point.name }}">
-                {% else %}
-                    <img src="{% static 'images/default.jpg' %}" 
-                         class="img-fluid destination-img" 
-                         alt="No image">
-                {% endif %}
+        <div class="row">
+            {% for point in points %}
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card destination-card shadow-sm">
+                    <div class="dest-img-container">
+                        {% if point.img %}
+                            <img src="{% static 'images/' %}{{ point.img }}" class="dest-img" alt="{{ point.name }}">
+                        {% else %}
+                            <img src="{% static 'images/default.jpg' %}" class="dest-img" alt="No image">
+                        {% endif %}
+                        
+                        <div class="rating-badge">
+                            <i class="fas fa-star text-warning"></i> {{ point.rating|default:"5.0" }}
+                        </div>
+                    </div>
+
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="dest-title" title="{{ point.name }}">{{ point.name }}</h5>
+                        
+                        <ul class="info-list mt-2">
+                            {% if point.address %}
+                            <li>
+                                <i class="fas fa-map-marker-alt"></i> 
+                                <span>{{ point.address }}</span>
+                            </li>
+                            {% endif %}
+                            
+                            {% if point.type %}
+                            <li>
+                                <i class="fas fa-layer-group"></i> 
+                                <span>{{ point.type }}</span>
+                            </li>
+                            {% endif %}
+
+                            {% if point.open_hours %}
+                            <li>
+                                <i class="fas fa-clock"></i> 
+                                <span>{{ point.open_hours }}</span>
+                            </li>
+                            {% endif %}
+                        </ul>
+
+                        <p class="card-text">
+                            {{ point.description|default:"Khám phá vẻ đẹp lịch sử và văn hóa đặc sắc tại điểm đến hấp dẫn này."|truncatewords:18 }}
+                        </p>
+                        
+                        <div class="mt-auto pt-3 border-top text-center">
+                            <a href="{% url 'home' %}?lat={{ point.latitude }}&lng={{ point.longitude }}&name={{ point.name|urlencode }}&img={{ point.img|urlencode }}&address={{ point.address|urlencode }}" class="btn-action">
+                                <i class="fas fa-route me-2"></i> Khám phá ngay
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="col-md-6 d-flex flex-column justify-content-center">
-                <h5 class="fw-bold">{{ point.name }}</h5>
-                <p class="text-muted">{{ point.description|truncatewords:25 }}</p>
-                <ul class="list-unstyled small mb-3">
-                    {% if point.address %}
-                        <li><strong>Địa chỉ:</strong> {{ point.address }}</li>
-                    {% endif %}
-                    {% if point.open_hours %}
-                        <li><strong>Giờ mở cửa:</strong> {{ point.open_hours }}</li>
-                    {% endif %}
-                    {% if point.type %}
-                        <li><strong>Loại hình:</strong> {{ point.type }}</li>
-                    {% endif %}
-                    {% if point.rating %}
-                        <li><strong>Đánh giá:</strong> ⭐ {{ point.rating }}</li>
-                    {% endif %}
-                </ul>
+            {% empty %}
+            <div class="col-12">
+                <p class="empty-msg">Hiện chưa có dữ liệu điểm đến nào để hiển thị.</p>
             </div>
+            {% endfor %}
         </div>
-        {% empty %}
-        <p class="text-center">Chưa có điểm đến nào được thêm vào hệ thống.</p>
-        {% endfor %}
     </div>
 </section>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 {% endblock %}
+

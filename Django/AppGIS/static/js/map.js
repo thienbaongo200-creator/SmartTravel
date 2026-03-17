@@ -1,176 +1,98 @@
-// ==============================
-// 1. Khởi tạo bản đồ
-// ==============================
+/**
+ * ==========================================
+ * 1. KHỞI TẠO BẢN ĐỒ & BIẾN TOÀN CỤC
+ * ==========================================
+ */
 if (typeof map !== "undefined") {
-    map.remove(); // xóa bản đồ cũ nếu đã tồn tại
+    map.remove();
 }
-var map = L.map('map').setView([10.762622, 106.660172], 13);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap'
+
+// Cấu hình các lớp bản đồ
+var streetLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+    attribution: '© OpenStreetMap contributors © CARTO',
+    subdomains: 'abcd',
+    maxZoom: 20
+});
+
+var satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { 
+    attribution: 'Tiles © Esri' 
+});
+
+var labelsLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}');
+
+var satelliteWithLabels = L.layerGroup([satelliteLayer, labelsLayer]);
+
+var map = L.map('map', {
+    center: [10.762622, 106.660172],
+    zoom: 13,
+    layers: [streetLayer] 
+});
+
+// Điều khiển lớp nền
+var baseMaps = {
+    "Bản đồ đường phố": streetLayer,
+    "Ảnh vệ tinh": satelliteWithLabels
+};
+L.control.layers(baseMaps, null, { 
+    position: 'bottomleft' 
 }).addTo(map);
 
-var searchMarker = null;
+// Khai báo biến (Sử dụng var để tránh lỗi redeclare khi reload script)
 var userMarker = null;
+var searchMarker = null;
 var routeLine = null;
-var geojsonLayer = null;
-var watchId = null;
-var selectedTransport = "driving";
+var bufferLayer = null;
+var nearbyMarkers = [];
+var currentMenuImgs = [];
+var currentMenuIndex = 0;
 
-// Hàm hiển thị thông tin địa điểm
-function displayInfo(p) {
-    const panel = document.getElementById("info-panel");
-    const content = document.getElementById("info-content");
+/**
+ * ==========================================
+ * 2. ĐỊNH VỊ & TÌM KIẾM
+ * ==========================================
+ */
+function locateUser() {
+    if (!navigator.geolocation) return alert("Trình duyệt không hỗ trợ định vị.");
 
-    let imgFile = p.img ? p.img.replace("images/", "") : "no-image.jpg";
-    let imgPath = "/static/images/" + imgFile;
+    const loading = document.getElementById("loading");
+    if (loading) loading.style.display = "block";
 
-    panel.style.display = "block";
-    content.innerHTML = `
-        <div class="info-header">
-            <img src="${imgPath}" alt="${p.name}">
-        </div>
-        <div class="info-body">
-            <h2>${p.name}</h2>
-            <p><strong>⭐ Đánh giá:</strong> ${p.rating || 'Chưa có'}</p>
-            <p><strong>📍 Địa chỉ:</strong> ${p.address || 'Đang cập nhật'}</p>
-            <p><strong>⏰ Giờ mở cửa:</strong> ${p.open_hours || '8:00 - 21:00'}</p>
-            <p><strong>ℹ️ Mô tả:</strong> ${p.description || 'Không có mô tả.'}</p>
-            <label for="transport">Phương tiện:</label>
-            <select id="transport">
-                <option value="DRIVING">🚗 Ô tô</option>
-                <option value="WALKING">🚶 Đi bộ</option>
-                <option value="BICYCLING">🚴 Xe đạp</option>
-                <option value="TRANSIT">🚌 Xe buýt</option>
-            </select>
-            <button onclick="showRouteORS(${p.latitude}, ${p.longitude})" class="btn-direction">
-                <i class="fa-solid fa-route"></i> Hướng đi
-            </button>
-        </div>
-    `;
-}
-//API Key: eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjlkNWI2M2RiODZmNzQzODA5ODM0NDVjOTZkYTFmMGRkIiwiaCI6Im11cm11cjY0In0=
-async function showRouteORS(destLat, destLng) {
-    if (!userMarker) {
-        alert("Vui lòng bật định vị trước khi xem chỉ đường!");
-        return;
-    }
+    navigator.geolocation.getCurrentPosition(
+        function (pos) {
+            const lat = pos.coords.latitude;
+            const lng = pos.coords.longitude;
 
-    let userLatLng = userMarker.getLatLng();
-    const transportSelect = document.getElementById("transport");
-    let mode = transportSelect ? transportSelect.value : "DRIVING";
-
-    let orsProfile = "driving-car";
-    if (mode === "WALKING") orsProfile = "foot-walking";
-    else if (mode === "BICYCLING") orsProfile = "cycling-regular";
-    else if (mode === "TRANSIT") {
-        alert("ORS chưa hỗ trợ phương tiện công cộng!");
-        return;
-    }
-
-    try {
-        let response = await fetch(
-            `https://api.openrouteservice.org/v2/directions/${orsProfile}`,
-            {
-                method: "POST",
-                headers: {
-                    "Authorization": "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjlkNWI2M2RiODZmNzQzODA5ODM0NDVjOTZkYTFmMGRkIiwiaCI6Im11cm11cjY0In0=", 
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    coordinates: [
-                        [userLatLng.lng, userLatLng.lat], 
-                        [destLng, destLat]               
-                    ]
-                })
+            if (userMarker) {
+                userMarker.setLatLng([lat, lng]);
+            } else {
+                userMarker = L.marker([lat, lng], {
+                    icon: L.divIcon({ 
+                        className: 'user-marker', 
+                        html: '<div style="background:#1a73e8; width:12px; height:12px; border-radius:50%; border:2px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.5);"></div>' 
+                    })
+                }).addTo(map).bindPopup("Bạn đang ở đây");
             }
-        );
-
-        let data = await response.json();
-        console.log("ORS data:", data);
-
-        if (!data.routes || data.routes.length === 0) {
-            alert("Không tìm thấy tuyến đường!");
-            return;
-        }
-
-        let route = data.routes[0];
-        let distanceKm = (route.summary.distance / 1000).toFixed(2);
-        let durationMin = (route.summary.duration / 60).toFixed(1);
-
-        if (route.geometry) {
-            let coords = polyline.decode(route.geometry).map(c => [c[0], c[1]]);
-            if (routeLine) map.removeLayer(routeLine);
-            routeLine = L.polyline(coords, { color: '#1a73e8', weight: 5 }).addTo(map);
-            map.fitBounds(routeLine.getBounds(), { padding: [50, 50] });
-        } else {
-            console.error("Không có geometry:", route);
-            alert("ORS không trả về dữ liệu hình học!");
-            return;
-        }
-
-        // Hiển thị thông tin
-        document.getElementById("info-panel").style.display = "block";
-        document.getElementById("route-summary").innerText = `📏 ${distanceKm} km | ⏱ ${durationMin} phút`;
-        document.getElementById("route-detail").innerHTML = `
-            <h4>Thông tin di chuyển</h4>
-            <p><strong>Phương tiện:</strong> ${mode}</p>
-            <p><strong>Khoảng cách:</strong> ${distanceKm} km</p>
-            <p><strong>Thời gian dự kiến:</strong> ${durationMin} phút</p>
-        `;
-
-        // Nút lưu
-        const saveBtn = document.getElementById("save-route-btn");
-        saveBtn.style.display = "block";
-        saveBtn.onclick = function() {
-            saveRoute({
-                transport: mode,
-                distance: distanceKm + " km",
-                duration: durationMin + " phút",
-                destination: { lat: destLat, lng: destLng }
-            });
-        };
-
-    } catch (err) {
-        console.error("ORS error:", err);
-        alert("Có lỗi khi gọi OpenRouteService!");
-    }
+            map.flyTo([lat, lng], 15);
+            if (loading) loading.style.display = "none";
+        },
+        function (err) {
+            alert("Lỗi: " + err.message);
+            if (loading) loading.style.display = "none";
+        },
+        { enableHighAccuracy: true }
+    );
 }
-
-// Hàm lưu tuyến đường vào localStorage
-function saveRoute(routeData) {
-    let routes = JSON.parse(localStorage.getItem("savedRoutes")) || [];
-    routes.push(routeData);
-    localStorage.setItem("savedRoutes", JSON.stringify(routes));
-    alert("✅ Tuyến đường đã được lưu!");
-}
-
-// Hàm xem lại tuyến đường đã lưu
-function showSavedRoutes() {
-    let routes = JSON.parse(localStorage.getItem("savedRoutes")) || [];
-    if (routes.length === 0) {
-        alert("Chưa có tuyến đường nào được lưu!");
-        return;
-    }
-    let list = "<h4>Tuyến đường đã lưu:</h4><ul>";
-    routes.forEach((r, i) => {
-        list += `<li>${i+1}. ${r.transport} - ${r.distance} - ${r.duration}</li>`;
-    });
-    list += "</ul>";
-    document.getElementById("route-detail").innerHTML = list;
-}
-    
-// ==============================
-// 3. Chức năng Tìm kiếm & Lọc
-// ==============================
 
 function searchPlace() {
     let query = document.getElementById("searchBox").value;
     if (!query) return;
 
+    addToHistory(query);
+    
     fetch(`/search/?q=${encodeURIComponent(query)}`)
       .then(res => res.json())
       .then(data => {
-          if (data.length > 0) {
+          if (data && data.length > 0) {
               let p = data[0];
               if (searchMarker) map.removeLayer(searchMarker);
 
@@ -178,74 +100,178 @@ function searchPlace() {
               searchMarker = L.marker([p.latitude, p.longitude]).addTo(map)
                                .bindPopup(`<b>${p.name}</b>`).openPopup();
               
-              displayInfo({
-                  name: p.name,
-                  img: p.img,
-                  rating: p.rating,
-                  address: p.address,
-                  open_hours: p.open_hours,
-                  description: p.description || p.desc,
-                  latitude: p.latitude,
-                  longitude: p.longitude
-              });
+              displayInfo(p);
           } else {
-              alert("Không tìm thấy địa điểm này!");
+              alert("Không tìm thấy địa điểm!");
           }
-      });
-}
-
-document.getElementById("searchBox").addEventListener("keypress", function(e) {
-    if (e.key === "Enter") searchPlace();
-});
-
-function selectTransport(type, el) {
-    selectedTransport = type;
-
-    document.querySelectorAll("#sidebar li").forEach(li => li.classList.remove("active"));
-    el.classList.add("active");
-    alert("Phương tiện đã chọn: " + type);
+      })
+      .catch(err => console.error("Search error:", err));
 }
 
 function filterCategory(category) {
-    map.eachLayer(function (layer) {
-        if (layer instanceof L.Marker && layer !== userMarker) map.removeLayer(layer);
-    });
+    nearbyMarkers.forEach(m => map.removeLayer(m));
+    nearbyMarkers = [];
+    if (routeLine) map.removeLayer(routeLine);
 
-    fetch("/static/data/data.geojson")
+    fetch(`/search_category/?cat=${category}`)
       .then(res => res.json())
       .then(data => {
-          geojsonLayer = L.geoJSON(data, {
-              filter: function (f) { return f.properties.type === category; },
-              onEachFeature: function (feature, layer) {
-                  layer.on('click', function() {
-                      let p = feature.properties;
-                      displayInfo({
-                          name: p.name,
-                          img: p.img,
-                          rating: p.rating,
-                          address: p.address,
-                          open_hours: p.open_hours,
-                          description: p.desc,
-                          latitude: feature.geometry.coordinates[1],
-                          longitude: feature.geometry.coordinates[0]
-                      });
-                  });
-              }
-          }).addTo(map);
-      });
+          if (!data || data.length === 0) {
+              alert("Không có địa điểm nào trong mục này.");
+              return;
+          }
+
+          data.forEach(p => {
+              let m = L.marker([p.latitude, p.longitude])
+                       .addTo(map)
+                       .bindPopup(`<b>${p.name}</b><br>${p.address}`);
+              m.on('click', () => displayInfo(p));
+              nearbyMarkers.push(m);
+          });
+
+          const group = new L.featureGroup(nearbyMarkers);
+          const bounds = group.getBounds();
+          if (bounds.isValid()) {
+              map.fitBounds(bounds, { padding: [30, 30] });
+          }
+      })
+      .catch(err => console.error("Filter category error:", err));
 }
 
-// ==============================
-// 4. Định vị & Dữ liệu GeoJSON
-// ==============================
+function findNearby() {
+    if (!userMarker) return alert("Vui lòng bật định vị trước!");
 
-function locateUser() {
-    if (!navigator.geolocation) {
-        alert("Trình duyệt không hỗ trợ định vị.");
-        return;
+    nearbyMarkers.forEach(m => map.removeLayer(m));
+    nearbyMarkers = [];
+    if (bufferLayer) map.removeLayer(bufferLayer);
+
+    let pos = userMarker.getLatLng();
+    fetch(`/nearby_places?lat=${pos.lat}&lng=${pos.lng}&radius=2`)
+      .then(res => res.json())
+      .then(data => {
+          if (data.buffer) {
+              bufferLayer = L.geoJSON(data.buffer, {
+                  style: { color: 'orange', fillColor: 'orange', fillOpacity: 0.2 }
+              }).addTo(map);
+          }
+
+          if (data.nearby && data.nearby.length > 0) {
+              data.nearby.forEach(p => {
+                  let m = L.marker([p.latitude, p.longitude])
+                    .addTo(map)
+                    .bindPopup(`<b>${p.name}</b><br>${p.distance_km} km`);
+                  nearbyMarkers.push(m);
+              });
+              
+              const group = new L.featureGroup(nearbyMarkers);
+              if (group.getBounds().isValid()) {
+                  map.fitBounds(group.getBounds().pad(0.2));
+              }
+          } else {
+              if (bufferLayer) map.fitBounds(bufferLayer.getBounds());
+          }
+      })
+      .catch(err => console.error("Nearby error:", err));
+}
+
+/**
+ * ==========================================
+ * 3. CHỈ ĐƯỜNG (ORS & POLYLINE)
+ * ==========================================
+ */
+async function showRouteORS(destLat, destLng, startLat = null, startLng = null, modeOverride = null) {
+    if (!startLat || !startLng) {
+        if (!userMarker) {
+            alert("Vui lòng bật định vị hoặc nhập tọa độ xuất phát!");
+            return null;
+        }
+        let userLatLng = userMarker.getLatLng();
+        startLat = userLatLng.lat;
+        startLng = userLatLng.lng;
     }
 
-    document.getElementById("loading").style.display = "block";
+    const mode = modeOverride || (document.getElementById("transportMode") ? document.getElementById("transportMode").value : "DRIVING-CAR");
+    
+    // Bản đồ mapping profile cho ORS
+    const profiles = { 
+        "DRIVING-CAR": "driving-car", 
+        "DRIVING-MOTO": "driving-car", // ORS free thường dùng chung car cho moto
+        "WALKING": "foot-walking", 
+        "BICYCLING": "cycling-regular" 
+    };
+    const orsProfile = profiles[mode] || "driving-car";
+
+    try {
+        const response = await fetch(`https://api.openrouteservice.org/v2/directions/${orsProfile}`, {
+            method: "POST",
+            headers: {
+                "Authorization": "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjlkNWI2M2RiODZmNzQzODA5ODM0NDVjOTZkYTFmMGRkIiwiaCI6Im11cm11cjY0In0=", 
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                coordinates: [[startLng, startLat], [destLng, destLat]]
+            })
+        });
+
+        const data = await response.json();
+        if (!data.routes || data.routes.length === 0) throw new Error("Không tìm thấy đường đi");
+
+        const route = data.routes[0];
+
+        // 1. Vẽ đường đi lên bản đồ
+        if (route.geometry) {
+            const decodedCoords = polyline.decode(route.geometry);
+            if (routeLine) map.removeLayer(routeLine);
+            routeLine = L.polyline(decodedCoords, { color: '#1a73e8', weight: 5, opacity: 0.8 }).addTo(map);
+            map.fitBounds(routeLine.getBounds(), { padding: [50, 50] });
+        }
+
+        // 2. HIỂN THỊ KẾT QUẢ VÀO MODAL (Phần quan trọng nhất)
+        const distanceKm = (route.summary.distance / 1000).toFixed(2);
+        const durationMin = (route.summary.duration / 60).toFixed(0);
+        
+        // Cập nhật vào ID đúng trong HTML của bạn
+        const summaryDiv = document.getElementById("route-modal-summary");
+        const resultArea = document.getElementById("route-modal-result");
+
+        if (summaryDiv) {
+            summaryDiv.innerHTML = `
+                <div style="background: #f0f7ff; padding: 15px; border-radius: 8px; border-left: 5px solid #1a73e8; margin-top: 10px;">
+                    <p style="margin: 0; color: #333;"><i class="fa-solid fa-road"></i> <b>Khoảng cách:</b> ${distanceKm} km</p>
+                    <p style="margin: 5px 0 0 0; color: #333;"><i class="fa-solid fa-clock"></i> <b>Thời gian:</b> ${durationMin} phút</p>
+                </div>
+            `;
+        }
+        
+        if (resultArea) {
+            resultArea.style.display = "block"; // Hiện vùng kết quả và nút lưu
+        }
+        const panelSummary = document.getElementById("route-summary");
+        if (panelSummary) {
+            panelSummary.innerHTML = `
+                <div style="margin-top:10px; padding:10px; border-top:1px solid #ddd; color:#1a73e8; font-weight:bold;">
+                    ${distanceKm} km | ${durationMin} phút
+                </div>
+            `;
+        }
+        return { distance: distanceKm, duration: durationMin };
+
+    } catch (err) {
+        console.error("ORS error:", err);
+        alert("Lỗi: " + err.message);
+        return null;
+    }
+}
+
+async function showRouteFromSearch(destLat = null, destLng = null) {
+    const panel = document.getElementById("info-panel");
+    const modal = document.getElementById("route-modal");
+    const startInput = document.getElementById("startPoint");
+    const endInput = document.getElementById("endPoint");
+    const loading = document.getElementById("loading");
+
+    if (panel) panel.style.display = "none";
+    if (modal) modal.style.display = "block";
 
     if (watchId !== null) navigator.geolocation.clearWatch(watchId);
 
@@ -264,7 +290,7 @@ function locateUser() {
                     })
                 }).addTo(map).bindPopup("Vị trí của bạn").openPopup();
             }
-            
+
             map.setView([lat, lng], 15);
             document.getElementById("loading").style.display = "none";
 

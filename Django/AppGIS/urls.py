@@ -15,6 +15,8 @@ urlpatterns = [
     path("hotels/", views.hotels_list, name="hotels"),
     path("restaurants/", views.restaurants_list, name="restaurants"),
     path("tours/", views.tour_list, name="tours"),
+    path("tours/<int:tour_id>/book/", views.book_tour, name="book_tour"),
+    path("booking_success/", views.booking_success, name="booking_success"),
     path("transport/", views.transport_list, name="transport"),
 
     # Liên hệ
@@ -25,6 +27,11 @@ urlpatterns = [
     path("search/", views.search, name="search"),
     path("distance/", views.distance, name="distance"),
     path("distance/<int:point_id>/", views.get_distance, name="get_distance"),
+    path("nearby_places/", views.nearby_places, name="nearby_places"),
+    path('admin_places/', views.admin_places_view, name='admin_places'),
+    path('api/places/', views.get_places_by_category, name='api_places'),
+    path('api/admin/places/', views.api_places, name='api_admin_places'),
+    path('api/admin/places/<int:pk>/', views.api_place_detail, name='api_admin_place_detail'),
 ] 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
