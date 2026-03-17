@@ -4,29 +4,190 @@
 {% block title %}Phương tiện di chuyển - Smart Travel Map{% endblock %}
 
 {% block content %}
-<section class="transport_section" style="padding:60px 20px; background:#f4f6f9;">
-    <h2 style="text-align:center; font-size:32px; margin-bottom:40px; color:#2c3e50;">
-        <i class="fa-solid fa-bus"></i> Phương tiện di chuyển
-    </h2>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <div class="transport-list" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:30px; max-width:1200px; margin:0 auto;">
-        {% for t in transports %}
-        <div class="transport-item" style="background:white; padding:25px; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.1); transition:transform 0.3s, box-shadow 0.3s;">
-            <h3 style="margin-bottom:10px; color:#9b59b6;">{{ t.title }}</h3>
-            <p>{{ t.desc }}</p>
-            <p><strong>Giá:</strong> {{ t.price }}</p>
-            <button style="margin-top:10px; padding:8px 16px; background:#9b59b6; color:white; border:none; border-radius:6px; cursor:pointer;">
-                Đặt ngay
-            </button>
+<section class="transport_section" style="padding:60px 20px; background:#f4f6f9; min-height: 100vh; font-family: 'Segoe UI', Roboto, sans-serif;">
+    <div style="max-width:1200px; margin:0 auto;">
+        
+        <div style="text-align:center; margin-bottom:40px;">
+            <h2 style="font-size:36px; color:#2c3e50; margin-bottom:10px; font-weight: 700;">
+                <i class="fa-solid fa-bus-simple" style="color: #9b59b6;"></i> Phương tiện di chuyển
+            </h2>
+            <p style="color: #7f8c8d; font-size: 18px;">Tìm kiếm và đặt phương tiện di chuyển tại TP.HCM</p>
         </div>
-        {% endfor %}
+
+        <div style="background: white; padding: 25px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 40px;">
+            <div style="display: flex; flex-direction: column; gap: 20px;">
+                
+                <div style="position: relative; width: 100%; max-width: 600px; margin: 0 auto;">
+                    <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #9b59b6;"></i>
+                    <input type="text" id="searchInput" onkeyup="combinedFilter()" placeholder="Nhập tên xe bạn muốn tìm... (VD: VinFast, Bus 2 tầng)" 
+                           style="width: 100%; padding: 12px 15px 12px 45px; border-radius: 30px; border: 2px solid #eee; outline: none; transition: 0.3s; font-size: 16px;">
+                </div>
+
+                <div style="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
+                    <button class="filter-btn active" onclick="updateCategory('Tất cả', this)">Tất cả</button>
+                    <button class="filter-btn" onclick="updateCategory('Xe buýt', this)">Xe Buýt</button>
+                    <button class="filter-btn" onclick="updateCategory('Xe máy', this)">Xe Máy</button>
+                    <button class="filter-btn" onclick="updateCategory('Ô tô', this)">Ô tô</button>
+                    <button class="filter-btn" onclick="updateCategory('Đường thủy', this)">Đường thủy</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="noResult" style="display: none; text-align: center; padding: 50px; color: #7f8c8d;">
+            <i class="fa-solid fa-face-frown" style="font-size: 50px; margin-bottom: 15px;"></i>
+            <h3>Rất tiếc, không tìm thấy phương tiện phù hợp!</h3>
+        </div>
+
+        <div class="transport-list" id="transportGrid" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:30px;">
+            {% for t in transports %}
+            <div class="transport-card" data-type="{{ t.type }}" data-title="{{ t.title|lower }}" style="background:white; border-radius:20px; overflow:hidden; box-shadow:0 10px 20px rgba(0,0,0,0.05); transition: 0.4s; position: relative;">
+                
+                <span style="position: absolute; top: 15px; right: 15px; background: rgba(155, 89, 182, 0.9); color: white; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; z-index: 1;">
+                    {{ t.type }}
+                </span>
+
+                <div style="height: 180px; background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%); display: flex; align-items: center; justify-content: center; font-size: 60px; color: white;">
+                    {% if "bus" in t.title|lower or "buýt" in t.title|lower %}
+                        <i class="fa-solid fa-bus"></i>
+                    {% elif "máy" in t.title|lower %}
+                        <i class="fa-solid fa-motorcycle"></i>
+                    {% elif "tô" in t.title|lower %}
+                        <i class="fa-solid fa-car-side"></i>
+                    {% else %}
+                        <i class="fa-solid fa-ferry"></i>
+                    {% endif %}
+                </div>
+
+                <div style="padding: 25px;">
+                    <h3 class="card-title" style="margin: 0 0 10px 0; color:#2c3e50; font-size: 22px; font-weight: 700;">{{ t.title }}</h3>
+                    <p style="color: #636e72; font-size: 15px; line-height: 1.5; margin-bottom: 20px; height: 45px; overflow: hidden;">
+                        {{ t.desc }}
+                    </p>
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f1f1f1; padding-top: 20px;">
+                        <div>
+                            <span style="display: block; font-size: 12px; color: #95a5a6; text-transform: uppercase;">Giá thuê</span>
+                            <span style="color: #e74c3c; font-weight: 700; font-size: 19px;">{{ t.price }}</span>
+                        </div>
+                        <button onclick="openBookingModal('{{ t.title }}', '{{ t.price }}')" class="book-btn">Đặt ngay</button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
     </div>
 </section>
 
+<div id="bookingModal" class="modal-overlay">
+    <div class="modal-content">
+        <button class="close-modal" onclick="closeModal()">&times;</button>
+        <div style="text-align: center; margin-bottom: 25px;">
+            <h3 style="color: #9b59b6; font-size: 24px; margin-bottom: 5px;">Xác nhận đặt chỗ</h3>
+            <p id="modalVehicleName" style="font-weight: 600; color: #34495e;"></p>
+        </div>
+        <form id="bookingForm">
+            <div class="form-group"><label>Họ và tên</label><input type="text" placeholder="Nhập tên của bạn" required></div>
+            <div class="form-group"><label>Số điện thoại</label><input type="tel" placeholder="Nhập số điện thoại" required></div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="form-group"><label>Ngày đi</label><input type="date" required></div>
+                <div class="form-group"><label>Số lượng</label><input type="number" min="1" value="1"></div>
+            </div>
+            <button type="submit" class="confirm-btn">GỬI YÊU CẦU</button>
+        </form>
+    </div>
+</div>
+
 <style>
-.transport-item:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-}
+    /* Nút lọc */
+    .filter-btn {
+        padding: 8px 22px; border-radius: 30px; border: 1px solid #ddd;
+        background: white; cursor: pointer; transition: 0.3s; font-weight: 600; color: #7f8c8d;
+    }
+    .filter-btn:hover, .filter-btn.active { background: #9b59b6; color: white; border-color: #9b59b6; }
+    
+    /* Input Search Focus */
+    #searchInput:focus { border-color: #9b59b6; box-shadow: 0 0 8px rgba(155, 89, 182, 0.2); }
+
+    /* Nút Đặt ngay */
+    .book-btn {
+        padding: 10px 20px; background: #9b59b6; color: white; border: none;
+        border-radius: 10px; cursor: pointer; font-weight: 600; transition: 0.3s;
+    }
+    .book-btn:hover { background: #8e44ad; transform: scale(1.05); }
+
+    /* Modal hiệu ứng */
+    .modal-overlay {
+        display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.7); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(5px);
+    }
+    .modal-content {
+        background: white; padding: 40px; border-radius: 25px; width: 100%; max-width: 400px;
+        position: relative; animation: slideUp 0.3s ease-out;
+    }
+    @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .close-modal { position: absolute; top: 15px; right: 20px; border: none; background: none; font-size: 28px; cursor: pointer; color: #ccc; }
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; margin-bottom: 5px; font-size: 14px; color: #666; font-weight: 600; }
+    .form-group input { width: 100%; padding: 10px; border: 1px solid #eee; border-radius: 8px; box-sizing: border-box; }
+    .confirm-btn { width: 100%; padding: 14px; background: #2ecc71; color: white; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; margin-top: 10px; }
+    
+    /* Card ẩn hiện mượt */
+    .transport-card.hidden { display: none; }
 </style>
+
+<script>
+    let currentCategory = 'Tất cả';
+
+    // Hàm cập nhật khi bấm nút lọc loại xe
+    function updateCategory(category, btn) {
+        currentCategory = category;
+        const buttons = document.querySelectorAll('.filter-btn');
+        buttons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        combinedFilter();
+    }
+
+    // Hàm lọc tổng hợp (Tên + Loại xe)
+    function combinedFilter() {
+        const searchText = document.getElementById('searchInput').value.toLowerCase();
+        const cards = document.querySelectorAll('.transport-card');
+        let hasResult = false;
+
+        cards.forEach(card => {
+            const title = card.getAttribute('data-title');
+            const type = card.getAttribute('data-type');
+            
+            const matchSearch = title.includes(searchText);
+            const matchCategory = (currentCategory === 'Tất cả' || type === currentCategory);
+
+            if (matchSearch && matchCategory) {
+                card.style.display = 'block';
+                hasResult = true;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+
+        // Hiện thông báo nếu không tìm thấy bất kỳ xe nào
+        document.getElementById('noResult').style.display = hasResult ? 'none' : 'block';
+    }
+
+    // Xử lý Modal
+    function openBookingModal(name, price) {
+        document.getElementById('bookingModal').style.display = 'flex';
+        document.getElementById('modalVehicleName').innerText = name + " (" + price + ")";
+    }
+
+    function closeModal() {
+        document.getElementById('bookingModal').style.display = 'none';
+    }
+
+    document.getElementById('bookingForm').onsubmit = function(e) {
+        e.preventDefault();
+        alert("Yêu cầu của bạn đã được gửi thành công!");
+        closeModal();
+    }
+</script>
 {% endblock %}

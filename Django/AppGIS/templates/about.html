@@ -1,107 +1,107 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Giới Thiệu{% endblock %}
+{% block title %}Giới Thiệu - Smart Travel Map{% endblock %}
 
 {% block content %}
-<section class="about_section py-5">
-    <div class="container">
+<section class="about_section section">
+    <div class="about-header">
+        <h2>Về Hệ Thống Web GIS Thông Minh</h2>
+        <h4>Kiến tạo nền tảng số dựa trên dữ liệu không gian</h4>
+        <p>Chúng tôi cung cấp giải pháp bản đồ tương tác hiện đại, giúp biến dữ liệu địa lý phức tạp thành những thông tin trực quan, dễ tiếp cận cho mọi người.</p>
+    </div>
 
-       <section id="banner" 
-         style="background:url('{% static "images/travelling.jpg" %}') center/cover no-repeat; 
-                color:white; text-align:center; height:400px; display:flex; align-items:center; justify-content:center;">
-
-            <div>
-                <h1 class="fw-bold">Smart Travel Map</h1>
-                <p class="fs-5 mt-3">Khám phá thế giới dễ dàng hơn bao giờ hết</p>
-            </div>
-            
-        </section>
-   <p></p>
-        <div class="col-md-6 mt-4">
-         
-            <h3 class="fw-bold text-center" style="font-size: 2.0rem;">Sứ mệnh & Tầm nhìn</h3>
-
-            <p class="fs-5 text-center fw-semibold" style="line-height:1.8; color:#333;">
-                Chúng tôi mang đến những trải nghiệm du lịch thú vị và đáng nhớ, 
-                với dịch vụ tận tâm, chuyên nghiệp giúp du khách khám phá thêm nhiều điều mới mẻ sau mỗi hành trình.
-            </p>
-
-
-            <ul class="list-unstyled mt-2">
-                <li><strong>Cung cấp thông tin:</strong> Luôn cập nhật những thông tin chính xác và mới nhất.</li>
-                <li><strong>Du lịch bền vững:</strong> Thân thiện và an toàn trong mỗi chuyến đi.</li>
-                <li><strong>Kết nối cộng đồng:</strong> Tạo cầu nối giữa du khách và doanh nghiệp địa phương.</li>
-            </ul>
+    <div class="grid about-cards">
+        <div class="card">
+            <div class="card-icon blue"><i class="fas fa-eye"></i></div>
+            <h3>Tầm nhìn</h3>
+            <p>Trở thành nền tảng bản đồ số hàng đầu, hỗ trợ đắc lực trong việc tra cứu thông tin địa lý và ra quyết định dựa trên dữ liệu.</p>
         </div>
-
-        <div class="row text-center mb-5 mt-4">
-            <h4 class="fw-bold mb-4">Tính năng nổi bật</h4>
-            <div class="col-md-4">
-                <i class="bi bi-map fs-1 text-primary"></i>
-                <h5 class="mt-3">Bản đồ tương tác</h5>
-                <p class="mt-2">Khám phá điểm đến dễ dàng với bản đồ trực quan, chi tiết.</p>
-            </div>
-            <div class="col-md-4">
-                <i class="bi bi-search fs-1 text-success"></i>
-                <h5 class="mt-3">Tìm kiếm nhanh</h5>
-                <p class="mt-2">Tìm sự kiện, dịch vụ và địa điểm chỉ trong vài giây.</p>
-            </div>
-                    <div class="col-md-4">
-            <i class="bi bi-calendar-event fs-1 text-danger"></i>
-            <h5 class="mt-3">Cập nhật sự kiện</h5>
-            <p class="mt-2">Theo dõi các sự kiện du lịch mới nhất, lễ hội và hoạt động nổi bật tại điểm đến bạn quan tâm.</p>
+        <div class="card">
+            <div class="card-icon green"><i class="fas fa-bullseye"></i></div>
+            <h3>Sứ mệnh</h3>
+            <p>Số hóa dữ liệu hạ tầng và du lịch nhằm minh bạch hóa thông tin, giúp người dùng tối ưu hóa lộ trình di chuyển.</p>
         </div>
-        <div class="col-md-4">
-                <i class="bi bi-search fs-1 text-success"></i>
-                <h5 class="mt-3">Gợi ý hành trình</h5>
-                <p class="mt-2">Đề xuất lịch trình du lịch thông minh, phù hợp sở thích và thời gian của bạn.</p>
-        </div>
-        <div class="col-md-4">
-                <i class="bi bi-search fs-1 text-success"></i>
-                <h5 class="mt-3">Đánh giá & Gợi ý</h5>
-                <p class="mt-2">Xem nhận xét từ cộng đồng và nhận gợi ý điểm đến phù hợp nhất cho bạn.</p>
-        </div>
-        </div>
-
-        <div class="row mb-5 mt-4">
-            <div class="col-md-6">
-                <h4 class="fw-bold">Hỗ trợ người dùng</h4>
-                <p class="mt-3">
-                    Chúng tôi cung cấp trung tâm trợ giúp, hướng dẫn sử dụng và hỗ trợ trực tuyến 24/7 
-                    để đảm bảo trải nghiệm của bạn luôn thuận lợi.
-                </p>
-
-            </div>
-            <div class="col-md-6">
-                <h4 class="fw-bold">Liên hệ & Hợp tác</h4>
-               
-                <p class="mt-3">
-                    Email: support@smarttravelmap.com <br>
-                    Hotline: +84 123 456 789 <br>
-                    Hợp tác: Liên hệ để cùng phát triển giải pháp du lịch thông minh.
-                </p>
-                 <a href="{% url 'contact' %}">
-            <button class="btn" 
-                    style="background: linear-gradient(45deg, #0d6efd, #6610f2); 
-                        color: white; 
-                        border-radius: 30px; 
-                        padding: 10px 25px; 
-                        font-weight: 600;">
-                Liên hệ tại đây
-            </button>
-            </a>
-
-            </div>
-        </div>
-
-        <div class="text-center mt-4">
-            <h4 class="fw-bold">Đơn vị phát triển</h4>
-            <p class="mt-3">
-                Smart Travel Map được nghiên cứu và phát triển bởi <strong>Nhóm GIS </strong>, 
-                với đội ngũ chuyên gia giàu kinh nghiệm trong lĩnh vực công nghệ bản đồ và du lịch.
-            </p>
+        <div class="card">
+            <div class="card-icon yellow"><i class="fas fa-star"></i></div>
+            <h3>Giá trị cốt lõi</h3>
+            <p>Dữ liệu chính xác - Công nghệ tiên tiến - Trải nghiệm người dùng mượt mà trên mọi thiết bị.</p>
         </div>
     </div>
 </section>
+
+<section class="stats-container">
+    <div class="tech-grid">
+        <div class="stat-item">
+            <h2>1,000+</h2>
+            <p>Điểm dữ liệu địa lý</p>
+        </div>
+        <div class="stat-item">
+            <h2>99.9%</h2>
+            <p>Độ chính xác tọa độ</p>
+        </div>
+        <div class="stat-item">
+            <h2>0.5s</h2>
+            <p>Tốc độ phản hồi</p>
+        </div>
+    </div>
+</section>
+
+<section class="workflow_section">
+    <h2 class="section-title">Hệ Thống Hoạt Động Thế Nào?</h2>
+    <div class="workflow-container">
+        <div class="step">
+            <div class="step-number">01</div>
+            <h3>Thu thập</h3>
+            <p>Dữ liệu được tích hợp từ các nguồn tin cậy và tệp tin GeoJSON chuẩn.</p>
+        </div>
+        <div class="step">
+            <div class="step-number">02</div>
+            <h3>Xử lý</h3>
+            <p>GeoPandas & Django thực hiện các thuật toán phân tích không gian phức tạp.</p>
+        </div>
+        <div class="step">
+            <div class="step-number">03</div>
+            <h3>Hiển thị</h3>
+            <p>Folium trực quan hóa kết quả lên bản đồ nền tương tác sinh động.</p>
+        </div>
+    </div>
+</section>
+
+<section class="about-container section">
+    <h2 class="section-title">Nền Tảng Công Nghệ</h2>
+    <div class="tech-grid">
+        <div class="tech-item">
+            <div class="img-wrapper">
+                <img src="{% static 'images/ThuVien/Folium & Leaflet.jpg' %}" alt="Leaflet">
+            </div>
+            <p><strong>Folium & Leaflet</strong><br><small>Hiển thị bản đồ tương tác</small></p>
+        </div>
+        <div class="tech-item">
+            <div class="img-wrapper">
+                <img src="{% static 'images/ThuVien/GeoPandas.jpg' %}" alt="GeoPandas">
+            </div>
+            <p><strong>GeoPandas</strong><br><small>Phân tích dữ liệu GIS</small></p>
+        </div>
+        <div class="tech-item">
+            <div class="img-wrapper">
+                <img src="{% static 'images/ThuVien/GeoPy & PyProj.jpg' %}" alt="GeoPy">
+            </div>
+            <p><strong>GeoPy & PyProj</strong><br><small>Xử lý tọa độ & Khoảng cách</small></p>
+        </div>
+        <div class="tech-item">
+            <div class="img-wrapper">
+                <img src="{% static 'images/ThuVien/Python.jpg' %}" alt="Django">
+            </div>
+            <p><strong>Django 6.0</strong><br><small>Backend Framework</small></p>
+        </div>
+    </div>
+</section>
+
+<div class="cta-wrapper">
+    <p>Sẵn sàng khám phá những địa điểm thú vị?</p>
+    <a href="{% url 'home' %}" class="cta-btn">
+        <i class="fas fa-map-marked-alt" style="margin-right: 10px;"></i> KHÁM PHÁ BẢN ĐỒ NGAY
+    </a>
+</div>
 {% endblock %}

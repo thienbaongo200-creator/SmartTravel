@@ -15,9 +15,12 @@
             <h3 style="margin-bottom:10px; color:#3498db;">{{ tour.title }}</h3>
             <p>{{ tour.desc }}</p>
             <p><strong>Giá:</strong> {{ tour.price }}</p>
-            <button style="margin-top:10px; padding:8px 16px; background:#2ecc71; color:white; border:none; border-radius:6px; cursor:pointer;">
-                Đặt ngay
-            </button>
+            <a href="{% url 'book_tour' tour.id %}" 
+                style="margin-top:10px; padding:8px 16px; background:#2ecc71; color:white; 
+                        border:none; border-radius:6px; cursor:pointer; text-decoration:none; display:inline-block;">
+                    Đặt ngay
+                </a>
+
         </div>
         {% endfor %}
     </div>

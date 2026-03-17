@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Đặt tour thành công - Smart Travel Map{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<div style="display: flex; align-items: center; justify-content: center; min-height: 85vh; background: #f8fafc; padding: 20px;">
+    
+    <div style="max-width: 500px; width: 100%; text-align: center; padding: 60px 40px; background: white; border-radius: 30px; box-shadow: 0 15px 35px rgba(0,0,0,0.07); transition: transform 0.3s ease;">
+        
+        <div class="success-icon-wrapper">
+            <i class="fa-solid fa-check"></i>
+        </div>
+
+        <h2 style="font-weight: 800; color: #1e293b; margin-bottom: 15px; font-size: 28px;">Đặt tour thành công!</h2>
+        
+        <p style="color: #64748b; font-size: 16px; line-height: 1.6; margin-bottom: 35px;">
+            Cảm ơn bạn đã tin tưởng **Smart Travel Map**. Yêu cầu của bạn đã được tiếp nhận, chúng tôi sẽ sớm liên hệ qua số điện thoại bạn cung cấp để hoàn tất thủ tục.
+        </p>
+
+        <div style="display: flex; flex-direction: column; gap: 15px;">
+            <a href="{% url 'tours' %}" class="btn-success-main">
+                <i class="fa-solid fa-magnifying-glass"></i> Khám phá thêm tour khác
+            </a>
+            
+            <a href="/" style="color: #94a3b8; text-decoration: none; font-size: 14px; font-weight: 600; transition: 0.2s;" onmouseover="this.style.color='#64748b'" onmouseout="this.style.color='#94a3b8'">
+                Quay lại trang chủ
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Hiệu ứng cho Icon vòng tròn */
+    .success-icon-wrapper {
+        width: 90px;
+        height: 90px;
+        background: #dcfce7;
+        color: #22c55e;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 25px;
+        font-size: 45px;
+        animation: scaleIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    /* Nút bấm tùy chỉnh */
+    .btn-success-main {
+        background: #22c55e;
+        color: white;
+        padding: 16px 30px;
+        border-radius: 14px;
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        border: none;
+        display: inline-block;
+    }
+
+    .btn-success-main:hover {
+        background: #16a34a;
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(34, 197, 94, 0.3);
+        color: white;
+    }
+
+    /* Animation xuất hiện */
+    @keyframes scaleIn {
+        from { transform: scale(0); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+    }
+</style>
+{% endblock %}

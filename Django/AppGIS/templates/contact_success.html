@@ -2,11 +2,11 @@
 {% block title %}Gửi thành công{% endblock %}
 
 {% block content %}
-<div class="container text-center my-5">
-    <div class="alert alert-success p-4 rounded shadow-sm">
+<div class="success-container">
+    <div class="success-alert">
         <h2 class="fw-bold">Đã gửi thành công!</h2>
         <p>Cảm ơn bạn đã liên hệ. Chúng tôi sẽ phản hồi trong thời gian sớm nhất.</p>
-        <a href="{% url 'contact' %}" class="btn btn-primary mt-3">Quay lại trang Liên hệ</a>
+        <a href="{% url 'contact' %}" class="btn">Quay lại trang Liên hệ</a>
     </div>
 </div>
 {% endblock %}

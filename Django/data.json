@@ -1,0 +1,1043 @@
+[
+{
+  "model": "auth.permission",
+  "pk": 1,
+  "fields": {
+    "name": "Can add log entry",
+    "content_type": 1,
+    "codename": "add_logentry"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 2,
+  "fields": {
+    "name": "Can change log entry",
+    "content_type": 1,
+    "codename": "change_logentry"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 3,
+  "fields": {
+    "name": "Can delete log entry",
+    "content_type": 1,
+    "codename": "delete_logentry"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 4,
+  "fields": {
+    "name": "Can view log entry",
+    "content_type": 1,
+    "codename": "view_logentry"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 5,
+  "fields": {
+    "name": "Can add permission",
+    "content_type": 3,
+    "codename": "add_permission"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 6,
+  "fields": {
+    "name": "Can change permission",
+    "content_type": 3,
+    "codename": "change_permission"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 7,
+  "fields": {
+    "name": "Can delete permission",
+    "content_type": 3,
+    "codename": "delete_permission"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 8,
+  "fields": {
+    "name": "Can view permission",
+    "content_type": 3,
+    "codename": "view_permission"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 9,
+  "fields": {
+    "name": "Can add group",
+    "content_type": 2,
+    "codename": "add_group"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 10,
+  "fields": {
+    "name": "Can change group",
+    "content_type": 2,
+    "codename": "change_group"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 11,
+  "fields": {
+    "name": "Can delete group",
+    "content_type": 2,
+    "codename": "delete_group"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 12,
+  "fields": {
+    "name": "Can view group",
+    "content_type": 2,
+    "codename": "view_group"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 13,
+  "fields": {
+    "name": "Can add user",
+    "content_type": 4,
+    "codename": "add_user"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 14,
+  "fields": {
+    "name": "Can change user",
+    "content_type": 4,
+    "codename": "change_user"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 15,
+  "fields": {
+    "name": "Can delete user",
+    "content_type": 4,
+    "codename": "delete_user"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 16,
+  "fields": {
+    "name": "Can view user",
+    "content_type": 4,
+    "codename": "view_user"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 17,
+  "fields": {
+    "name": "Can add content type",
+    "content_type": 5,
+    "codename": "add_contenttype"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 18,
+  "fields": {
+    "name": "Can change content type",
+    "content_type": 5,
+    "codename": "change_contenttype"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 19,
+  "fields": {
+    "name": "Can delete content type",
+    "content_type": 5,
+    "codename": "delete_contenttype"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 20,
+  "fields": {
+    "name": "Can view content type",
+    "content_type": 5,
+    "codename": "view_contenttype"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 21,
+  "fields": {
+    "name": "Can add session",
+    "content_type": 6,
+    "codename": "add_session"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 22,
+  "fields": {
+    "name": "Can change session",
+    "content_type": 6,
+    "codename": "change_session"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 23,
+  "fields": {
+    "name": "Can delete session",
+    "content_type": 6,
+    "codename": "delete_session"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 24,
+  "fields": {
+    "name": "Can view session",
+    "content_type": 6,
+    "codename": "view_session"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 25,
+  "fields": {
+    "name": "Can add todo item",
+    "content_type": 7,
+    "codename": "add_todoitem"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 26,
+  "fields": {
+    "name": "Can change todo item",
+    "content_type": 7,
+    "codename": "change_todoitem"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 27,
+  "fields": {
+    "name": "Can delete todo item",
+    "content_type": 7,
+    "codename": "delete_todoitem"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 28,
+  "fields": {
+    "name": "Can view todo item",
+    "content_type": 7,
+    "codename": "view_todoitem"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 29,
+  "fields": {
+    "name": "Can add tourism point",
+    "content_type": 8,
+    "codename": "add_tourismpoint"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 30,
+  "fields": {
+    "name": "Can change tourism point",
+    "content_type": 8,
+    "codename": "change_tourismpoint"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 31,
+  "fields": {
+    "name": "Can delete tourism point",
+    "content_type": 8,
+    "codename": "delete_tourismpoint"
+  }
+},
+{
+  "model": "auth.permission",
+  "pk": 32,
+  "fields": {
+    "name": "Can view tourism point",
+    "content_type": 8,
+    "codename": "view_tourismpoint"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "pk": 1,
+  "fields": {
+    "app_label": "admin",
+    "model": "logentry"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "pk": 2,
+  "fields": {
+    "app_label": "auth",
+    "model": "group"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "pk": 3,
+  "fields": {
+    "app_label": "auth",
+    "model": "permission"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "pk": 4,
+  "fields": {
+    "app_label": "auth",
+    "model": "user"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "pk": 5,
+  "fields": {
+    "app_label": "contenttypes",
+    "model": "contenttype"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "pk": 6,
+  "fields": {
+    "app_label": "sessions",
+    "model": "session"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "pk": 7,
+  "fields": {
+    "app_label": "AppGIS",
+    "model": "todoitem"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "pk": 8,
+  "fields": {
+    "app_label": "AppGIS",
+    "model": "tourismpoint"
+  }
+},
+{
+  "model": "AppGIS.tourismpoint",
+  "pk": 22,
+  "fields": {
+    "name": "Nhà thờ Đức Bà",
+    "description": "Địa điểm du lịch nổi tiếng tại TP.HCM",
+    "latitude": 10.779,
+    "longitude": 106.699,
+    "type": "Di tích",
+    "address": "Số 1 Công xã Paris, Quận 1, TP.HCM",
+    "open_hours": "8:00 - 21:00",
+    "rating": 4.7,
+    "img": "NhaThoDucBa.jpg",
+    "menu_imgs": []
+  }
+},
+{
+  "model": "AppGIS.tourismpoint",
+  "pk": 23,
+  "fields": {
+    "name": "Công viên văn hóa Đầm Sen",
+    "description": "Khu vui chơi giải trí nổi tiếng tại TP.HCM",
+    "latitude": 10.762,
+    "longitude": 106.647,
+    "type": "Khu vui chơi",
+    "address": "3 Hòa Bình, Quận 11, TP.HCM",
+    "open_hours": "8:00 - 18:00",
+    "rating": 4.5,
+    "img": "DamSen.jpg",
+    "menu_imgs": []
+  }
+},
+{
+  "model": "AppGIS.tourismpoint",
+  "pk": 24,
+  "fields": {
+    "name": "Vinpearl Luxury Landmark 81",
+    "description": "Khách sạn 5 sao cao cấp tại tòa nhà Landmark 81",
+    "latitude": 10.794,
+    "longitude": 106.721,
+    "type": "Khách sạn",
+    "address": "720A Điện Biên Phủ, Bình Thạnh, TP.HCM",
+    "open_hours": "24/7",
+    "rating": 4.8,
+    "img": "Landmark81.jpg",
+    "menu_imgs": []
+  }
+},
+{
+  "model": "AppGIS.tourismpoint",
+  "pk": 25,
+  "fields": {
+    "name": "Park Hyatt Saigon",
+    "description": "Khách sạn sang trọng tại trung tâm Quận 1",
+    "latitude": 10.776,
+    "longitude": 106.7,
+    "type": "Khách sạn",
+    "address": "2 Công Trường Lam Sơn, Quận 1, TP.HCM",
+    "open_hours": "24/7",
+    "rating": 4.7,
+    "img": "ParkHyatt.jpg",
+    "menu_imgs": []
+  }
+},
+{
+  "model": "AppGIS.tourismpoint",
+  "pk": 26,
+  "fields": {
+    "name": "The Reverie Saigon",
+    "description": "Khách sạn xa hoa bậc nhất tại TP.HCM",
+    "latitude": 10.773,
+    "longitude": 106.704,
+    "type": "Khách sạn",
+    "address": "22-36 Nguyễn Huệ, Quận 1, TP.HCM",
+    "open_hours": "24/7",
+    "rating": 4.8,
+    "img": "Reverie.jpg",
+    "menu_imgs": []
+  }
+},
+{
+  "model": "AppGIS.tourismpoint",
+  "pk": 27,
+  "fields": {
+    "name": "Hotel Nikko Saigon",
+    "description": "Khách sạn hiện đại với dịch vụ cao cấp",
+    "latitude": 10.762,
+    "longitude": 106.681,
+    "type": "Khách sạn",
+    "address": "235 Nguyễn Văn Cừ, Quận 1, TP.HCM",
+    "open_hours": "24/7",
+    "rating": 4.6,
+    "img": "Nikko.jpg",
+    "menu_imgs": []
+  }
+},
+{
+  "model": "AppGIS.tourismpoint",
+  "pk": 28,
+  "fields": {
+    "name": "InterContinental Saigon",
+    "description": "Khách sạn 5 sao nằm gần Nhà thờ Đức Bà",
+    "latitude": 10.779,
+    "longitude": 106.7,
+    "type": "Khách sạn",
+    "address": "39 Lê Duẩn, Quận 1, TP.HCM",
+    "open_hours": "24/7",
+    "rating": 4.7,
+    "img": "InterContinental.jpg",
+    "menu_imgs": []
+  }
+},
+{
+  "model": "AppGIS.tourismpoint",
+  "pk": 29,
+  "fields": {
+    "name": "Pullman Saigon Centre",
+    "description": "Khách sạn hiện đại với nhiều tiện nghi",
+    "latitude": 10.767,
+    "longitude": 106.692,
+    "type": "Khách sạn",
+    "address": "148 Trần Hưng Đạo, Quận 1, TP.HCM",
+    "open_hours": "24/7",
+    "rating": 4.6,
+    "img": "Pullman.jpg",
+    "menu_imgs": []
+  }
+},
+{
+  "model": "AppGIS.tourismpoint",
+  "pk": 30,
+  "fields": {
+    "name": "Majestic Saigon",
+    "description": "Khách sạn cổ kính bên sông Sài Gòn",
+    "latitude": 10.77,
+    "longitude": 106.705,
+    "type": "Khách sạn",
+    "address": "1 Đồng Khởi, Quận 1, TP.HCM",
+    "open_hours": "24/7",
+    "rating": 4.7,
+    "img": "Majestic.jpg",
+    "menu_imgs": []
+  }
+},
+{
+  "model": "AppGIS.tourismpoint",
+  "pk": 31,
+  "fields": {
+    "name": "Hoàng Yến Cuisine",
+    "description": "Chuỗi nhà hàng ẩm thực Việt nổi tiếng",
+    "latitude": 10.776,
+    "longitude": 106.704,
+    "type": "Nhà hàng",
+    "address": "07  09 Ngô Đức Kế, Quận 1, TP.HCM",
+    "open_hours": "10:00 - 22:00",
+    "rating": 4.5,
+    "img": "HoangYen.jpg",
+    "menu_imgs": [
+      "1.jpg",
+      "2.jpg",
+      "3.jpg",
+      "4.jpg",
+      "5.jpg",
+      "6.jpg"
+    ]
+  }
+},
+{
+  "model": "AppGIS.tourismpoint",
+  "pk": 32,
+  "fields": {
+    "name": "Quán Ăn Ngon",
+    "description": "Nhà hàng chuyên món Việt truyền thống",
+    "latitude": 10.779,
+    "longitude": 106.695,
+    "type": "Nhà hàng",
+    "address": "160 Pasteur, Quận 1, TP.HCM",
+    "open_hours": "10:00 - 22:00",
+    "rating": 4.6,
+    "img": "QuanAnNgon.jpg",
+    "menu_imgs": [
+      "1.jpg",
+      "2.jpg",
+      "3.jpg",
+      "4.jpg",
+      "5.jpg",
+      "6.jpg"
+    ]
+  }
+},
+{
+  "model": "AppGIS.tourismpoint",
+  "pk": 33,
+  "fields": {
+    "name": "Nhà hàng Phố 79",
+    "description": "Nhà hàng hải sản và món Việt cao cấp",
+    "latitude": 10.78,
+    "longitude": 106.7,
+    "type": "Nhà hàng",
+    "address": "79 Nguyễn Đình Chiểu, Quận 3, TP.HCM",
+    "open_hours": "10:00 - 23:00",
+    "rating": 4.4,
+    "img": "Pho79.jpg",
+    "menu_imgs": [
+      "1.jpg",
+      "2.jpg",
+      "3.jpg",
+      "4.jpg",
+      "5.jpg",
+      "6.jpg"
+    ]
+  }
+},
+{
+  "model": "AppGIS.tourismpoint",
+  "pk": 34,
+  "fields": {
+    "name": "Pizza 4Ps",
+    "description": "Nhà hàng pizza nổi tiếng với phong cách Nhật  Ý",
+    "latitude": 10.7797,
+    "longitude": 106.704,
+    "type": "Nhà hàng",
+    "address": "8/15 Lê Thánh Tôn, Quận 1, TP.HCM",
+    "open_hours": "10:00 - 22:00",
+    "rating": 4.7,
+    "img": "Pizza4Ps.jpg",
+    "menu_imgs": [
+      "1.jpg",
+      "2.jpg",
+      "3.jpg",
+      "4.jpg",
+      "5.jpg",
+      "6.jpg"
+    ]
+  }
+},
+{
+  "model": "AppGIS.tourismpoint",
+  "pk": 35,
+  "fields": {
+    "name": "El Gaucho Steakhouse",
+    "description": "Nhà hàng steak phong cách Argentina",
+    "latitude": 10.78,
+    "longitude": 106.707,
+    "type": "Nhà hàng",
+    "address": "74 Hai Bà Trưng, Quận 1, TP.HCM",
+    "open_hours": "11:00 - 23:00",
+    "rating": 4.6,
+    "img": "ElGaucho.jpg",
+    "menu_imgs": [
+      "1.jpg",
+      "2.jpg",
+      "3.jpg",
+      "4.jpg",
+      "5.jpg",
+      "6.jpg"
+    ]
+  }
+},
+{
+  "model": "AppGIS.tourismpoint",
+  "pk": 36,
+  "fields": {
+    "name": "Cục Gạch Quán",
+    "description": "Nhà hàng phong cách cổ điển, món Việt truyền thống",
+    "latitude": 10.79,
+    "longitude": 106.7,
+    "type": "Nhà hàng",
+    "address": "10 Đặng Tất, Quận 1, TP.HCM",
+    "open_hours": "10:00 - 22:00",
+    "rating": 4.5,
+    "img": "CucGach.jpg",
+    "menu_imgs": [
+      "1.jpg",
+      "2.jpg",
+      "3.jpg",
+      "4.jpg",
+      "5.jpg",
+      "6.jpg"
+    ]
+  }
+},
+{
+  "model": "AppGIS.tourismpoint",
+  "pk": 37,
+  "fields": {
+    "name": "Nhà hàng Gạo",
+    "description": "Nhà hàng ẩm thực Việt trong biệt thự cổ",
+    "latitude": 10.79,
+    "longitude": 106.707,
+    "type": "Nhà hàng",
+    "address": "33 Lê Quý Đôn, Quận 3, TP.HCM",
+    "open_hours": "10:00 - 22:00",
+    "rating": 4.6,
+    "img": "Gao.jpg",
+    "menu_imgs": [
+      "1.jpg",
+      "2.jpg",
+      "3.jpg",
+      "4.jpg",
+      "5.jpg",
+      "6.jpg"
+    ]
+  }
+},
+{
+  "model": "AppGIS.tourismpoint",
+  "pk": 38,
+  "fields": {
+    "name": "Công viên Suối Tiên",
+    "description": "Khu du lịch văn hóa nổi tiếng tại TP.HCM",
+    "latitude": 10.841,
+    "longitude": 106.811,
+    "type": "Khu vui chơi",
+    "address": "120 Xa lộ Hà Nội, Quận 9, TP.HCM",
+    "open_hours": "8:00 - 18:00",
+    "rating": 4.4,
+    "img": "SuoiTien.jpg",
+    "menu_imgs": []
+  }
+},
+{
+  "model": "AppGIS.tourismpoint",
+  "pk": 39,
+  "fields": {
+    "name": "Phố đi bộ Nguyễn Huệ",
+    "description": "Khu phố đi bộ sầm uất giữa trung tâm Quận 1",
+    "latitude": 10.773,
+    "longitude": 106.704,
+    "type": "Khu vui chơi",
+    "address": "Nguyễn Huệ, Quận 1, TP.HCM",
+    "open_hours": "24/7",
+    "rating": 4.6,
+    "img": "NguyenHue.jpg",
+    "menu_imgs": []
+  }
+},
+{
+  "model": "AppGIS.tourismpoint",
+  "pk": 40,
+  "fields": {
+    "name": "Vietopia",
+    "description": "Khu vui chơi giáo dục hướng nghiệp cho trẻ em",
+    "latitude": 10.755,
+    "longitude": 106.707,
+    "type": "Khu vui chơi",
+    "address": "02-04 Phạm Hữu Lầu, Quận 7, TP.HCM",
+    "open_hours": "9:00 - 17:00",
+    "rating": 4.5,
+    "img": "Vietopia.jpg",
+    "menu_imgs": []
+  }
+},
+{
+  "model": "AppGIS.tourismpoint",
+  "pk": 41,
+  "fields": {
+    "name": "Snow Town",
+    "description": "Khu vui chơi tuyết nhân tạo độc đáo",
+    "latitude": 10.77,
+    "longitude": 106.765,
+    "type": "Khu vui chơi",
+    "address": "125 Đồng Văn Cống, Quận 2, TP.HCM",
+    "open_hours": "9:00 - 21:00",
+    "rating": 4.3,
+    "img": "SnowTown.jpg",
+    "menu_imgs": []
+  }
+},
+{
+  "model": "AppGIS.tourismpoint",
+  "pk": 42,
+  "fields": {
+    "name": "Jump Arena",
+    "description": "Khu vui chơi thể thao trampoline hiện đại",
+    "latitude": 10.801,
+    "longitude": 106.714,
+    "type": "Khu vui chơi",
+    "address": "2-4 Phổ Quang, Quận Tân Bình, TP.HCM",
+    "open_hours": "9:00 - 22:00",
+    "rating": 4.4,
+    "img": "JumpArena.jpg",
+    "menu_imgs": []
+  }
+},
+{
+  "model": "AppGIS.tourismpoint",
+  "pk": 43,
+  "fields": {
+    "name": "Saigon Outcast",
+    "description": "Không gian sáng tạo, nghệ thuật và giải trí",
+    "latitude": 10.802,
+    "longitude": 106.714,
+    "type": "Khu vui chơi",
+    "address": "188/1 Nguyễn Văn Hưởng, Quận 2, TP.HCM",
+    "open_hours": "10:00 - 23:00",
+    "rating": 4.5,
+    "img": "SaigonOutcast.jpg",
+    "menu_imgs": []
+  }
+},
+{
+  "model": "AppGIS.tourismpoint",
+  "pk": 44,
+  "fields": {
+    "name": "Công viên Lê Thị Riêng",
+    "description": "Công viên cây xanh lớn tại Quận 10",
+    "latitude": 10.78,
+    "longitude": 106.67,
+    "type": "Khu vui chơi",
+    "address": "875 Cách Mạng Tháng 8, Quận 10, TP.HCM",
+    "open_hours": "5:00 - 22:00",
+    "rating": 4.2,
+    "img": "LeThiRieng.jpg",
+    "menu_imgs": []
+  }
+},
+{
+  "model": "AppGIS.tourismpoint",
+  "pk": 45,
+  "fields": {
+    "name": "Dinh Độc Lập",
+    "description": "Di tích lịch sử quốc gia đặc biệt",
+    "latitude": 10.777,
+    "longitude": 106.695,
+    "type": "Di tích",
+    "address": "135 Nam Kỳ Khởi Nghĩa, Quận 1, TP.HCM",
+    "open_hours": "8:00 - 17:00",
+    "rating": 4.7,
+    "img": "DinhDocLap.jpg",
+    "menu_imgs": []
+  }
+},
+{
+  "model": "AppGIS.tourismpoint",
+  "pk": 46,
+  "fields": {
+    "name": "Bưu điện Trung tâm Sài Gòn",
+    "description": "Công trình kiến trúc Pháp cổ nổi tiếng",
+    "latitude": 10.779,
+    "longitude": 106.7,
+    "type": "Di tích",
+    "address": "2 Công xã Paris, Quận 1, TP.HCM",
+    "open_hours": "7:00 - 19:00",
+    "rating": 4.6,
+    "img": "BuuDien.jpg",
+    "menu_imgs": []
+  }
+},
+{
+  "model": "AppGIS.tourismpoint",
+  "pk": 47,
+  "fields": {
+    "name": "Chợ Bến Thành",
+    "description": "Biểu tượng văn hóa và thương mại của TP.HCM",
+    "latitude": 10.772,
+    "longitude": 106.698,
+    "type": "Di tích",
+    "address": "Đường Lê Lợi, Quận 1, TP.HCM",
+    "open_hours": "7:00 - 19:00",
+    "rating": 4.5,
+    "img": "ChoBenThanh.jpg",
+    "menu_imgs": []
+  }
+},
+{
+  "model": "AppGIS.tourismpoint",
+  "pk": 48,
+  "fields": {
+    "name": "Bảo tàng Chứng tích Chiến tranh",
+    "description": "Nơi lưu giữ hiện vật về chiến tranh Việt Nam",
+    "latitude": 10.778,
+    "longitude": 106.692,
+    "type": "Di tích",
+    "address": "28 Võ Văn Tần, Quận 3, TP.HCM",
+    "open_hours": "7:30 - 18:00",
+    "rating": 4.6,
+    "img": "ChungTichChienTranh.jpg",
+    "menu_imgs": []
+  }
+},
+{
+  "model": "AppGIS.tourismpoint",
+  "pk": 49,
+  "fields": {
+    "name": "Bảo tàng Lịch sử Việt Nam",
+    "description": "Nơi trưng bày hiện vật lịch sử và văn hóa",
+    "latitude": 10.787,
+    "longitude": 106.705,
+    "type": "Di tích",
+    "address": "2 Nguyễn Bỉnh Khiêm, Quận 1, TP.HCM",
+    "open_hours": "8:00 - 17:00",
+    "rating": 4.5,
+    "img": "LichSuVN.jpg",
+    "menu_imgs": []
+  }
+},
+{
+  "model": "AppGIS.tourismpoint",
+  "pk": 50,
+  "fields": {
+    "name": "Chùa Vĩnh Nghiêm",
+    "description": "Ngôi chùa lớn theo kiến trúc truyền thống Việt Nam",
+    "latitude": 10.784,
+    "longitude": 106.683,
+    "type": "Di tích",
+    "address": "339 Nam Kỳ Khởi Nghĩa, Quận 3, TP.HCM",
+    "open_hours": "6:00 - 20:00",
+    "rating": 4.4,
+    "img": "VinhNghiem.jpg",
+    "menu_imgs": []
+  }
+},
+{
+  "model": "AppGIS.tourismpoint",
+  "pk": 51,
+  "fields": {
+    "name": "Nhà hát Thành phố",
+    "description": "Công trình kiến trúc Pháp cổ, nơi tổ chức biểu diễn nghệ thuật",
+    "latitude": 10.776,
+    "longitude": 106.703,
+    "type": "Di tích",
+    "address": "7 Công Trường Lam Sơn, Quận 1, TP.HCM",
+    "open_hours": "8:00 - 22:00",
+    "rating": 4.6,
+    "img": "NhaHatTP.jpg",
+    "menu_imgs": []
+  }
+},
+{
+  "model": "AppGIS.tourismpoint",
+  "pk": 62,
+  "fields": {
+    "name": "ATM Vietcombank - Bitexco",
+    "description": "Điểm rút tiền ATM Vietcombank - Bitexco tiện lợi.",
+    "latitude": 10.7715,
+    "longitude": 106.7042,
+    "type": "ATM",
+    "address": "2 Hải Triều, Quận 1",
+    "open_hours": "24/7",
+    "rating": 4.0,
+    "img": "atm_default.jpg",
+    "menu_imgs": []
+  }
+},
+{
+  "model": "AppGIS.tourismpoint",
+  "pk": 63,
+  "fields": {
+    "name": "ATM Techcombank - Vincom",
+    "description": "Điểm rút tiền ATM Techcombank - Vincom tiện lợi.",
+    "latitude": 10.778,
+    "longitude": 106.702,
+    "type": "ATM",
+    "address": "72 Lê Thánh Tôn, Quận 1",
+    "open_hours": "24/7",
+    "rating": 4.0,
+    "img": "atm_default.jpg",
+    "menu_imgs": []
+  }
+},
+{
+  "model": "AppGIS.tourismpoint",
+  "pk": 64,
+  "fields": {
+    "name": "ATM BIDV - NVH Thanh Niên",
+    "description": "Điểm rút tiền ATM BIDV - NVH Thanh Niên tiện lợi.",
+    "latitude": 10.7825,
+    "longitude": 106.6963,
+    "type": "ATM",
+    "address": "4 Phạm Ngọc Thạch, Quận 1",
+    "open_hours": "24/7",
+    "rating": 4.0,
+    "img": "atm_default.jpg",
+    "menu_imgs": []
+  }
+},
+{
+  "model": "AppGIS.tourismpoint",
+  "pk": 65,
+  "fields": {
+    "name": "ATM Agribank - ĐH Bách Khoa",
+    "description": "Điểm rút tiền ATM Agribank - ĐH Bách Khoa tiện lợi.",
+    "latitude": 10.7728,
+    "longitude": 106.6598,
+    "type": "ATM",
+    "address": "268 Lý Thường Kiệt, Quận 10",
+    "open_hours": "24/7",
+    "rating": 4.0,
+    "img": "atm_default.jpg",
+    "menu_imgs": []
+  }
+},
+{
+  "model": "AppGIS.tourismpoint",
+  "pk": 66,
+  "fields": {
+    "name": "ATM Sacombank - Bến Thành",
+    "description": "Điểm rút tiền ATM Sacombank - Bến Thành tiện lợi.",
+    "latitude": 10.7719,
+    "longitude": 106.6983,
+    "type": "ATM",
+    "address": "Chợ Bến Thành, Quận 1",
+    "open_hours": "24/7",
+    "rating": 4.0,
+    "img": "atm_default.jpg",
+    "menu_imgs": []
+  }
+},
+{
+  "model": "AppGIS.tourismpoint",
+  "pk": 67,
+  "fields": {
+    "name": "Pharmacity Cống Quỳnh",
+    "description": "Hệ thống nhà thuốc đạt chuẩn GPP - Pharmacity Cống Quỳnh",
+    "latitude": 10.7678,
+    "longitude": 106.6892,
+    "type": "Hiệu thuốc",
+    "address": "189 Cống Quỳnh, Quận 1",
+    "open_hours": "6:00 - 23:00",
+    "rating": 4.5,
+    "img": "pharmacity.jpg",
+    "menu_imgs": []
+  }
+},
+{
+  "model": "AppGIS.tourismpoint",
+  "pk": 68,
+  "fields": {
+    "name": "Long Châu CMT8",
+    "description": "Hệ thống nhà thuốc đạt chuẩn GPP - Long Châu CMT8",
+    "latitude": 10.7831,
+    "longitude": 106.6745,
+    "type": "Hiệu thuốc",
+    "address": "402 CMT8, Quận 3",
+    "open_hours": "6:00 - 23:00",
+    "rating": 4.5,
+    "img": "pharmacity.jpg",
+    "menu_imgs": []
+  }
+},
+{
+  "model": "AppGIS.tourismpoint",
+  "pk": 69,
+  "fields": {
+    "name": "An Khang Phan Đăng Lưu",
+    "description": "Hệ thống nhà thuốc đạt chuẩn GPP - An Khang Phan Đăng Lưu",
+    "latitude": 10.7995,
+    "longitude": 106.685,
+    "type": "Hiệu thuốc",
+    "address": "123 Phan Đăng Lưu, Phú Nhuận",
+    "open_hours": "6:00 - 23:00",
+    "rating": 4.5,
+    "img": "pharmacity.jpg",
+    "menu_imgs": []
+  }
+},
+{
+  "model": "AppGIS.tourismpoint",
+  "pk": 70,
+  "fields": {
+    "name": "Medicare Saigon Centre",
+    "description": "Hệ thống nhà thuốc đạt chuẩn GPP - Medicare Saigon Centre",
+    "latitude": 10.7738,
+    "longitude": 106.7011,
+    "type": "Hiệu thuốc",
+    "address": "65 Lê Lợi, Quận 1",
+    "open_hours": "6:00 - 23:00",
+    "rating": 4.5,
+    "img": "pharmacity.jpg",
+    "menu_imgs": []
+  }
+},
+{
+  "model": "AppGIS.tourismpoint",
+  "pk": 71,
+  "fields": {
+    "name": "Eco Pharmacy Quận 10",
+    "description": "Hệ thống nhà thuốc đạt chuẩn GPP - Eco Pharmacy Quận 10",
+    "latitude": 10.7761,
+    "longitude": 106.6778,
+    "type": "Hiệu thuốc",
+    "address": "397 Nguyễn Thượng Hiền, Quận 10",
+    "open_hours": "6:00 - 23:00",
+    "rating": 4.5,
+    "img": "pharmacity.jpg",
+    "menu_imgs": []
+  }
+}
+]
