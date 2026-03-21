@@ -72,7 +72,9 @@ def search(request):
     return JsonResponse(data, safe=False)
 
 def get_places_by_category(request):
-    category_slug = request.GET.get('category', '')
+    category_slug = request.GET.get('category', '').strip().lower()
+
+    # Mapping slug tiếng Anh sang tên tiếng Việt trong DB
     category_map = {
         'restaurant': 'Nhà hàng',
         'hotel': 'Khách sạn',
@@ -81,17 +83,19 @@ def get_places_by_category(request):
         'pharmacy': 'Hiệu thuốc',
         'atm': 'ATM'
     }
-    
-    target_type_vn = category_map.get(category_slug, '')
+
+    target_type_vn = category_map.get(category_slug, category_slug)
+
+    # Sửa lại: dùng category__name thay vì type
     places = TourismPoint.objects.filter(
-        Q(type__icontains=target_type_vn) | Q(type__icontains=category_slug)
+        Q(category__name__icontains=target_type_vn)
     ).values(
-        'name', 'latitude', 'longitude', 'address', 'description', 'rating', 'img'
+        'id', 'name', 'latitude', 'longitude', 'address', 'description', 'rating', 'img'
     )
-    
+
     data = list(places)
     for item in data:
-        item['image'] = item.get('img', '') 
+        item['image'] = item.get('img', '')
 
     return JsonResponse(data, safe=False)
 
