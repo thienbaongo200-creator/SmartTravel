@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, JsonResponse
-from .models import TodoItem, TourismPoint 
+from .models import TourismPoint, Category 
 from geopy.distance import geodesic
 import re
 import unicodedata
@@ -56,13 +56,13 @@ def search(request):
     results = TourismPoint.objects.filter(name__icontains=query)
     data = [] 
     for p in results: 
-        folder = slugify(p.name)  # tên thư mục theo tên nhà hàng
+        folder = slugify(p.name)  # tên thư mục theo tên địa điểm
         data.append({ 
             "name": p.name, 
             "description": p.description, 
             "latitude": p.latitude, 
             "longitude": p.longitude, 
-            "type": p.type, 
+            "category": p.category.name if p.category else None, 
             "address": p.address, 
             "open_hours": p.open_hours, 
             "rating": p.rating, 
@@ -247,7 +247,7 @@ def api_places(request):
                 "name": p.name,
                 "latitude": float(p.latitude) if p.latitude else 0,
                 "longitude": float(p.longitude) if p.longitude else 0,
-                "category": p.type if p.type else "Khác",
+                "category": p.category.name if p.category else "Khác",
                 "address": p.address if p.address else "Chưa có địa chỉ",
                 "rating": p.rating if p.rating else 0,
                 "img": img_url,
@@ -258,14 +258,27 @@ def api_places(request):
     elif request.method == "POST":
         try:
             raw_data = json.loads(request.body)
+
+            name = raw_data.get('name')
+            if not name:
+                return JsonResponse({"error": "Thiếu tên địa điểm"}, status=400)
+
+            lat = raw_data.get('latitude')
+            lng = raw_data.get('longitude')
+            latitude = float(lat) if lat else 0.0
+            longitude = float(lng) if lng else 0.0
+
+            cat_name = raw_data.get('category')
+            cat_obj, _ = Category.objects.get_or_create(name=cat_name if cat_name else "Khác")
+
             new_place = TourismPoint.objects.create(
-                name=raw_data.get('name'),
-                latitude=float(raw_data.get('latitude')),
-                longitude=float(raw_data.get('longitude')),
-                type=raw_data.get('category'), 
+                name=name,
+                latitude=latitude,
+                longitude=longitude,
+                category=cat_obj,   # gán object Category, không phải chuỗi
                 address=raw_data.get('address', ''),
-                img=raw_data.get('img', ''), 
-                rating=5.0
+                img=raw_data.get('img', ''),
+                rating=raw_data.get('rating', 5.0)
             )
             return JsonResponse({"message": "Thêm thành công"}, status=201)
         except Exception as e:
@@ -285,10 +298,14 @@ def api_place_detail(request, pk):
             place.name = raw_data.get('name', place.name)
             place.latitude = raw_data.get('latitude', place.latitude)
             place.longitude = raw_data.get('longitude', place.longitude)
-            place.type = raw_data.get('type', place.type)
+            cat_name = raw_data.get('category')
+
+            if cat_name:
+                cat_obj, _ = Category.objects.get_or_create(name=cat_name)
+                place.category = cat_obj
+
             place.address = raw_data.get('address', place.address)
             place.save()
             return JsonResponse({"message": "Cập nhật thành công"})
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=400)
-
