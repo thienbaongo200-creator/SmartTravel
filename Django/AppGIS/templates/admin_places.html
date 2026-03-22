@@ -6,6 +6,15 @@
     <title>Admin - Quản lý Địa điểm Du lịch</title>
     <link rel="stylesheet" href="{% static 'css/style_admin_places.css' %}">
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+    <style>
+        /* Đảm bảo map có chiều cao để hiển thị */
+        #map, #editMap { height: 300px; width: 100%; border-radius: 8px; margin-top: 10px; }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; }
+        .modal-content { background: white; padding: 20px; border-radius: 8px; width: 80%; max-width: 600px; }
+        .flex-row { display: flex; gap: 10px; margin-bottom: 10px; }
+        .full-width { width: 100%; margin-bottom: 10px; padding: 8px; box-sizing: border-box; }
+        .thumb { width: 80px; height: 60px; object-fit: cover; border-radius: 4px; }
+    </style>
 </head>
 <body>
 <div class="container">
@@ -70,7 +79,7 @@
             </div>
             <input type="text" id="editImg" placeholder="Tên file ảnh" class="full-width">
             <div id="editMap"></div>
-            <div class="modal-actions">
+            <div class="modal-actions" style="margin-top:15px; text-align:right;">
                 <button type="submit" class="btn btn-edit">💾 Lưu thay đổi</button>
                 <button type="button" class="btn btn-delete" onclick="closeEditModal()">✖ Đóng</button>
             </div>
@@ -84,13 +93,25 @@ let mainMap, mainMarker;
 let editMap, editMarker;
 let allData = [];
 
-// --- 1. Khởi tạo Bản đồ ---
+// --- Cấu hình Layer CARTO Voyager ---
+const streetLayerUrl = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+const streetLayerAttribution = '© OpenStreetMap contributors © CARTO';
+
+function getVoyagerLayer() {
+    return L.tileLayer(streetLayerUrl, {
+        attribution: streetLayerAttribution,
+        subdomains: 'abcd',
+        maxZoom: 20
+    });
+}
+
+// --- 1. Khởi tạo Bản đồ Chính ---
 function initMainMap() {
     mainMap = L.map('map').setView([10.776, 106.700], 13);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mainMap);
+    getVoyagerLayer().addTo(mainMap); // Add Voyager Layer
+
     mainMarker = L.marker([10.776, 106.700], {draggable: true}).addTo(mainMap);
 
-    // Khi kéo ghim trên bản đồ chính
     mainMarker.on('dragend', function() {
         let pos = mainMarker.getLatLng();
         document.getElementById('latitude').value = pos.lat.toFixed(6);
@@ -104,38 +125,30 @@ function initMainMap() {
     });
 }
 
-// --- 2. Hàm Tìm vị trí từ Địa chỉ (Geocoding) ---
+// --- 2. Tìm vị trí từ Địa chỉ ---
 async function searchLocation(address, targetMap, targetMarker, latId, lngId) {
     if (!address || address.length < 4) return;
     try {
         const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`);
         const data = await response.json();
-
         if (data && data.length > 0) {
             const lat = parseFloat(data[0].lat);
             const lon = parseFloat(data[0].lon);
-
             targetMap.setView([lat, lon], 16);
             targetMarker.setLatLng([lat, lon]);
-
             document.getElementById(latId).value = lat.toFixed(6);
             document.getElementById(lngId).value = lon.toFixed(6);
         }
-    } catch (error) {
-        console.error("Lỗi tìm địa chỉ:", error);
-    }
+    } catch (error) { console.error("Lỗi tìm địa chỉ:", error); }
 }
 
-// Gán sự kiện cho ô nhập địa chỉ
-document.getElementById('address').addEventListener('change', function(e) {
-    searchLocation(e.target.value, mainMap, mainMarker, 'latitude', 'longitude');
-});
+document.getElementById('address').addEventListener('change', (e) => 
+    searchLocation(e.target.value, mainMap, mainMarker, 'latitude', 'longitude'));
 
-document.getElementById('editAddress').addEventListener('change', function(e) {
-    searchLocation(e.target.value, editMap, editMarker, 'editLat', 'editLng');
-});
+document.getElementById('editAddress').addEventListener('change', (e) => 
+    searchLocation(e.target.value, editMap, editMarker, 'editLat', 'editLng'));
 
-// --- 3. Các hàm xử lý Dữ liệu (API) ---
+// --- 3. API & Render ---
 async function loadPlaces(categoryFilter = null) {
     const res = await fetch("/api/admin/places/");
     allData = await res.json();
@@ -160,6 +173,7 @@ function renderTable(data, filter = null) {
     });
 }
 
+// --- 4. Modal Sửa & Bản đồ Edit ---
 function openEditModal(id, name, category, address, lat, lng, img) {
     document.getElementById('editId').value = id;
     document.getElementById('editName').value = name;
@@ -173,7 +187,7 @@ function openEditModal(id, name, category, address, lat, lng, img) {
 
     if (!editMap) {
         editMap = L.map('editMap').setView([lat, lng], 15);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(editMap);
+        getVoyagerLayer().addTo(editMap); // Add Voyager Layer to Edit Map
         editMarker = L.marker([lat, lng], {draggable: true}).addTo(editMap);
         
         editMarker.on('dragend', () => {
@@ -190,6 +204,7 @@ function openEditModal(id, name, category, address, lat, lng, img) {
 
 function closeEditModal() { document.getElementById('editModal').style.display = 'none'; }
 
+// --- 5. Form Submits ---
 document.getElementById("addForm").addEventListener("submit", async e => {
     e.preventDefault();
     const data = Object.fromEntries(new FormData(e.target).entries());
@@ -227,11 +242,6 @@ async function deletePlace(id) {
         });
         loadPlaces();
     }
-}
-
-function filterSearch() {
-    const term = document.getElementById("searchBox").value.toLowerCase();
-    renderTable(allData.filter(p => p.name.toLowerCase().includes(term)));
 }
 
 window.onload = () => { initMainMap(); loadPlaces(); };
