@@ -605,3 +605,4 @@ function showSearchHistory() {
     content.innerHTML = html;
     document.getElementById("info-panel").style.display = "block";
 }
+

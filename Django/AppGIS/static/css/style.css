@@ -1293,9 +1293,63 @@ a, button, input, textarea {
 /* =========================
    Home
 ========================= */
-#info-content ul {
-    list-style: none;
-    padding: 0;
+body { font-family: 'Roboto', sans-serif; margin:0; padding:0; background:#f9f9f9; }
+    .destination_section { max-width: 1000px; margin: 50px auto; padding: 20px; }
+    .destination_section h2 { text-align:center; color:#3498db; margin-bottom:30px; }
+    .destination-list { display:grid; grid-template-columns: repeat(auto-fit,minmax(280px,1fr)); gap:20px; }
+    .destination-item { background:#fff; padding:20px; border-radius:8px; box-shadow:0 4px 10px rgba(0,0,0,0.1); }
+    .destination-item h3 { color:#2980b9; margin-bottom:10px; }
+    .destination-item p { font-size:14px; color:#555; }
+    
+.img-wrapper {
+    width: 100%;
+    height: 220px;         
+    overflow: hidden;    
+    border-top-left-radius: .5rem;
+    border-top-right-radius: .5rem;
+}
+.destination-img {
+    object-fit: cover;
+    max-height: 180px;   /* thu nhỏ ảnh để card gọn hơn */
+    border-top-left-radius: 0.5rem;
+    border-top-right-radius: 0.5rem;
+}
+
+.card-body {
+    font-size: 0.85rem;  /* chữ nhỏ hơn */
+}
+
+
+.service_section {
+    padding: 60px 20px;
+    background: #f9f9f9;
+}
+
+.service_section h2 {
+    text-align: center;
+    font-size: 32px;
+    margin-bottom: 40px;
+    color: #2c3e50;
+}
+
+.service-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 30px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.service-item {
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    text-align: center;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.service-item h3 {
     margin-top: 15px;
 }
 
