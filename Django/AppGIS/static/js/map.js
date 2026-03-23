@@ -268,6 +268,7 @@ function showRouteFromSearch(destLat=null, destLng=null) {
     if (panel) panel.style.display = "none";
     const modal = document.getElementById("route-modal");
     if (modal) modal.style.display = "block";
+<<<<<<< HEAD
     if (destLat && destLng) {
         document.getElementById("endPoint").value = `${destLat},${destLng}`;
     } else if (window.searchMarker) {
@@ -280,6 +281,68 @@ function showRouteFromSearch(destLat=null, destLng=null) {
     }
 }
 
+=======
+
+    if (destLat && destLng) {
+        endInput.value = `${destLat},${destLng}`;
+    }
+
+    if (window.userMarker) {
+        let pos = window.userMarker.getLatLng();
+        startInput.value = `${pos.lat},${pos.lng}`;
+    } else {
+        startInput.placeholder = "Đang xác định vị trí chính xác...";
+        if (loading) loading.style.display = "block";
+
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                function (pos) {
+                    const lat = pos.coords.latitude;
+                    const lng = pos.coords.longitude;
+
+                    updateUserMarker(lat, lng);
+
+                    map.flyTo([lat, lng], 15);
+
+                    startInput.value = `${lat},${lng}`;
+
+                    if (loading) loading.style.display = "none";
+                },
+                function (err) {
+                    let msg = "Không thể lấy vị trí.";
+                    if (err.code === 1) msg = "Vui lòng cho phép truy cập vị trí.";
+                    startInput.placeholder = msg;
+                    console.error("Lỗi định vị:", err.message);
+
+                    if (loading) loading.style.display = "none";
+                },
+                { 
+                    enableHighAccuracy: true, 
+                    timeout: 10000,        
+                    maximumAge: 0           
+                }
+            );
+        } else {
+            alert("Trình duyệt của bạn không hỗ trợ định vị.");
+            if (loading) loading.style.display = "none";
+        }
+    }
+}
+
+function updateUserMarker(lat, lng) {
+    if (userMarker) {
+        userMarker.setLatLng([lat, lng]);
+    } else {
+        userMarker = L.marker([lat, lng], {
+            icon: L.divIcon({ 
+                className: 'user-marker', 
+                html: '<div style="background:#1a73e8; width:12px; height:12px; border-radius:50%; border:2px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.5);"></div>' 
+            })
+        }).addTo(map).bindPopup("Bạn đang ở đây");
+    }
+}
+
+>>>>>>> 1949ec8c35408db14a2e93916740ddc7bb9021ae
 async function calculateRoute() {
     let start = document.getElementById("startPoint").value;
     let end = document.getElementById("endPoint").value;
@@ -375,7 +438,11 @@ function displayInfo(p) {
             <p><strong>Địa chỉ:</strong> ${p.address || 'Đang cập nhật'}</p>
             <p><strong>Giờ mở cửa:</strong> ${p.open_hours || '8:00 - 21:00'}</p>
             <p><strong>Đánh giá:</strong> ${p.rating || '5.0'}/5</p>
+<<<<<<< HEAD
             <p><strong>ℹMô tả:</strong> ${p.description || 'Không có mô tả.'}</p>
+=======
+            <p><strong>Mô tả:</strong> ${p.description || 'Không có mô tả.'}</p>
+>>>>>>> 1949ec8c35408db14a2e93916740ddc7bb9021ae
             
             <div class="button-group">
                 <button class="btn-direction" onclick="showRouteFromSearch(${p.latitude}, ${p.longitude})">

@@ -3,39 +3,53 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Admin - Quản lý Tourism Point</title>
+    <title>Admin - Quản lý Địa điểm Du lịch</title>
+    <link rel="stylesheet" href="{% static 'css/style_admin_places.css' %}">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
     <style>
-        body { font-family: sans-serif; margin: 20px; background: #f9f9f9; }
-        .container { max-width: 1000px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        table { border-collapse: collapse; width: 100%; margin-top: 20px; }
-        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
-        th { background: #eee; }
-        img { border-radius: 5px; object-fit: cover; background: #f0f0f0; display: block; }
-        .input-group { display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
-        input { padding: 8px; border: 1px solid #ccc; border-radius: 4px; flex: 1; min-width: 150px; }
-        button { cursor: pointer; padding: 8px 15px; border: none; border-radius: 4px; font-weight: bold; }
-        .btn-add { background: #28a745; color: white; }
-        .btn-delete { background: #dc3545; color: white; }
-        .btn-edit { background: #ffc107; color: #000; }
+        /* Đảm bảo map có chiều cao để hiển thị */
+        #map, #editMap { height: 300px; width: 100%; border-radius: 8px; margin-top: 10px; }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; }
+        .modal-content { background: white; padding: 20px; border-radius: 8px; width: 80%; max-width: 600px; }
+        .flex-row { display: flex; gap: 10px; margin-bottom: 10px; }
+        .full-width { width: 100%; margin-bottom: 10px; padding: 8px; box-sizing: border-box; }
+        .thumb { width: 80px; height: 60px; object-fit: cover; border-radius: 4px; }
     </style>
 </head>
 <body>
-    <div class="container">
+<div class="container">
+    <header>
         <h1>Quản lý Địa điểm Du lịch</h1>
+    </header>
 
-       <form id="addForm">
+    <nav class="tabs">
+        <button onclick="loadPlaces()">Tất cả</button>
+        <button onclick="loadPlaces('Khu vui chơi')">Khu vui chơi</button>
+        <button onclick="loadPlaces('Nhà hàng')">Nhà hàng</button>
+        <button onclick="loadPlaces('Di tích')">Di tích</button>
+        <button onclick="loadPlaces('Khách sạn')">Khách sạn</button>
+    </nav>
+
+    <section class="form-card">
+        <h2>➕ Thêm địa điểm mới</h2>
+        <form id="addForm">
             <div class="input-group">
                 <input type="text" name="name" placeholder="Tên địa điểm" required>
-                <input type="text" name="category" placeholder="Loại (Ví dụ: Nhà hàng)" required> <input type="text" name="address" placeholder="Địa chỉ">
+                <input type="text" name="category" placeholder="Loại (VD: Nhà hàng)" required>
+                <input type="text" id="address" name="address" placeholder="Nhập địa chỉ rồi nhấn Tab/Click ra ngoài để tìm trên map">
             </div>
             <div class="input-group">
-                <input type="number" step="any" name="latitude" placeholder="Vĩ độ" required>
-                <input type="number" step="any" name="longitude" placeholder="Kinh độ" required>
-                <input type="text" name="img" placeholder="Tên file ảnh (ví dụ: NhaHatTP.jpg)">
-                <button type="submit" class="btn-add">Thêm mới</button>
+                <input type="number" step="any" id="latitude" name="latitude" placeholder="Vĩ độ" required>
+                <input type="number" step="any" id="longitude" name="longitude" placeholder="Kinh độ" required>
+                <input type="text" name="img" placeholder="Tên file ảnh">
             </div>
+            <div id="map"></div>
+            <button type="submit" class="btn btn-add" style="margin-top:10px">Thêm mới</button>
         </form>
+    </section>
 
+    <section class="table-section">
+        <h2>📋 Danh sách địa điểm</h2>
         <table>
             <thead>
                 <tr>
@@ -47,112 +61,190 @@
             </thead>
             <tbody id="placesTable"></tbody>
         </table>
+    </section>
+</div>
+
+<div id="editModal" class="modal">
+    <div class="modal-content">
+        <h3>Sửa địa điểm</h3>
+        <form id="editForm">
+            <input type="hidden" id="editId">
+            <input type="text" id="editName" placeholder="Tên" required class="full-width">
+            <input type="text" id="editCategory" placeholder="Loại" required class="full-width">
+            <input type="text" id="editAddress" name="address" placeholder="Sửa địa chỉ để tìm lại vị trí" class="full-width">
+            
+            <div class="flex-row">
+                <input type="number" step="any" id="editLat" placeholder="Vĩ độ" required>
+                <input type="number" step="any" id="editLng" placeholder="Kinh độ" required>
+            </div>
+            <input type="text" id="editImg" placeholder="Tên file ảnh" class="full-width">
+            <div id="editMap"></div>
+            <div class="modal-actions" style="margin-top:15px; text-align:right;">
+                <button type="submit" class="btn btn-edit">💾 Lưu thay đổi</button>
+                <button type="button" class="btn btn-delete" onclick="closeEditModal()">✖ Đóng</button>
+            </div>
+        </form>
     </div>
+</div>
 
-    <script>
-    // 1. Hàm load danh sách (Sửa lỗi hiển thị cột Thông tin)
-    async function loadPlaces() {
-        const res = await fetch("/api/admin/places/");
-        const data = await res.json();
-        const tbody = document.getElementById("placesTable");
-        tbody.innerHTML = "";
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+let mainMap, mainMarker;
+let editMap, editMarker;
+let allData = [];
 
-        data.forEach(p => {
-            tbody.innerHTML += `
-                <tr>
-                    <td>
-                        <img src="${p.img}" 
-                             style="width:80px; height:60px; object-fit:cover; border-radius:5px;"
-                             onerror="this.src='/static/images/default.jpg'">
-                    </td>
-                    <td>
-                        <strong>${p.name}</strong> <br>
-                        <small>Loại: ${p.category} | Rating: ${p.rating || 5.0}</small> <br>
-                        <small>Đ/C: ${p.address || 'N/A'}</small>
-                    </td>
-                    <td>${p.latitude}, ${p.longitude}</td>
-                    <td>
-                        <button class="btn-edit" 
-                            onclick="editPlace(${p.id}, '${p.name}', '${p.category}', '${p.address}', ${p.latitude}, ${p.longitude}, '${p.img || ''}')">
-                            Sửa
-                        </button>
-                        <button class="btn-delete" onclick="deletePlace(${p.id})">Xóa</button>
-                    </td>
-                </tr>
-            `;
-        });
-    }
+// --- Cấu hình Layer CARTO Voyager ---
+const streetLayerUrl = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+const streetLayerAttribution = '© OpenStreetMap contributors © CARTO';
 
-    // 2. Thêm mới (Đảm bảo gửi đúng JSON)
-    document.getElementById("addForm").addEventListener("submit", async e => {
-        e.preventDefault();
-        const formData = new FormData(e.target);
-        const data = Object.fromEntries(formData.entries());
+function getVoyagerLayer() {
+    return L.tileLayer(streetLayerUrl, {
+        attribution: streetLayerAttribution,
+        subdomains: 'abcd',
+        maxZoom: 20
+    });
+}
 
-        // Ép kiểu số cho tọa độ để tránh lỗi 400
-        data.latitude = parseFloat(data.latitude);
-        data.longitude = parseFloat(data.longitude);
+// --- 1. Khởi tạo Bản đồ Chính ---
+function initMainMap() {
+    mainMap = L.map('map').setView([10.776, 106.700], 13);
+    getVoyagerLayer().addTo(mainMap); // Add Voyager Layer
 
-        const response = await fetch("/api/admin/places/", {
-            method: "POST",
-            headers: { 
-                "Content-Type": "application/json",
-                "X-CSRFToken": "{{ csrf_token }}" 
-            },
-            body: JSON.stringify(data)
-        });
+    mainMarker = L.marker([10.776, 106.700], {draggable: true}).addTo(mainMap);
 
-        if (response.ok) {
-            e.target.reset();
-            loadPlaces();
-            alert("Thêm thành công!");
-        } else {
-            const errorData = await response.json();
-            alert("Lỗi 400: " + errorData.error);
-        }
+    mainMarker.on('dragend', function() {
+        let pos = mainMarker.getLatLng();
+        document.getElementById('latitude').value = pos.lat.toFixed(6);
+        document.getElementById('longitude').value = pos.lng.toFixed(6);
     });
 
-    // 3. Xóa
-    async function deletePlace(id) {
-        if (confirm("Bạn có muốn xóa địa điểm này?")) {
-            const res = await fetch(`/api/admin/places/${id}/`, { 
-                method: "DELETE",
-                headers: { "X-CSRFToken": "{{ csrf_token }}" }
-            });
-            if (res.ok) loadPlaces();
+    mainMap.on('click', function(e) {
+        mainMarker.setLatLng(e.latlng);
+        document.getElementById('latitude').value = e.latlng.lat.toFixed(6);
+        document.getElementById('longitude').value = e.latlng.lng.toFixed(6);
+    });
+}
+
+// --- 2. Tìm vị trí từ Địa chỉ ---
+async function searchLocation(address, targetMap, targetMarker, latId, lngId) {
+    if (!address || address.length < 4) return;
+    try {
+        const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`);
+        const data = await response.json();
+        if (data && data.length > 0) {
+            const lat = parseFloat(data[0].lat);
+            const lon = parseFloat(data[0].lon);
+            targetMap.setView([lat, lon], 16);
+            targetMarker.setLatLng([lat, lon]);
+            document.getElementById(latId).value = lat.toFixed(6);
+            document.getElementById(lngId).value = lon.toFixed(6);
         }
+    } catch (error) { console.error("Lỗi tìm địa chỉ:", error); }
+}
+
+document.getElementById('address').addEventListener('change', (e) => 
+    searchLocation(e.target.value, mainMap, mainMarker, 'latitude', 'longitude'));
+
+document.getElementById('editAddress').addEventListener('change', (e) => 
+    searchLocation(e.target.value, editMap, editMarker, 'editLat', 'editLng'));
+
+// --- 3. API & Render ---
+async function loadPlaces(categoryFilter = null) {
+    const res = await fetch("/api/admin/places/");
+    allData = await res.json();
+    renderTable(allData, categoryFilter);
+}
+
+function renderTable(data, filter = null) {
+    const tbody = document.getElementById("placesTable");
+    tbody.innerHTML = "";
+    data.filter(p => !filter || (p.category && p.category.toLowerCase() === filter.toLowerCase()))
+    .forEach(p => {
+        tbody.innerHTML += `
+            <tr>
+                <td><img src="${p.img}" class="thumb" onerror="this.src='https://via.placeholder.com/80x60'"></td>
+                <td><strong>${p.name}</strong><br><small>${p.category}</small></td>
+                <td>${p.latitude.toFixed(4)}, ${p.longitude.toFixed(4)}</td>
+                <td>
+                    <button class="btn btn-edit" onclick="openEditModal(${p.id}, '${p.name}', '${p.category}', '${p.address}', ${p.latitude}, ${p.longitude}, '${p.img}')">✏️</button>
+                    <button class="btn btn-delete" onclick="deletePlace(${p.id})">🗑️</button>
+                </td>
+            </tr>`;
+    });
+}
+
+// --- 4. Modal Sửa & Bản đồ Edit ---
+function openEditModal(id, name, category, address, lat, lng, img) {
+    document.getElementById('editId').value = id;
+    document.getElementById('editName').value = name;
+    document.getElementById('editCategory').value = category;
+    document.getElementById('editAddress').value = address || '';
+    document.getElementById('editLat').value = lat;
+    document.getElementById('editLng').value = lng;
+    document.getElementById('editImg').value = img || '';
+
+    document.getElementById('editModal').style.display = 'flex';
+
+    if (!editMap) {
+        editMap = L.map('editMap').setView([lat, lng], 15);
+        getVoyagerLayer().addTo(editMap); // Add Voyager Layer to Edit Map
+        editMarker = L.marker([lat, lng], {draggable: true}).addTo(editMap);
+        
+        editMarker.on('dragend', () => {
+            let pos = editMarker.getLatLng();
+            document.getElementById('editLat').value = pos.lat.toFixed(6);
+            document.getElementById('editLng').value = pos.lng.toFixed(6);
+        });
+    } else {
+        editMap.setView([lat, lng], 15);
+        editMarker.setLatLng([lat, lng]);
     }
+    setTimeout(() => { editMap.invalidateSize(); }, 200);
+}
 
-    // 4. Sửa (Dùng PATCH như View yêu cầu hoặc PUT tùy bạn)
-    async function editPlace(id, oldName, oldCategory, oldAddress, oldLat, oldLng, oldImg) {
-    const newName = prompt("Tên mới:", oldName);
-    const newCategory = prompt("Loại mới:", oldCategory);
-    const newAddress = prompt("Địa chỉ mới:", oldAddress);
-    const newLat = parseFloat(prompt("Vĩ độ mới:", oldLat));
-    const newLng = parseFloat(prompt("Kinh độ mới:", oldLng));
-    const newImg = prompt("Tên file ảnh mới:", oldImg);
+function closeEditModal() { document.getElementById('editModal').style.display = 'none'; }
 
-    if (!newName) return;
+// --- 5. Form Submits ---
+document.getElementById("addForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    const data = Object.fromEntries(new FormData(e.target).entries());
+    const res = await fetch("/api/admin/places/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token }}" },
+        body: JSON.stringify(data)
+    });
+    if (res.ok) { e.target.reset(); loadPlaces(); alert("Đã thêm thành công!"); }
+});
 
-    await fetch(`/api/admin/places/${id}/`, {
+document.getElementById("editForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    const id = document.getElementById("editId").value;
+    const data = {
+        name: document.getElementById("editName").value,
+        category: document.getElementById("editCategory").value,
+        address: document.getElementById("editAddress").value,
+        latitude: parseFloat(document.getElementById("editLat").value),
+        longitude: parseFloat(document.getElementById("editLng").value),
+        img: document.getElementById("editImg").value
+    };
+    const res = await fetch(`/api/admin/places/${id}/`, {
         method: "PUT",
-        headers: { 
-            "Content-Type": "application/json",
-            "X-CSRFToken": "{{ csrf_token }}"
-        },
-        body: JSON.stringify({
-            name: newName,
-            type: newCategory,
-            address: newAddress,
-            latitude: newLat,
-            longitude: newLng,
-            img: newImg
-        })
+        headers: { "Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token }}" },
+        body: JSON.stringify(data)
     });
-    loadPlaces();
-    }
+    if (res.ok) { closeEditModal(); loadPlaces(); }
+});
 
-    loadPlaces();
+async function deletePlace(id) {
+    if (confirm("Xóa địa điểm này?")) {
+        await fetch(`/api/admin/places/${id}/`, { 
+            method: "DELETE", headers: { "X-CSRFToken": "{{ csrf_token }}" } 
+        });
+        loadPlaces();
+    }
+}
+
+window.onload = () => { initMainMap(); loadPlaces(); };
 </script>
 </body>
 </html>
