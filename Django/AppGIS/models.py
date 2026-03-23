@@ -1,37 +1,31 @@
 from django.db import models
 import math
+from django.contrib.auth.models import User
 
-class TodoItem(models.Model):
-    title = models.CharField(max_length=200)
-    completed = models.BooleanField(default=False)
+class Category(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
 
-    def __str__(self): 
-        return self.title 
-    
+    def __str__(self):
+        return self.name
 
-class TourismPoint(models.Model): 
-    name = models.CharField(max_length=200) 
-    description = models.TextField(blank=True) 
-    latitude = models.FloatField() 
-    longitude = models.FloatField() 
-    type = models.CharField(max_length=100, blank=True) 
-    address = models.CharField(max_length=255, blank=True, null=True) 
-    open_hours = models.CharField(max_length=100, blank=True, null=True) 
-    rating = models.FloatField(blank=True, null=True) 
+class TourismPoint(models.Model):
+    name = models.CharField(max_length=200)
+    description = models.TextField(blank=True)
+    latitude = models.FloatField()
+    longitude = models.FloatField()
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, null=True, blank=True)
+    address = models.CharField(max_length=255, blank=True, null=True)
+    open_hours = models.CharField(max_length=100, blank=True, null=True)
+    rating = models.FloatField(blank=True, null=True)
     img = models.CharField(max_length=500, blank=True, null=True)
     menu_imgs = models.JSONField(default=list, blank=True)
 
-
-    def __str__(self): 
+    def __str__(self):
         return self.name
 
     def distance_from(self, user_lat, user_lng, speed_kmh=40):
-        """
-        user_lat, user_lng: tọa độ người dùng
-        speed_kmh: tốc độ trung bình (km/h), mặc định 40 km/h
-        """
-        R = 6371  
-
+        R = 6371
         lat1 = math.radians(user_lat)
         lon1 = math.radians(user_lng)
         lat2 = math.radians(self.latitude)
@@ -44,10 +38,46 @@ class TourismPoint(models.Model):
         c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
 
         distance_km = R * c
-
         time_minutes = (distance_km / speed_kmh) * 60
 
         return {
             "distance_km": round(distance_km, 2),
             "time_minutes": round(time_minutes, 1)
         }
+
+class OpeningHours(models.Model):
+    tourismpoint = models.ForeignKey(TourismPoint, on_delete=models.CASCADE)
+    day_of_week = models.CharField(max_length=20)
+    open_time = models.TimeField()
+    close_time = models.TimeField()
+
+    def __str__(self):
+        return f"{self.tourismpoint.name} - {self.day_of_week}"
+
+class Review(models.Model):
+    tourismpoint = models.ForeignKey(TourismPoint, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    comment = models.TextField()
+    rating = models.FloatField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.tourismpoint.name}"
+
+class ImageGallery(models.Model):
+    tourismpoint = models.ForeignKey(TourismPoint, on_delete=models.CASCADE)
+    img_path = models.CharField(max_length=200)
+    caption = models.CharField(max_length=200, blank=True)
+
+    def __str__(self):
+        return f"{self.tourismpoint.name} - {self.img_path}"
+
+class Event(models.Model):
+    tourismpoint = models.ForeignKey(TourismPoint, on_delete=models.CASCADE)
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+    start_date = models.DateField()
+    end_date = models.DateField()
+
+    def __str__(self):
+        return f"{self.title} - {self.tourismpoint.name}"
