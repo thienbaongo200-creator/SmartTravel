@@ -67,7 +67,7 @@ def search(request):
             "open_hours": p.open_hours, 
             "rating": p.rating, 
             "img": p.img, 
-            "menu_imgs": [f"/static/images/menus/{folder}/{img}" for img in (p.menu_imgs or [])]
+            "menu_imgs": [img for img in (p.menu_imgs or [])]
         })
     return JsonResponse(data, safe=False)
 
