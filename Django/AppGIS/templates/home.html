@@ -149,16 +149,19 @@
     let categoryLayerGroup = L.layerGroup();
 
     /**
-     * CHỨC NĂNG 1: Lọc và hiển thị địa điểm theo danh mục (Restaurant, Hotel,...)
+     * CHỨC NĂNG 1: Lọc và hiển thị địa điểm theo danh mục (Sử dụng API mới)
      */
-    async function filterCategory(category) {
-        console.log("Đang lấy dữ liệu cho mục:", category);
+    async function filterCategory(categorySlug) {
+        console.log("Đang lấy dữ liệu cho danh mục (slug):", categorySlug);
         const loading = document.getElementById('loading');
         
         if (loading) loading.style.display = 'block';
 
+        // Xóa các marker cũ của danh mục trước đó
         if (typeof map !== 'undefined') {
             categoryLayerGroup.clearLayers();
+            // Nếu có marker tìm kiếm lẻ, cũng nên xóa để tránh rối mắt
+            if (window.searchMarker) map.removeLayer(window.searchMarker);
         } else {
             alert("Lỗi: Bản đồ chưa được tải xong.");
             if (loading) loading.style.display = 'none';
@@ -166,53 +169,67 @@
         }
 
         try {
-            const response = await fetch(`/api/places/?category=${category}`);
+            // Gửi request đến API get_places_by_category đã sửa ở views.py
+            // URL: /api/places/?category=hotel
+            const response = await fetch(`/api/places/?category=${categorySlug}`);
             if (!response.ok) throw new Error("Lỗi kết nối server");
             
             const data = await response.json();
 
             if (data.length === 0) {
                 alert("Không tìm thấy địa điểm nào thuộc danh mục này.");
+                if (loading) loading.style.display = 'none';
+                return;
             }
 
-data.forEach(place => {
-    const lat = parseFloat(place.latitude);
-    const lng = parseFloat(place.longitude);
+            data.forEach(place => {
+                const lat = parseFloat(place.latitude);
+                const lng = parseFloat(place.longitude);
 
-    if (!isNaN(lat) && !isNaN(lng)) {
-        const marker = L.marker([lat, lng])
-            .bindPopup(`<b>${place.name}</b>`);
-        marker.bindTooltip(place.name, {
-            permanent: true, 
-            direction: 'top',  
-            offset: [0, -10],  
-            className: 'custom-marker-label' 
-        }).openTooltip();
-        marker.on('click', () => {
-        displayInfo({
-            name: place.name,
-            img: place.img || "",
-            latitude: lat,
-            longitude: lng,
-            address: place.address || "Đang cập nhật",
-            description: place.description || "Không có mô tả.",
-            rating: place.rating || "5.0"
+                if (!isNaN(lat) && !isNaN(lng)) {
+                    // Tạo Marker
+                    const marker = L.marker([lat, lng]);
+
+                    // Tooltip hiện tên địa điểm ngay trên bản đồ
+                    marker.bindTooltip(place.name, {
+                        permanent: false, // Để false để chỉ hiện khi hover hoặc bạn có thể để true nếu muốn hiện tất cả
+                        direction: 'top',
+                        offset: [0, -10],
+                        className: 'custom-marker-label'
+                    });
+
+                    // Sự kiện click hiện bảng thông tin chi tiết (Info Panel)
+                    marker.on('click', () => {
+                        // Di chuyển bản đồ đến điểm được chọn
+                        map.flyTo([lat, lng], 16);
+                        
+                        displayInfo({
+                            name: place.name,
+                            img: place.img || place.image || "", // Hỗ trợ cả 2 key img hoặc image từ API
+                            latitude: lat,
+                            longitude: lng,
+                            address: place.address || "Đang cập nhật",
+                            description: place.description || "Không có mô tả.",
+                            rating: place.rating || "5.0"
+                        });
+                    });
+
+                    categoryLayerGroup.addLayer(marker);
+                }
             });
-        });
-        categoryLayerGroup.addLayer(marker);
-    }
-});
 
+            // Thêm group marker vào bản đồ
             categoryLayerGroup.addTo(map);
 
+            // Tự động căn chỉnh bản đồ để nhìn thấy tất cả các marker vừa tìm được
             if (data.length > 0) {
                 const group = new L.featureGroup(categoryLayerGroup.getLayers());
                 map.fitBounds(group.getBounds().pad(0.2));
             }
 
         } catch (error) {
-            console.error("Lỗi Fetch:", error);
-            alert("Không thể tải dữ liệu. Vui lòng kiểm tra lại Backend.");
+            console.error("Lỗi Fetch Category:", error);
+            alert("Không thể tải dữ liệu danh mục.");
         } finally {
             if (loading) loading.style.display = 'none';
         }
