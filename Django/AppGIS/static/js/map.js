@@ -48,9 +48,11 @@ var currentMenuIndex = 0;
 
 /**
  * ==========================================
- * 2. ĐỊNH VỊ & TÌM KIẾM
+ * 2. ĐỊNH VỊ & TÌM KIẾM (Bản hoàn chỉnh)
  * ==========================================
  */
+
+// Hàm định vị vị trí người dùng
 function locateUser() {
     if (!navigator.geolocation) return alert("Trình duyệt không hỗ trợ định vị.");
 
@@ -76,102 +78,128 @@ function locateUser() {
             if (loading) loading.style.display = "none";
         },
         function (err) {
-            alert("Lỗi: " + err.message);
+            alert("Lỗi định vị: " + err.message);
             if (loading) loading.style.display = "none";
         },
         { enableHighAccuracy: true }
     );
 }
 
-function searchPlace() {
-    let query = document.getElementById("searchBox").value;
-    if (!query) return;
+// Hàm tìm kiếm thông minh: Ưu tiên Database -> Dự phòng OpenStreetMap
+async function searchPlace() {
+    let query = document.getElementById("searchBox").value.trim();
+    if (!query || query.length < 2) return;
 
-    addToHistory(query);
-    
-    fetch(`/search/?q=${encodeURIComponent(query)}`)
-      .then(res => res.json())
-      .then(data => {
-          if (data && data.length > 0) {
-              let p = data[0];
-              if (searchMarker) map.removeLayer(searchMarker);
+    const loading = document.getElementById("loading");
+    if (loading) loading.style.display = "block";
 
-              map.flyTo([p.latitude, p.longitude], 16);
-              searchMarker = L.marker([p.latitude, p.longitude]).addTo(map)
-                               .bindPopup(`<b>${p.name}</b>`).openPopup();
-              
-              displayInfo(p);
-          } else {
-              alert("Không tìm thấy địa điểm!");
-          }
-      })
-      .catch(err => console.error("Search error:", err));
+    // Lưu vào lịch sử tìm kiếm (Hàm bạn đã viết ở cuối file)
+    if (typeof addToHistory === "function") addToHistory(query);
+
+    try {
+        // --- BƯỚC 1: Tìm trong Database nội bộ của bạn ---
+        const res = await fetch(`/search/?q=${encodeURIComponent(query)}`);
+        const data = await res.json();
+
+        if (data && data.length > 0) {
+            // Nếu tìm thấy trong DB, lấy kết quả đầu tiên
+            const p = data[0];
+            renderSearchResult(p.latitude, p.longitude, p.name, p);
+        } 
+        else {
+            // --- BƯỚC 2: Nếu DB không có, tra cứu trên OpenStreetMap ---
+            console.log("Không có trong DB, đang tìm trên bản đồ toàn cầu...");
+            const osmRes = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query + ", Vietnam")}&limit=1`);
+            const osmData = await osmRes.json();
+            
+            if (osmData && osmData.length > 0) {
+                const lat = parseFloat(osmData[0].lat);
+                const lon = parseFloat(osmData[0].lon);
+                const displayName = osmData[0].display_name;
+                
+                // TỰ ĐỘNG TẠO ẢNH: Sử dụng một icon địa chỉ đẹp hoặc ảnh bản đồ tĩnh
+                // Ở đây tôi dùng một ảnh placeholder chuyên nghiệp cho địa chỉ nhà
+                const defaultAddressImg = "https://images.unsplash.com/photo-1526772662000-3f88f10405ff?q=80&w=400&h=300&auto=format&fit=crop"; 
+
+                const osmPlace = {
+                    name: displayName.split(',')[0], // Tên số nhà/đường
+                    latitude: lat,
+                    longitude: lon,
+                    address: displayName,
+                    description: "Đây là địa chỉ tìm kiếm từ bản đồ vệ tinh.",
+                    category: "Địa chỉ riêng",
+                    rating: "N/A",
+                    img: defaultAddressImg // Gán ảnh này vào để Panel không bị trống
+                };
+
+                renderSearchResult(lat, lon, osmPlace.name, osmPlace);
+            }
+            else {
+                alert("Rất tiếc, không tìm thấy địa điểm này!");
+            }
+        }
+    } catch (err) {
+        console.error("Lỗi thực thi tìm kiếm:", err);
+    } finally {
+        if (loading) loading.style.display = "none";
+    }
 }
 
-function filterCategory(category) {
+// Hàm hỗ trợ: Hiển thị Marker và Panel thông tin
+function renderSearchResult(lat, lon, name, placeObject) {
+    // Xóa marker cũ nếu có
+    if (searchMarker) map.removeLayer(searchMarker);
+
+    // Di chuyển bản đồ
+    map.flyTo([lat, lon], 16);
+
+    // Cắm marker mới
+    searchMarker = L.marker([lat, lon]).addTo(map)
+        .bindPopup(`<b>${name}</b>`)
+        .openPopup();
+
+    // Hiển thị Panel thông tin bên trái (Gọi hàm displayInfo bạn đã có)
+    if (typeof displayInfo === "function") {
+        displayInfo(placeObject);
+    }
+}
+
+// Lọc theo danh mục (Sửa lỗi encode và dọn dẹp bản đồ)
+async function filterCategory(category) {
+    // Dọn dẹp các marker cũ
     nearbyMarkers.forEach(m => map.removeLayer(m));
     nearbyMarkers = [];
     if (routeLine) map.removeLayer(routeLine);
-
-    fetch(`/search_category/?cat=${category}`)
-      .then(res => res.json())
-      .then(data => {
-          if (!data || data.length === 0) {
-              alert("Không có địa điểm nào trong mục này.");
-              return;
-          }
-
-          data.forEach(p => {
-              let m = L.marker([p.latitude, p.longitude])
-                       .addTo(map)
-                       .bindPopup(`<b>${p.name}</b><br>${p.address}`);
-              m.on('click', () => displayInfo(p));
-              nearbyMarkers.push(m);
-          });
-
-          const group = new L.featureGroup(nearbyMarkers);
-          const bounds = group.getBounds();
-          if (bounds.isValid()) {
-              map.fitBounds(bounds, { padding: [30, 30] });
-          }
-      })
-      .catch(err => console.error("Filter category error:", err));
-}
-
-function findNearby() {
-    if (!userMarker) return alert("Vui lòng bật định vị trước!");
-
-    nearbyMarkers.forEach(m => map.removeLayer(m));
-    nearbyMarkers = [];
+    if (searchMarker) map.removeLayer(searchMarker);
     if (bufferLayer) map.removeLayer(bufferLayer);
 
-    let pos = userMarker.getLatLng();
-    fetch(`/nearby_places?lat=${pos.lat}&lng=${pos.lng}&radius=2`)
-      .then(res => res.json())
-      .then(data => {
-          if (data.buffer) {
-              bufferLayer = L.geoJSON(data.buffer, {
-                  style: { color: 'orange', fillColor: 'orange', fillOpacity: 0.2 }
-              }).addTo(map);
-          }
+    try {
+        const res = await fetch(`/search_category/?cat=${encodeURIComponent(category)}`);
+        const data = await res.json();
 
-          if (data.nearby && data.nearby.length > 0) {
-              data.nearby.forEach(p => {
-                  let m = L.marker([p.latitude, p.longitude])
-                    .addTo(map)
-                    .bindPopup(`<b>${p.name}</b><br>${p.distance_km} km`);
-                  nearbyMarkers.push(m);
-              });
-              
-              const group = new L.featureGroup(nearbyMarkers);
-              if (group.getBounds().isValid()) {
-                  map.fitBounds(group.getBounds().pad(0.2));
-              }
-          } else {
-              if (bufferLayer) map.fitBounds(bufferLayer.getBounds());
-          }
-      })
-      .catch(err => console.error("Nearby error:", err));
+        if (!data || data.length === 0) {
+            alert(`Không có địa điểm nào thuộc mục "${category}".`);
+            return;
+        }
+
+        data.forEach(p => {
+            let m = L.marker([p.latitude, p.longitude])
+                     .addTo(map)
+                     .bindPopup(`<b>${p.name}</b><br>${p.address || ''}`);
+            
+            // Click vào marker trên bản đồ để hiện Panel thông tin
+            m.on('click', () => displayInfo(p));
+            nearbyMarkers.push(m);
+        });
+
+        // Tự động căn chỉnh bản đồ bao phủ hết các Marker vừa tìm được
+        const group = new L.featureGroup(nearbyMarkers);
+        if (group.getBounds().isValid()) {
+            map.fitBounds(group.getBounds(), { padding: [50, 50] });
+        }
+    } catch (err) {
+        console.error("Lỗi lọc danh mục:", err);
+    }
 }
 
 /**
