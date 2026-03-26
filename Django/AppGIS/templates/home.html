@@ -12,29 +12,6 @@
 </section>
 
 <div class="main-layout">
-    <aside class="sidebar-left">
-        <div class="control-group">
-            <button onclick="showSavedRoutes()" class="btn-nearby">
-                <i class="fa-solid fa-bookmark"></i> Đã lưu
-            </button>
-            <button onclick="showSearchHistory()" class="btn-history">
-                <i class="fa-solid fa-clock-rotate-left"></i> Lịch sử tìm kiếm
-            </button>
-            <button onclick="findNearby()" class="btn-nearby">
-                <i class="fa-solid fa-location-dot"></i> Địa điểm gần tôi
-            </button>
-
-            <div class="filter-title">Khám phá theo danh mục</div>
-            <div class="filter-buttons">
-                <button onclick="filterCategory('restaurant')"><i class="fa-solid fa-utensils"></i> Nhà hàng</button>
-                <button onclick="filterCategory('hotel')"><i class="fa-solid fa-bed"></i> Khách sạn</button>
-                <button onclick="filterCategory('attraction')"><i class="fa-solid fa-masks-theater"></i> Khu vui chơi</button>
-                <button onclick="filterCategory('museum')"><i class="fa-solid fa-landmark"></i> Di tích</button>
-                <button onclick="filterCategory('pharmacy')"><i class="fa-solid fa-prescription-bottle-medical"></i> Hiệu thuốc</button>
-                <button onclick="filterCategory('atm')"><i class="fa-solid fa-credit-card"></i> ATM</button>
-            </div>
-        </div>
-    </aside>
 
     <main class="map-wrapper" style="position: relative; height: 70vh;">
         <div id="search-bar-overlay">
@@ -49,7 +26,26 @@
 
         <!-- Bản đồ -->
         <div id="map" style="height: 100%; width: 100%;"></div>
-
+        <div class="category-filter-nav">
+            <button class="cat-nav-btn" onclick="filterCategory('restaurant')">
+                <i class="fa-solid fa-utensils"></i> Nhà hàng
+            </button>
+            <button class="cat-nav-btn" onclick="filterCategory('hotel')">
+                <i class="fa-solid fa-bed"></i> Khách sạn
+            </button>
+            <button class="cat-nav-btn" onclick="filterCategory('attraction')">
+                <i class="fa-solid fa-masks-theater"></i> Khu vui chơi
+            </button>
+            <button class="cat-nav-btn" onclick="filterCategory('museum')">
+                <i class="fa-solid fa-landmark"></i> Di tích
+            </button>
+            <button class="cat-nav-btn" onclick="filterCategory('pharmacy')">
+                <i class="fa-solid fa-prescription-bottle-medical"></i> Hiệu thuốc
+            </button>
+            <button class="cat-nav-btn" onclick="filterCategory('atm')">
+                <i class="fa-solid fa-credit-card"></i> ATM
+            </button>
+        </div>
         <!-- Panel thông tin -->
         <div id="info-panel" class="floating-info-panel" style="display:none;">
             <span class="close-btn" onclick="this.parentElement.style.display='none'">×</span>
@@ -91,11 +87,12 @@
                         TÌM TUYẾN NGẮN NHẤT
                     </button>
 
-                    <div id="route-modal-result" class="route-result-area" style="display:none;">
-                        <div id="route-modal-summary"></div>
-                        <div id="route-modal-detail"></div>
-                        <button id="route-modal-save" class="btn-save-route">
-                            <i class="fa-solid fa-bookmark"></i> Lưu tuyến đường
+                    <div id="route-modal-result" class="route-result-area" style="display:none; padding: 10px; border-top: 1px solid #eee;">
+                        <div id="route-modal-summary" style="margin-bottom: 10px; font-size: 0.9rem; color: #555;"></div>
+                        
+                        <button type="button" class="btn-save-route-custom" onclick="saveRoute()" 
+                                style="background: #28a745; color: white; border: none; padding: 10px; border-radius: 5px; width: 100%; cursor: pointer;">
+                            <i class="fa-solid fa-floppy-disk"></i> LƯU TUYẾN ĐƯỜNG
                         </button>
                     </div>
                 </div>

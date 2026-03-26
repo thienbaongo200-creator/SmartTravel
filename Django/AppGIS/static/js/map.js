@@ -541,15 +541,40 @@ var LocateControl = L.Control.extend({
 map.addControl(new LocateControl());
 
 // --- LƯU TRỮ DỮ LIỆU ---
-function savePlace(name) {
-    let saved = JSON.parse(localStorage.getItem('myPlaces')) || [];
-    if (!saved.includes(name)) {
-        saved.push(name);
-        localStorage.setItem('myPlaces', JSON.stringify(saved));
-        alert("Đã lưu địa điểm: " + name);
-    } else {
-        alert("Địa điểm này đã có trong danh sách lưu!");
+function saveRoute() {
+    console.log("Đang gọi hàm saveRoute..."); 
+    
+    const start = document.getElementById("startPoint").value;
+    const end = document.getElementById("endPoint").value;
+    const mode = document.getElementById("transportMode") ? document.getElementById("transportMode").value : "DRIVING";
+    const summary = document.getElementById("route-modal-summary") ? document.getElementById("route-modal-summary").innerText : "";
+
+    if (!start || !end) {
+        alert("Không có thông tin tuyến đường để lưu!");
+        return;
     }
+
+    let savedRoutes = JSON.parse(localStorage.getItem('mySavedRoutes')) || [];
+    
+    const isDuplicate = savedRoutes.some(r => r.start === start && r.end === end);
+    if (isDuplicate) {
+        alert("Tuyến đường này đã có trong danh sách lưu!");
+        return;
+    }
+
+    const newRoute = {
+        id: Date.now(),
+        start: start,
+        end: end,
+        mode: mode,
+        summary: summary,
+        time: new Date().toLocaleString('vi-VN')
+    };
+
+    savedRoutes.push(newRoute);
+    localStorage.setItem('mySavedRoutes', JSON.stringify(savedRoutes));
+
+    alert("Đã lưu tuyến đường thành công!");
 }
 
 function addToHistory(query) {
@@ -560,31 +585,66 @@ function addToHistory(query) {
 }
 
 function showSavedRoutes() {
-    const saved = JSON.parse(localStorage.getItem('myPlaces')) || [];
+    const savedPlaces = JSON.parse(localStorage.getItem('myPlaces')) || [];
+    const savedRoutes = JSON.parse(localStorage.getItem('mySavedRoutes')) || [];
+    
     const panel = document.getElementById("info-panel");
     const content = document.getElementById("info-content");
 
-    let html = `<h3><i class="fa-solid fa-star" style="color:#fbbc04"></i> Địa điểm đã lưu</h3>`;
-    if (saved.length === 0) {
-        html += "<p class='text-muted'>Bạn chưa lưu địa điểm nào.</p>";
+    let html = `<h3><i class="fa-solid fa-star" style="color:#fbbc04"></i> Dữ liệu đã lưu</h3>`;
+
+    if (savedPlaces.length === 0 && savedRoutes.length === 0) {
+        html += "<p class='text-muted' style='padding:20px;'>Bạn chưa lưu dữ liệu nào.</p>";
     } else {
-        html += "<ul>" + saved.map(item => `
-            <li class="list-item">
-                <div style="display:flex; align-items:center;">
-                    <div class="item-icon icon-saved"><i class="fa-solid fa-bookmark"></i></div>
-                    <div class="item-info">
-                        <span class="item-name">${item}</span>
-                        <span class="item-sub">Địa điểm yêu thích của bạn</span>
+        // Phần hiển thị Tuyến đường
+        if (savedRoutes.length > 0) {
+            html += `<h4 style="margin-top:15px; border-bottom:1px solid #eee;">Tuyến đường</h4><ul>`;
+            html += savedRoutes.map((route, index) => `
+                <li class="list-item" style="padding:10px; border-bottom:1px solid #f9f9f9;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <strong style="color:#1a73e8;">Từ:</strong> ${route.start}<br>
+                            <strong style="color:#1a73e8;">Đến:</strong> ${route.end}<br>
+                            <small class="text-muted">${route.summary} (${route.time})</small>
+                        </div>
+                        <button onclick="deleteRoute(${index})" style="border:none; background:none; color:red; cursor:pointer;">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
                     </div>
-                </div>
-            </li>`).join('') + "</ul>";
-        html += `<button class="btn-clear-all" onclick="localStorage.removeItem('myPlaces'); showSavedRoutes()">Xóa tất cả đã lưu</button>`;
+                </li>`).join('');
+            html += "</ul>";
+        }
+
+        // Phần hiển thị Địa điểm
+        if (savedPlaces.length > 0) {
+            html += `<h4 style="margin-top:15px; border-bottom:1px solid #eee;">Địa điểm</h4><ul>`;
+            html += savedPlaces.map((place, index) => `
+                <li class="list-item">
+                    <div style="display:flex; align-items:center; justify-content:space-between; width:100%;">
+                        <div style="display:flex; align-items:center;">
+                            <div class="item-icon icon-saved"><i class="fa-solid fa-location-dot"></i></div>
+                            <div class="item-info">
+                                <span class="item-name">${place}</span>
+                            </div>
+                        </div>
+                    </div>
+                </li>`).join('');
+            html += "</ul>";
+        }
+
+        html += `<button class="btn-clear-all" onclick="clearAllData()" style="width:100%; margin-top:20px; padding:10px; background:#f44336; color:white; border:none; border-radius:5px; cursor:pointer;">Xóa tất cả</button>`;
     }
-    
+
     content.innerHTML = html;
     panel.style.display = "block";
 }
-
+function clearAllData() {
+    if(confirm("Bạn có chắc chắn muốn xóa toàn bộ địa điểm và tuyến đường đã lưu?")) {
+        localStorage.removeItem('myPlaces');
+        localStorage.removeItem('mySavedRoutes');
+        showSavedRoutes();
+    }
+}
 function showSearchHistory() {
     const history = JSON.parse(localStorage.getItem('searchHistory')) || [];
     const content = document.getElementById("info-content");
@@ -609,4 +669,3 @@ function showSearchHistory() {
     content.innerHTML = html;
     document.getElementById("info-panel").style.display = "block";
 }
-

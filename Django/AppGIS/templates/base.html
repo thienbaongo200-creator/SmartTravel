@@ -13,8 +13,20 @@
             <div class="navbar_logo">
                 <img src="{% static 'images/logo.jpg' %}" alt="Logo" />
             </div>
+
             <ul class="navbar_links">
                 <li><a href="{% url 'home' %}">Trang Chủ</a></li>
+                
+                <!-- DROP DOWN CÔNG CỤ BẢN ĐỒ -->
+                <li class="dropdown map-tools-dropdown">
+                    <a href="#">Công cụ bản đồ ▾</a>
+                    <ul class="dropdown_menu">
+                        <li class="divider"></li>
+                        <li><a href="javascript:void(0)" onclick="showSavedRoutes()"><i class="fa-solid fa-bookmark"></i> Địa điểm đã lưu</a></li>
+                        <li><a href="javascript:void(0)" onclick="showSearchHistory()"><i class="fa-solid fa-clock-rotate-left"></i> Lịch sử</a></li>
+                    </ul>
+                </li>
+
                 <li><a href="{% url 'about' %}">Giới Thiệu</a></li>
                 <li class="dropdown">
                     <a href="#">Khám phá ▾</a>
@@ -25,7 +37,6 @@
                     </ul>
                 </li>
                 <li><a href="{% url 'contact' %}">Liên Hệ</a></li>
-        
             </ul>
         </nav>
     </header>
