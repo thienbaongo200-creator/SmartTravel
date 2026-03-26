@@ -15,15 +15,19 @@
 
     <main class="map-wrapper" style="position: relative; height: 70vh;">
         <div id="search-bar-overlay">
-            <input type="text" id="searchBox" placeholder="Tìm địa điểm, khách sạn...">
-            <button onclick="searchPlace()" class="btn-search">
+            <input type="text" id="searchBox" 
+                placeholder="Tìm địa điểm, khách sạn hoặc địa chỉ..." 
+                onkeypress="if(event.key === 'Enter') searchPlace()">
+                
+            <button onclick="searchPlace()" class="btn-search" title="Tìm kiếm">
                 <i class="fa-solid fa-magnifying-glass"></i>
             </button>
+            
             <button onclick="showRouteFromSearch()" class="btn-direction" title="Chỉ đường">
                 <i class="fa-solid fa-location-arrow"></i>
             </button>
         </div>
-
+        
         <!-- Bản đồ -->
         <div id="map" style="height: 100%; width: 100%;"></div>
         <div class="category-filter-nav">
