@@ -380,7 +380,7 @@
 #map {
     width: 100%;
     height: 100%;
-    z-index: 1;
+    z-index: 1 !important;
 }
 
 #search-bar-overlay {
@@ -1587,10 +1587,22 @@ button[onclick="findNearby()"] {
     transition: all 0.3s ease;
 }
 .category-filter-nav {
+    position: absolute;
+    top: 20px;
+    left: 35%;
+    transform: translateX(-50%);
+    z-index: 9999 !important; 
     display: flex;
     gap: 8px;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 8px 15px;
+    border-radius: 50px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    max-width: 95%;
+    overflow-x: auto;
+    white-space: nowrap;
+    border: 1px solid #ddd;
 }
-
 .cat-nav-btn {
     padding: 8px 12px;
     border-radius: 20px;
