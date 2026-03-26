@@ -267,21 +267,7 @@ function showRouteFromSearch(destLat=null, destLng=null) {
     const panel = document.getElementById("info-panel");
     if (panel) panel.style.display = "none";
     const modal = document.getElementById("route-modal");
-    if (modal) modal.style.display = "block";
-<<<<<<< HEAD
-    if (destLat && destLng) {
-        document.getElementById("endPoint").value = `${destLat},${destLng}`;
-    } else if (window.searchMarker) {
-        let latlng = window.searchMarker.getLatLng();
-        document.getElementById("endPoint").value = `${latlng.lat},${latlng.lng}`;
-    }
-    if (window.userMarker) {
-        let pos = window.userMarker.getLatLng();
-        document.getElementById("startPoint").value = `${pos.lat},${pos.lng}`;
-    }
-}
-
-=======
+    if (modal) modal.style.display = "block"
 
     if (destLat && destLng) {
         endInput.value = `${destLat},${destLng}`;
@@ -342,7 +328,6 @@ function updateUserMarker(lat, lng) {
     }
 }
 
->>>>>>> 1949ec8c35408db14a2e93916740ddc7bb9021ae
 async function calculateRoute() {
     let start = document.getElementById("startPoint").value;
     let end = document.getElementById("endPoint").value;

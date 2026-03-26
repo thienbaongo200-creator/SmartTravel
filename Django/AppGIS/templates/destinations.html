@@ -45,7 +45,10 @@
         object-fit: cover;
         transition: transform 0.5s ease;
     }
-
+    .card-text {
+         position: relative;
+     top: -15px; /* dịch chữ lên trên, chỉnh số px theo ý */
+    }
     /* PHẦN NỘI DUNG (Bên phải) */
     .card-body {
         flex: 1;
@@ -76,15 +79,21 @@
         margin-right: 15px;
     }
 
-    /* Đoạn văn mô tả */
-    .info-list {
-        list-style: none;
-        padding: 0;
-        font-size: 1rem;
-        color: #666;
-        line-height: 1.8;
-        margin-bottom: 30px;
-    }
+   /* Đoạn văn mô tả */
+.info-list {
+    list-style: none;
+    padding: 0;
+    font-size: 1rem;
+    color: #666;
+    line-height: 1.8;
+    
+    /* Tăng số này lên để đẩy đoạn văn lên trên, nhường chỗ cho nút */
+    margin-bottom: 80px; 
+    
+    /* Thêm dòng này để đảm bảo chữ không bao giờ bị tràn xuống dưới nút */
+    display: block; 
+    position: relative;
+}
 
     /* NÚT BẤM (Góc phải dưới) */
     .btn-container {
