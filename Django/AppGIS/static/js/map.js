@@ -418,22 +418,18 @@ function displayInfo(p) {
 
     // --- CHỈNH SỬA HÀM getCorrectPath ---
     const getCorrectPath = (path) => {
-        if (!path) return "/static/images/default.jpg";
+        if (!path) return ""; // bỏ default.jpg, trả về rỗng
         if (path.startsWith('http') || path.startsWith('/static/')) return path;
 
-        // Chuyển category về chữ thường để so sánh chính xác
         const category = p.category ? p.category.toLowerCase() : "";
 
-        // Nếu là Nhà hàng (Restaurant) thì mới thêm folder /restaurants/
         if (category.includes("nhà hàng") || category.includes("restaurant")) {
-            // Kiểm tra xem path đã có sẵn chữ 'restaurants/' chưa để tránh lặp
             if (path.startsWith('restaurants/')) {
                 return "/static/images/" + path;
             }
             return "/static/images/restaurants/" + path;
         }
 
-        // Các trường hợp còn lại (Khách sạn, ATM, Di tích...) lấy trực tiếp trong images/
         return "/static/images/" + path;
     };
 
@@ -450,14 +446,13 @@ function displayInfo(p) {
         }
     }
     
-    // Gán danh sách ảnh menu dùng hàm getCorrectPath mới
     currentMenuImgs = Array.isArray(rawMenu) ? rawMenu.map(item => getCorrectPath(item)) : [];
     currentMenuIndex = 0;
 
     // 3. Khởi tạo HTML
     let html = `
         <div class="info-header">
-            ${imgPath ? `<img src="${imgPath}" alt="${p.name}" onerror="this.src='/static/images/default.jpg'">` : ""}
+            ${imgPath ? `<img src="${imgPath}" alt="${p.name}">` : ""}
         </div>
         <div class="info-body">
             <h2>${p.name}</h2>
@@ -489,7 +484,6 @@ function displayInfo(p) {
                 <div class="carousel-image-container">
                     <img id="menu-img" src="${currentMenuImgs[0]}" 
                          alt="Chi tiết"
-                         onerror="this.src='/static/images/default.jpg'"
                          onclick="openImageModal(this.src)">
                 </div>
                 <button class="carousel-btn next" onclick="nextMenu()">❯</button>
