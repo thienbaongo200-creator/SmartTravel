@@ -62,10 +62,10 @@
                 <div class="card hotel-card shadow-sm">
                     <div class="hotel-img-container">
                         {% if hotel.img %}
-                            <img src="{% static 'images/' %}{{ hotel.img }}" class="hotel-img" alt="{{ hotel.name }}">
-                        {% else %}
-                            <img src="{% static 'images/default.jpg' %}" class="hotel-img" alt="No image">
-                        {% endif %}
+                            {% if hotel.img %}
+                                <img src="{% static 'images/' %}{{ hotel.img }}" class="hotel-img" alt="{{ hotel.name }}">
+                            {% endif %}
+
                         <div class="rating-badge">⭐ {{ hotel.rating|default:"5.0" }}</div>
                     </div>
 
