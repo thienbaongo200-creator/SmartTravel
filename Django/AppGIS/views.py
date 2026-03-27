@@ -254,6 +254,7 @@ def api_places(request):
                 "category": p.category.name if p.category else "Khác",
                 "address": p.address if p.address else "Chưa có địa chỉ",
                 "rating": p.rating if p.rating else 0,
+                "price": p.price if p.price else 0,
                 "img": img_url,
                 "raw_img": p.img 
             })
@@ -282,6 +283,7 @@ def api_places(request):
                 category=cat_obj,   # gán object Category, không phải chuỗi
                 address=raw_data.get('address', ''),
                 img=raw_data.get('img', ''),
+                price=raw_data.get('price', 0),
                 rating=raw_data.get('rating', 5.0)
             )
             return JsonResponse({"message": "Thêm thành công"}, status=201)
@@ -309,6 +311,7 @@ def api_place_detail(request, pk):
                 place.category = cat_obj
 
             place.address = raw_data.get('address', place.address)
+            place.price = raw_data.get('price', place.price)
             place.save()
             return JsonResponse({"message": "Cập nhật thành công"})
         except Exception as e:
