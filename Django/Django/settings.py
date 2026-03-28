@@ -31,7 +31,6 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
@@ -51,11 +50,13 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = "Django.urls"
-
+# Tách riêng template cho user và admin
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "templates"],
+        "DIRS": [
+            BASE_DIR / "templates" / "user",   # giao diện người dùng
+        ],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -66,7 +67,6 @@ TEMPLATES = [
         },
     },
 ]
-
 WSGI_APPLICATION = "Django.wsgi.application"
 
 

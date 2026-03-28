@@ -1,0 +1,57 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="{% static 'css/admin.css' %}">
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>Trang quản trị</h1>
+    </header>
+
+    <nav class="admin-nav">
+        <a href="{% url 'admin_places' %}" class="nav-link">📍 Quản lý Địa điểm</a>
+        <a href="{% url 'admin_user' %}" class="nav-link">👤 Quản lý Người dùng</a>
+        <a href="{% url 'logout' %}" class="nav-link">🚪 Đăng xuất</a>
+    </nav>
+
+    <main>
+        <div class="section stats">
+            <div class="stat-card">📍 Địa điểm: {{ places_count }}</div>
+            <div class="stat-card">👤 Người dùng: {{ users_count }}</div>
+        </div>
+
+        <div class="section">
+            <h2>Thành viên quản trị</h2>
+            <div class="members">
+                <div class="member-card">
+                    <img src="{% static 'images/ThanhVien/ngoquocthienbao.jpg' %}" alt="Bao Ngo">
+                    <h3>Ngô Quốc Thiên Bảo</h3>
+                    <p>Thiết kế hệ thống</p>
+                </div>
+                <div class="member-card">
+                    <img src="{% static 'images/ThanhVien/nguyenminhchien.jpg' %}" alt="Nguyễn Minh Chiến">
+                    <h3>Nguyễn Minh Chiến</h3>
+                    <p>Quản lý và Kiểm tra code</p>
+                </div>
+                <div class="member-card">
+                    <img src="{% static 'images/ThanhVien/nguyenvandanh.jpg' %}" alt="Nguyễn Văn Danh">
+                    <h3>Nguyễn Văn Danh</h3>
+                    <p>Quản lý người dùng & Quản lý địa điểm</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="section guide">
+            <h2>Hướng dẫn sử dụng</h2>
+            <p>📍 Vào mục <b>Quản lý Địa điểm</b> để thêm, sửa, xóa địa điểm du lịch.</p>
+            <p>👤 Vào mục <b>Quản lý Người dùng</b> để tạo hoặc chỉnh sửa tài khoản.</p>
+            <p>🚪 Dùng <b>Đăng xuất</b> để thoát khỏi hệ thống quản trị.</p>
+        </div>
+    </main>
+</div>
+</body>
+</html>

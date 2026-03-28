@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Đăng ký tài khoản{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <h2>Đăng ký</h2>
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label for="{{ form.username.id_for_label }}">Tên tài khoản</label>
+            {{ form.username }}
+            {% if form.username.errors %}
+                <div class="error">{{ form.username.errors }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group password-wrapper">
+            <label for="{{ form.password1.id_for_label }}">Mật khẩu</label>
+            {{ form.password1 }}
+            <span class="toggle-password" onclick="togglePassword(this)">
+                <i class="fa fa-eye"></i>
+            </span>
+            {% if form.password1.errors %}
+                <div class="error">{{ form.password1.errors }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group password-wrapper">
+            <label for="{{ form.password2.id_for_label }}">Xác nhận mật khẩu</label>
+            {{ form.password2 }}
+            <span class="toggle-password" onclick="togglePassword(this)">
+                <i class="fa fa-eye"></i>
+            </span>
+            {% if form.password2.errors %}
+                <div class="error">{{ form.password2.errors }}</div>
+            {% endif %}
+        </div>
+
+        <button type="submit">Đăng ký</button>
+    </form>
+    <p>Đã có tài khoản? <a href="{% url 'login' %}">Đăng nhập ngay</a></p>
+</div>
+{% endblock %}
