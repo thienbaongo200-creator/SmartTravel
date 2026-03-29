@@ -6,7 +6,6 @@
     <title>Admin - Quản lý Địa điểm Du lịch</title>
     <link rel="stylesheet" href="{% static 'css/style_admin_places.css' %}">
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-<<<<<<< HEAD:Django/AppGIS/templates/admin_places.html
     <style>
         #map, #editMap { height: 300px; width: 100%; border-radius: 8px; margin-top: 10px; }
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; }
@@ -18,7 +17,6 @@
     </style>
 =======
     <link rel="stylesheet" href="{% static 'css/admin.css' %}">
->>>>>>> 54a4a7b27b59ec49cb175fb90bfb66728461b2e0:Django/AppGIS/templates/admin/admin_places.html
 </head>
 <body>
 <div class="container">
@@ -43,7 +41,6 @@
             <!-- Form bên trái -->
             <form id="addForm" class="form-side">
                 <input type="text" name="name" placeholder="Tên địa điểm" required>
-<<<<<<< HEAD:Django/AppGIS/templates/admin_places.html
                 <input type="text" name="category" placeholder="Loại (VD: Khách sạn)" required>
                 <input type="text" id="address" name="address" placeholder="Địa chỉ">
             </div>
@@ -52,7 +49,6 @@
                 <input type="number" step="any" id="longitude" name="longitude" placeholder="Kinh độ" required>
                 <input type="text" name="img" placeholder="Tên file ảnh">
                 <input type="number" name="price" placeholder="Giá tiền (VNĐ)">
-=======
                 <input type="text" name="category" placeholder="Loại (VD: Nhà hàng)" required>
                 <input type="text" id="address" name="address" placeholder="Nhập địa chỉ rồi nhấn Tab/Click ra ngoài để tìm trên map">
                 <div class="flex-row">
@@ -66,7 +62,6 @@
             <!-- Map bên phải -->
             <div class="map-side">
                 <div id="map"></div>
->>>>>>> 54a4a7b27b59ec49cb175fb90bfb66728461b2e0:Django/AppGIS/templates/admin/admin_places.html
             </div>
         </div>
     </section>
@@ -87,8 +82,6 @@
         </table>
     </section>
 </div>
-
-<<<<<<< HEAD:Django/AppGIS/templates/admin_places.html
 <!-- Modal Sửa -->
 <div id="editModal" class="modal">
     <div class="modal-content">
@@ -138,13 +131,12 @@
                 <div id="editMap"></div>
             </div>
         </div>
->>>>>>> 54a4a7b27b59ec49cb175fb90bfb66728461b2e0:Django/AppGIS/templates/admin/admin_places.html
     </div>
 </div>
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
-let mainMap, mainMarker, editMap, editMarker, allData = [];
+let mainMap, mainMarker, editMap, editMarker, allData = [], currentFilter = null;
 
 // Khởi tạo bản đồ (Voyager Layer)
 function getVoyagerLayer() {
@@ -165,10 +157,15 @@ function initMainMap() {
 }
 
 // Load dữ liệu từ API
-async function loadPlaces(categoryFilter = null) {
+async function loadPlaces(categoryFilter = undefined) {
+    if (categoryFilter !== undefined) {
+        currentFilter = categoryFilter;
+    }
+
     const res = await fetch("/api/admin/places/");
     allData = await res.json();
-    renderTable(allData, categoryFilter);
+    renderTable(allData, currentFilter);
+    updateTabUI(currentFilter);
 }
 
 function renderTable(data, filter = null) {
