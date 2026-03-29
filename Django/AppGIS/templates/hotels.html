@@ -1,10 +1,30 @@
 {% extends "base.html" %}
 {% load static %}
+{% load humanize %}
 
 {% block title %}Khách sạn - Smart Travel Map{% endblock %}
 
 {% block content %}
 <style>
+    .hotel-price-wrapper {
+    margin-top: 20px;
+    text-align: center;
+    }
+    .hotel-price {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #e74c3c;
+    background: #fff5f5;
+    padding: 8px 12px;
+    border-radius: 6px;
+    display: inline-block;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    .hotel-price-muted {
+        font-size: 1rem;
+        color: #777;
+        font-style: italic;
+    }
     .hotels-section { background-color: #f8f9fa; padding: 60px 0; }
     .hotel-card {
         border: none; border-radius: 15px; overflow: hidden;
@@ -61,7 +81,6 @@
             <div class="col-lg-4 col-md-6 mb-4">
                 <div class="card hotel-card shadow-sm">
                     <div class="hotel-img-container">
-                        {% if hotel.img %}
                             {% if hotel.img %}
                                 <img src="{% static 'images/' %}{{ hotel.img }}" class="hotel-img" alt="{{ hotel.name }}">
                             {% endif %}
@@ -85,12 +104,12 @@
                                 <i class="fas fa-directions me-2"></i> Xem trên bản đồ
                             </a>
                         </div>
-                        <p class="card-text">
+                        <p class="card-text hotel-price-wrapper">
                             <strong>Giá phòng: </strong> 
                             {% if hotel.price %}
-                                <span style="color: red; font-weight: bold;">{{ hotel.price }} VNĐ</span>
+                                <span class="hotel-price">{{ hotel.price|intcomma }} VNĐ</span>
                             {% else %}
-                                <span class="text-muted">Liên hệ để biết giá</span>
+                                <span class="hotel-price-muted">Liên hệ để biết giá</span>
                             {% endif %}
                         </p>
                     </div>

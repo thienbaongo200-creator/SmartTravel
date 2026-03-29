@@ -691,3 +691,59 @@ function showSearchHistory() {
     content.innerHTML = html;
     document.getElementById("info-panel").style.display = "block";
 }
+function showNearbyPlaces() {
+    if (!navigator.geolocation) {
+        alert("Trình duyệt không hỗ trợ định vị.");
+        return;
+    }
+
+    navigator.geolocation.getCurrentPosition(async position => {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+
+        try {
+            // Gọi API backend (đúng route trong urls.py)
+            const res = await fetch(`/nearby_places/?lat=${lat}&lng=${lng}&radius=20`);
+            const data = await res.json();
+
+            // Lấy mảng địa điểm từ key "nearby"
+            const places = data.nearby || [];
+
+            // Xóa layer cũ nếu có
+            if (window.nearbyLayer) {
+                map.removeLayer(window.nearbyLayer);
+            }
+
+            // Tạo layer mới
+            window.nearbyLayer = L.layerGroup().addTo(map);
+
+            // Vẽ vòng tròn bán kính 20km quanh vị trí người dùng
+            L.circle([lat, lng], {
+                radius: data.radius_km * 1000, // km → mét
+                color: "#007bff",
+                fillColor: "#007bff",
+                fillOpacity: 0.1
+            }).addTo(window.nearbyLayer);
+
+            // Thêm marker vị trí người dùng
+            L.marker([lat, lng]).bindPopup("📍 Vị trí của bạn").addTo(window.nearbyLayer);
+
+            // Thêm các địa điểm xung quanh
+            places.forEach(p => {
+                const marker = L.marker([p.latitude, p.longitude])
+                    .bindPopup(`<strong>${p.name}</strong><br>${p.address || ''}<br>📏 ${p.distance_km} km`);
+                window.nearbyLayer.addLayer(marker);
+            });
+
+            // Zoom bản đồ vào vị trí người dùng
+            map.setView([lat, lng], 12);
+
+        } catch (err) {
+            console.error("Lỗi khi tải dữ liệu:", err);
+            alert("Không thể tải danh sách địa điểm quanh bạn.");
+        }
+
+    }, () => {
+        alert("Không thể lấy vị trí hiện tại.");
+    });
+}
