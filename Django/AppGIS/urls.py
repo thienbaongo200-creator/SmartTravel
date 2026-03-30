@@ -35,7 +35,7 @@ urlpatterns = [
     path("distance/<int:point_id>/", views.get_distance, name="get_distance"),
     path("nearby_places/", views.nearby_places, name="nearby_places"),
     path("review/<int:point_id>/", views.submit_review, name="submit_review"),
-
+    
     # Admin giao diện
     path("admin/", views.admin_dashboard, name="admin_dashboard"),
     path("admin_places/", views.admin_places, name="admin_places"),
