@@ -1888,129 +1888,164 @@ destinations-section {
 /* ===========================
    Modal Đánh Giá
    =========================== */
-#reviewModal.modal {
-    display: none;
+.review-modal-overlay {
     position: fixed;
-    z-index: 10000;
-    left: 0; top: 0;
+    top: 0; left: 0;
     width: 100%; height: 100%;
-    background: rgba(0,0,0,0.6);
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px); /* Làm mờ hậu cảnh */
+    z-index: 9999;
     display: flex;
     align-items: center;
     justify-content: center;
-    backdrop-filter: blur(3px);
+    animation: fadeIn 0.3s ease;
 }
 
-#reviewModal .modal-content {
-    background: #fff;
-    padding: 25px;
-    border-radius: 12px;
+/* 2. Khung nội dung Modal */
+.review-modal-content {
+    background: #ffffff;
     width: 90%;
     max-width: 480px;
-    box-shadow: 0 12px 30px rgba(0,0,0,0.25);
-    animation: fadeInScale 0.3s ease;
-    font-family: "Segoe UI", sans-serif;
+    padding: 30px;
+    border-radius: 20px;
+    position: relative;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+    animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-#reviewTitle {
-    margin-bottom: 20px;
-    font-size: 1.4rem;
-    font-weight: bold;
-    color: #222;
-    text-align: center;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 10px;
-}
-
-#reviewForm label {
-    display: block;
-    margin-top: 12px;
-    font-weight: 600;
+.review-modal-content h2 {
+    margin-top: 0;
+    font-size: 1.5rem;
     color: #333;
+    text-align: center;
+    font-weight: 700;
+    margin-bottom: 20px;
 }
 
-#reviewForm textarea {
-    width: 100%;
-    margin-top: 6px;
-    padding: 10px;
-    border: 1px solid #d0d7de;
-    border-radius: 8px;
-    box-sizing: border-box;
-    font-size: 14px;
-    transition: border-color 0.2s;
-}
-
-#reviewForm textarea:focus {
-    border-color: #1a73e8;
-    outline: none;
-}
-
-#reviewForm .flex-row {
-    display: flex;
-    gap: 12px;
-    margin-top: 18px;
-}
-
-#reviewForm .btn-add {
-    flex: 1;
-    background: linear-gradient(135deg, #28a745, #34d058);
-    color: white;
-    border: none;
-    padding: 10px;
-    border-radius: 8px;
+/* 3. Nút đóng (Close) */
+.close-review-modal {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 28px;
+    color: #aaa;
     cursor: pointer;
-    font-weight: bold;
-    transition: background 0.3s;
+    transition: 0.3s;
 }
 
-#reviewForm .btn-add:hover {
-    background: linear-gradient(135deg, #218838, #28a745);
+.close-review-modal:hover {
+    color: #ff4757;
+    transform: rotate(90deg);
 }
 
-#reviewForm .btn-delete {
-    flex: 1;
-    background: linear-gradient(135deg, #f44336, #ff6b6b);
-    color: white;
-    border: none;
-    padding: 10px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: background 0.3s;
-}
-
-#reviewForm .btn-delete:hover {
-    background: linear-gradient(135deg, #d32f2f, #f44336);
-}
-
-/* Rating bằng sao */
+/* 4. Hệ thống Rating Ngôi sao (Chính xác & Đẹp) */
 .star-rating {
-  display: flex;
-  flex-direction: row-reverse; /* quan trọng để checked + label hoạt động đúng */
-  justify-content: flex-start;
-  font-size: 1.8rem;
-  cursor: pointer;
-  margin-top: 6px;
+    display: flex;
+    flex-direction: row-reverse; /* Quan trọng để hover từ trái qua phải */
+    justify-content: center;
+    margin: 10px 0 25px 0;
 }
 
 .star-rating input {
-  display: none;
+    display: none;
 }
 
 .star-rating label {
-  color: #ddd;
-  padding: 0 4px;
-  transition: color 0.2s, transform 0.2s;
+    font-size: 2.5rem;
+    color: #dfe4ea;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 0 5px;
 }
 
-.star-rating input:checked + label,
+/* Hiệu ứng khi Hover và khi được chọn (Checked) */
 .star-rating label:hover,
-.star-rating label:hover ~ label {
-  color: #f5b301;
-  transform: scale(1.1);
+.star-rating label:hover ~ label{
+    color: #ffca08 !important;
+}
+    
+.star-rating input:checked ~ label {
+    color: #ffa502 !important;
+    text-shadow: 0 0 10px rgba(255, 165, 2, 0.4);
+    transform: scale(1.1);
 }
 
-@keyframes fadeInScale {
-    from { opacity: 0; transform: scale(0.9); }
-    to { opacity: 1; transform: scale(1); }
+/* 5. Khung nhập liệu Nhận xét */
+#reviewForm label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #57606f;
+    font-size: 0.95rem;
+}
+
+#reviewComment {
+    width: 100%;
+    border: 2px solid #f1f2f6;
+    border-radius: 12px;
+    padding: 12px;
+    font-family: inherit;
+    font-size: 1rem;
+    transition: 0.3s;
+    background: #f9fbff;
+    margin-bottom: 20px;
+}
+
+#reviewComment:focus {
+    outline: none;
+    border-color: #70a1ff;
+    background: #fff;
+    box-shadow: 0 5px 15px rgba(112, 161, 255, 0.1);
+}
+
+/* 6. Nhóm nút bấm (Gửi & Xóa) */
+.flex-row {
+    display: flex;
+    gap: 12px;
+}
+
+.btn-review-submit {
+    flex: 2;
+    background: linear-gradient(135deg, #1e90ff, #5352ed);
+    color: white;
+    border: none;
+    padding: 14px;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s;
+    box-shadow: 0 4px 15px rgba(30, 144, 255, 0.3);
+}
+
+.btn-review-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(30, 144, 255, 0.4);
+}
+
+.btn-review-delete {
+    flex: 1;
+    background: #ffffff;
+    color: #ff4757;
+    border: 2px solid #ff4757;
+    padding: 14px;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-review-delete:hover {
+    background: #ff4757;
+    color: white;
+}
+
+/* Keyframes cho hiệu ứng */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from { transform: translateY(50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
 }
