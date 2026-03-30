@@ -6,15 +6,6 @@
     <title>Admin - Quản lý Địa điểm Du lịch</title>
     <link rel="stylesheet" href="{% static 'css/style_admin_places.css' %}">
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-    <style>
-        #map, #editMap { height: 300px; width: 100%; border-radius: 8px; margin-top: 10px; }
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; }
-        .modal-content { background: white; padding: 20px; border-radius: 8px; width: 80%; max-width: 600px; }
-        .flex-row { display: flex; gap: 10px; margin-bottom: 10px; }
-        .full-width { width: 100%; margin-bottom: 10px; padding: 8px; box-sizing: border-box; }
-        .thumb { width: 80px; height: 60px; object-fit: cover; border-radius: 4px; }
-        .price-tag { color: #e74c3c; font-size: 0.85em; font-weight: bold; }
-    </style>
     <link rel="stylesheet" href="{% static 'css/admin.css' %}">
 </head>
 <body>
@@ -42,19 +33,15 @@
                 <input type="text" name="name" placeholder="Tên địa điểm" required>
                 <input type="text" name="category" placeholder="Loại (VD: Khách sạn)" required>
                 <input type="text" id="address" name="address" placeholder="Địa chỉ">
-            </div>
-            <div class="input-group">
-                <input type="number" step="any" id="latitude" name="latitude" placeholder="Vĩ độ" required>
-                <input type="number" step="any" id="longitude" name="longitude" placeholder="Kinh độ" required>
-                <input type="text" name="img" placeholder="Tên file ảnh">
-                <input type="number" name="price" placeholder="Giá tiền (VNĐ)">
-                <input type="text" name="category" placeholder="Loại (VD: Nhà hàng)" required>
-                <input type="text" id="address" name="address" placeholder="Nhập địa chỉ rồi nhấn Tab/Click ra ngoài để tìm trên map">
+
                 <div class="flex-row">
                     <input type="number" step="any" id="latitude" name="latitude" placeholder="Vĩ độ" required>
                     <input type="number" step="any" id="longitude" name="longitude" placeholder="Kinh độ" required>
                 </div>
+
                 <input type="text" name="img" placeholder="Tên file ảnh">
+                <input type="number" name="price" placeholder="Giá tiền (VNĐ)">
+
                 <button type="submit" class="btn btn-add">Thêm mới</button>
             </form>
 
