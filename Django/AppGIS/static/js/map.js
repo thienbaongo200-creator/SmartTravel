@@ -147,18 +147,37 @@ async function searchPlace() {
 
 // Hàm hỗ trợ: Hiển thị Marker và Panel thông tin
 function renderSearchResult(lat, lon, name, placeObject) {
-    // Xóa marker cũ nếu có
-    if (searchMarker) map.removeLayer(searchMarker);
+    // 1. Lấy ID từ placeObject (Đảm bảo Backend đã trả về field 'id')
+    const placeId = placeObject.id; 
 
-    // Di chuyển bản đồ
+    // Kiểm tra nếu không có ID thì báo lỗi ngay để debug
+    if (!placeId) {
+        console.error("Lỗi: placeObject không có trường 'id'!", placeObject);
+    }
+
+    // 2. Xóa marker cũ nếu có
+    if (typeof searchMarker !== 'undefined' && searchMarker) {
+        map.removeLayer(searchMarker);
+    }
+
+    // 3. Di chuyển bản đồ
     map.flyTo([lat, lon], 16);
 
-    // Cắm marker mới
+    // 4. Cắm marker mới (Sửa biến 'id' thành 'placeId')
     searchMarker = L.marker([lat, lon]).addTo(map)
-        .bindPopup(`<b>${name}</b>`)
+        .bindPopup(`
+            <div style="min-width:150px;">
+                <b>${name}</b><br>
+                <button class="btn-review" 
+                    onclick="openReviewModal(${placeId}, '${name.replace(/'/g, "\\'")}')"
+                    style="margin-top:8px; width:100%; cursor:pointer; background:#28a745; color:white; border:none; padding:5px; border-radius:3px;">
+                    ⭐ Viết đánh giá
+                </button>
+            </div>
+        `)
         .openPopup();
-
-    // Hiển thị Panel thông tin bên trái (Gọi hàm displayInfo bạn đã có)
+        
+    // 5. Hiển thị Panel thông tin bên trái
     if (typeof displayInfo === "function") {
         displayInfo(placeObject);
     }
@@ -750,8 +769,18 @@ function showNearbyPlaces() {
 
             // Thêm các địa điểm xung quanh
             places.forEach(p => {
+                // p.id chính là cột bigint từ PostgreSQL của bạn
                 const marker = L.marker([p.latitude, p.longitude])
-                    .bindPopup(`<strong>${p.name}</strong><br>${p.address || ''}<br>📏 ${p.distance_km} km`);
+                    .bindPopup(`
+                        <strong>${p.name}</strong><br>
+                        ${p.address || ''}<br>
+                        📏 ${p.distance_km ? p.distance_km + ' km' : ''}<br>
+                        <hr>
+                        <button class="btn-review" onclick="openReviewModal(${p.id}, '${p.name.replace(/'/g, "\\'")}')" 
+                            style="cursor:pointer; background:#28a745; color:white; border:none; padding:5px 10px; border-radius:3px; width:100%;">
+                            ⭐ Viết đánh giá
+                        </button>
+                    `);
                 window.nearbyLayer.addLayer(marker);
             });
 
@@ -768,61 +797,74 @@ function showNearbyPlaces() {
     });
 }
 
-function openReviewModal(placeName, category) {
+function getCSRFToken() {
+    const tokenInput = document.querySelector('[name=csrfmiddlewaretoken]');
+    return tokenInput ? tokenInput.value : null;
+}
+
+function openReviewModal(placeId, placeName) {
+    // 1. Ép kiểu và kiểm tra ID
+    const numericId = parseInt(placeId);
+    if (isNaN(numericId)) {
+        console.error("Lỗi: ID địa điểm không phải là số!", placeId);
+        alert("Không thể đánh giá: Dữ liệu ID bị lỗi.");
+        return;
+    }
+
     const modal = document.getElementById('reviewModal');
     const title = document.getElementById('reviewTitle');
     const form = document.getElementById('reviewForm');
 
-    if (!modal || !title || !form) return;
-
-    title.innerText = "Đánh giá địa điểm: " + placeName;
-    form.innerHTML = "";
-
-    // Nếu là nhà hàng
-    if (category && category.toLowerCase().includes("nhà hàng")) {
-        form.innerHTML = `
-            <label>Chất lượng món ăn</label>
-            ${renderStarRating('food')}
-            
-            <label>Dịch vụ</label>
-            ${renderStarRating('service')}
-            
-            <label>Không gian</label>
-            ${renderStarRating('ambience')}
-            
-            <label>Giá cả</label>
-            ${renderStarRating('price')}
-            
-            <label>Mô tả trải nghiệm</label>
-            <textarea name="description" rows="4" class="full-width"></textarea>
-            
-            <div class="flex-row">
-                <button type="submit" class="btn btn-add">Gửi đánh giá</button>
-                <button type="button" class="btn btn-delete" onclick="closeReviewModal()">Đóng</button>
-            </div>
-        `;
-    } else {
-        // Form mặc định
-        form.innerHTML = `
-            <label>Trải nghiệm tổng thể</label>
-            ${renderStarRating('overall')}
-            
-            <label>Mô tả trải nghiệm</label>
-            <textarea name="description" rows="4" class="full-width"></textarea>
-            
-            <div class="flex-row">
-                <button type="submit" class="btn btn-add">Gửi đánh giá</button>
-                <button type="button" class="btn btn-delete" onclick="closeReviewModal()">Đóng</button>
-            </div>
-        `;
-    }
-
+    title.innerText = "Đánh giá: " + placeName;
     modal.style.display = 'flex';
 
-    form.onsubmit = function(e) {
+    // 2. Render nội dung form (đảm bảo có CSRF Token)
+    form.innerHTML = `
+        <input type="hidden" name="csrfmiddlewaretoken" value="${getCSRFToken()}">
+        <div class="rating-group">
+            <label>Số sao:</label>
+            ${renderStarRating('overall')}
+        </div>
+        <div class="comment-group" style="margin-top:10px;">
+            <label>Nội dung:</label>
+            <textarea name="comment" rows="4" style="width:100%"></textarea>
+        </div>
+        <div class="modal-footer" style="margin-top:15px;">
+            <button type="submit" class="btn btn-add">Gửi</button>
+            <button type="button" class="btn btn-delete" onclick="closeReviewModal()">Hủy</button>
+        </div>
+    `;
+
+    // 3. Xử lý Submit
+    form.onsubmit = async function(e) {
         e.preventDefault();
-        const rating = document.querySelector('input[name="overall"]:checked')?.value;
-        alert("Cảm ơn bạn đã gửi đánh giá cho " + placeName + (rating ? ` (${rating} sao)` : ""));
+        const rating = form.querySelector('input[name="overall"]:checked')?.value;
+        const comment = form.querySelector('textarea[name="comment"]').value;
+
+        if (!rating) { alert("Vui lòng chọn sao!"); return; }
+
+        try {
+            // Gửi đến /review/ID_SO/
+            const response = await fetch(`/review/${numericId}/`, {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": getCSRFToken(),
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
+                body: new URLSearchParams({ rating, comment })
+            });
+
+            if (response.ok) {
+                alert("Đánh giá thành công!");
+                closeReviewModal();
+            } else {
+                const err = await response.json();
+                alert("Lỗi: " + (err.error || "Không thể lưu"));
+            }
+        } catch (error) {
+            alert("Lỗi kết nối server!");
+        }
+        
         closeReviewModal();
     };
 }
