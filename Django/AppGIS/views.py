@@ -63,6 +63,7 @@ def search(request):
     for p in results: 
         folder = slugify(p.name)  # tên thư mục theo tên địa điểm
         data.append({ 
+            'id': p.id,
             "name": p.name, 
             "description": p.description, 
             "latitude": p.latitude, 
@@ -239,18 +240,27 @@ def transport_list(request):
 @login_required
 def submit_review(request, point_id):
     if request.method == "POST":
-        tourismpoint = get_object_or_404(TourismPoint, id=point_id)
-        comment = request.POST.get("comment")
-        rating = float(request.POST.get("rating"))
+        # point_id ở đây nhận từ <int:point_id> trong urls.py
+        point = get_object_or_404(TourismPoint, id=point_id)
+        
+        rating = request.POST.get('rating')
+        comment = request.POST.get('comment', '')
 
-        review = Review.objects.create(
-            tourismpoint=tourismpoint,
-            user=request.user,
-            comment=comment,
-            rating=rating
-        )
-        return JsonResponse({"message": "Đánh giá đã được lưu", "id": review.id})
-    return JsonResponse({"error": "Chỉ hỗ trợ POST"}, status=400)
+        try:
+            # Django sẽ tự điền user_id từ request.user
+            # và tourismpoint_id từ đối tượng point
+            Review.objects.create(
+                tourismpoint=point,
+                user=request.user,
+                rating=float(rating),
+                comment=comment
+            )
+            return JsonResponse({"message": "Lưu thành công"}, status=201)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=400)
+
+    return JsonResponse({"error": "Yêu cầu không hợp lệ"}, status=405)
+
 # ==============================
 # Admin Dashboard
 # ==============================
