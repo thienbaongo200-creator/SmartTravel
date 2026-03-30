@@ -429,6 +429,7 @@ async function showWeather(lat, lng) {
 }
 
 function displayInfo(p) {
+    console.log("Dữ liệu nhận được:", p);
     const panel = document.getElementById("info-panel");
     const content = document.getElementById("info-content");
     if (!panel || !content) return;
@@ -468,10 +469,26 @@ function displayInfo(p) {
     currentMenuImgs = Array.isArray(rawMenu) ? rawMenu.map(item => getCorrectPath(item)) : [];
     currentMenuIndex = 0;
 
+    let priceBadgeHTML = ""; // Đổi tên để tránh nhầm lẫn
+    if (p.price !== null && p.price !== undefined) {
+        const priceValue = Number(p.price);
+        if (priceValue > 0) {
+            const formattedPrice = new Intl.NumberFormat('vi-VN').format(priceValue);
+            const isHotel = p.category && p.category.toLowerCase().includes("khách sạn");
+            // Thêm class 'price-badge' để định vị
+            priceBadgeHTML = `
+                <div class="price-badge">
+                    ${formattedPrice}đ${isHotel ? ' / đêm' : ''}
+                </div>`;
+        } else {
+            priceBadgeHTML = `<div class="price-badge free">Miễn phí</div>`;
+        }
+    }
     // 3. Khởi tạo HTML
     let html = `
         <div class="info-header">
             ${imgPath ? `<img src="${imgPath}" alt="${p.name}">` : ""}
+            ${priceBadgeHTML}
         </div>
         <div class="info-body">
             <h2>${p.name}</h2>
@@ -873,3 +890,8 @@ function closeReviewModal() {
     const modal = document.getElementById('reviewModal');
     if (modal) modal.style.display = 'none';
 }
+<<<<<<< HEAD
+
+
+=======
+>>>>>>> 9b307d78f4165a7d9537e9465349e0fe900b9ec9
