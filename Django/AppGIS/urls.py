@@ -2,6 +2,7 @@ from django.conf import settings
 from django.urls import path
 from django.conf.urls.static import static
 from . import views
+from .views import register_view, login_view, logout_view
 
 urlpatterns = [
     # Trang chính
@@ -10,6 +11,11 @@ urlpatterns = [
     path("destinations/", views.destinations, name="destinations"),
     path("events/", views.events, name="events"),
     path("services/", views.services, name="services"),
+
+    # Đăng nhập / Đăng ký
+    path("login/", login_view, name="login"),
+    path("register/", register_view, name="register"),
+    path("logout/", logout_view, name="logout"),
 
     # Dịch vụ chi tiết
     path("hotels/", views.hotels_list, name="hotels"),
@@ -28,10 +34,21 @@ urlpatterns = [
     path("distance/", views.distance, name="distance"),
     path("distance/<int:point_id>/", views.get_distance, name="get_distance"),
     path("nearby_places/", views.nearby_places, name="nearby_places"),
-    path('admin_places/', views.admin_places_view, name='admin_places'),
-    path('api/places/', views.get_places_by_category, name='api_places'),
-    path('api/admin/places/', views.api_places, name='api_admin_places'),
-    path('api/admin/places/<int:pk>/', views.api_place_detail, name='api_admin_place_detail'),
-] 
+
+    # Admin giao diện
+    path("admin/", views.admin_dashboard, name="admin_dashboard"),
+    path("admin_places/", views.admin_places, name="admin_places"),
+    path("admin_user/", views.admin_user, name="admin_user"),
+
+    # API cho địa điểm
+    path("api/places/", views.get_places_by_category, name="api_places"),
+    path("api/admin/places/", views.api_places, name="api_admin_places"),
+    path("api/admin/places/<int:pk>/", views.api_place_detail, name="api_admin_place_detail"),
+
+    # API cho user
+    path("api/admin/users/", views.api_users, name="api_admin_users"),
+    path("api/admin/users/<int:pk>/", views.api_user_detail, name="api_admin_user_detail"),
+]
+
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

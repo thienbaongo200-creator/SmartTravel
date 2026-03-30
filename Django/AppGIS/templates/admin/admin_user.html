@@ -1,0 +1,156 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin - Quản lý Người dùng</title>
+    <link rel="stylesheet" href="{% static 'css/admin.css' %}">
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>Quản lý Người dùng</h1>
+    </header>
+
+    <div class="back-action">
+        <a href="{% url 'admin_dashboard' %}" class="btn-back">⬅ Quay lại Dashboard</a>
+    </div>
+    
+    <!-- Form thêm mới -->
+    <section class="form-card">
+        <h2>➕ Thêm người dùng mới</h2>
+        <form id="addUserForm" class="form-side">
+            <input type="text" name="username" placeholder="Tên đăng nhập" required>
+            <input type="email" name="email" placeholder="Email" required>
+            <input type="password" name="password" placeholder="Mật khẩu" required>
+            <div class="flex-row">
+                <label><input type="checkbox" name="is_staff"> Staff</label>
+                <label><input type="checkbox" name="is_superuser"> Superuser</label>
+            </div>
+            <button type="submit" class="btn btn-add">Thêm mới</button>
+        </form>
+    </section>
+
+    <!-- Danh sách người dùng -->
+    <section class="table-section">
+        <h2>📋 Danh sách người dùng</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Tên đăng nhập</th>
+                    <th>Email</th>
+                    <th>Quyền</th>
+                    <th>Hành động</th>
+                </tr>
+            </thead>
+            <tbody id="usersTable"></tbody>
+        </table>
+    </section>
+</div>
+
+<!-- Modal sửa user -->
+<div id="editUserModal" class="modal">
+    <div class="modal-content">
+        <h3>Sửa người dùng</h3>
+        <form id="editUserForm" class="form-side">
+            <input type="hidden" id="editUserId">
+            <input type="text" id="editUsername" placeholder="Tên đăng nhập" required class="full-width">
+            <input type="email" id="editEmail" placeholder="Email" required class="full-width">
+            <input type="password" id="editPassword" placeholder="Mật khẩu mới (nếu đổi)" class="full-width">
+            <div class="flex-row">
+                <label><input type="checkbox" id="editIsStaff"> Staff</label>
+                <label><input type="checkbox" id="editIsSuperuser"> Superuser</label>
+            </div>
+            <div class="modal-actions" style="margin-top:15px; text-align:right;">
+                <button type="submit" class="btn btn-edit">💾 Lưu thay đổi</button>
+                <button type="button" class="btn btn-delete" onclick="closeEditUserModal()">✖ Đóng</button>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+async function loadUsers() {
+    const res = await fetch("/api/admin/users/");
+    const users = await res.json();
+    const tbody = document.getElementById("usersTable");
+    tbody.innerHTML = "";
+    users.forEach(u => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+            <td>${u.username}</td>
+            <td>${u.email}</td>
+            <td>
+                Staff: ${u.is_staff ? "✔" : "✖"}<br>
+                Superuser: ${u.is_superuser ? "✔" : "✖"}
+            </td>
+            <td>
+                <button onclick="openEditUserModal(${u.id}, '${u.username}', '${u.email}', ${u.is_staff}, ${u.is_superuser})">Sửa</button>
+                <button onclick="deleteUser(${u.id})">Xóa</button>
+            </td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
+document.getElementById("addUserForm").addEventListener("submit", async function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const data = {
+        username: formData.get("username"),
+        email: formData.get("email"),
+        password: formData.get("password"),
+        is_staff: formData.get("is_staff") ? true : false,
+        is_superuser: formData.get("is_superuser") ? true : false
+    };
+    await fetch("/api/admin/users/", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(data)
+    });
+    this.reset();
+    loadUsers();
+});
+
+async function deleteUser(id) {
+    if (!confirm("Bạn có chắc muốn xóa user này?")) return;
+    await fetch(`/api/admin/users/${id}/`, { method: "DELETE" });
+    loadUsers();
+}
+
+function openEditUserModal(id, username, email, isStaff, isSuperuser) {
+    document.getElementById("editUserId").value = id;
+    document.getElementById("editUsername").value = username;
+    document.getElementById("editEmail").value = email;
+    document.getElementById("editIsStaff").checked = isStaff;
+    document.getElementById("editIsSuperuser").checked = isSuperuser;
+    document.getElementById("editUserModal").style.display = "flex";
+}
+
+function closeEditUserModal() {
+    document.getElementById("editUserModal").style.display = "none";
+}
+
+document.getElementById("editUserForm").addEventListener("submit", async function(e) {
+    e.preventDefault();
+    const id = document.getElementById("editUserId").value;
+    const data = {
+        username: document.getElementById("editUsername").value,
+        email: document.getElementById("editEmail").value,
+        password: document.getElementById("editPassword").value,
+        is_staff: document.getElementById("editIsStaff").checked,
+        is_superuser: document.getElementById("editIsSuperuser").checked
+    };
+    await fetch(`/api/admin/users/${id}/`, {
+        method: "PUT",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(data)
+    });
+    closeEditUserModal();
+    loadUsers();
+});
+
+// Load danh sách khi mở trang
+window.onload = loadUsers;
+</script>
+</body>
+</html>

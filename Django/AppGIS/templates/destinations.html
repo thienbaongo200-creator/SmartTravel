@@ -146,58 +146,44 @@
     <div class="container">
         <div class="text-center mb-5">
             <h2 class="fw-bold text-uppercase">Khám phá Điểm đến</h2>
-            <div style="width: 80px; height: 3px; background: #2575fc; margin: 10px auto;"></div>
+            <div class="section-divider"></div>
             <p class="text-muted">Hành trình khám phá những địa danh nổi tiếng và vẻ đẹp tiềm ẩn</p>
         </div>
 
         <div class="row">
             {% for point in points %}
             <div class="col-lg-4 col-md-6 mb-4">
-                <div class="card destination-card shadow-sm">
+                <!-- Gán class loại dựa trên point.category -->
+                <div class="card destination-card {{ point.category|lower }}">
                     <div class="dest-img-container">
                         {% if point.img %}
                             <img src="{% static 'images/' %}{{ point.img }}" class="dest-img" alt="{{ point.name }}">
                         {% else %}
                             <img src="{% static 'images/default.jpg' %}" class="dest-img" alt="No image">
                         {% endif %}
-                        
                         <div class="rating-badge">
                             <i class="fas fa-star text-warning"></i> {{ point.rating|default:"5.0" }}
                         </div>
                     </div>
 
                     <div class="card-body d-flex flex-column">
-                        <h5 class="dest-title" title="{{ point.name }}">{{ point.name }}</h5>
-                        
+                        <h5 class="dest-title">{{ point.name }}</h5>
                         <ul class="info-list mt-2">
                             {% if point.address %}
-                            <li>
-                                <i class="fas fa-map-marker-alt"></i> 
-                                <span>{{ point.address }}</span>
-                            </li>
+                            <li><i class="fas fa-map-marker-alt"></i> {{ point.address }}</li>
                             {% endif %}
-                            
-                            {% if point.type %}
-                            <li>
-                                <i class="fas fa-layer-group"></i> 
-                                <span>{{ point.type }}</span>
-                            </li>
-                            {% endif %}
-
                             {% if point.open_hours %}
-                            <li>
-                                <i class="fas fa-clock"></i> 
-                                <span>{{ point.open_hours }}</span>
-                            </li>
+                            <li><i class="fas fa-clock"></i> {{ point.open_hours }}</li>
+                            {% endif %}
+                            {% if point.category %}
+                            <li><i class="fas fa-layer-group"></i> {{ point.category }}</li>
                             {% endif %}
                         </ul>
-
                         <p class="card-text">
-                            {{ point.description|default:"Khám phá vẻ đẹp lịch sử và văn hóa đặc sắc tại điểm đến hấp dẫn này."|truncatewords:18 }}
+                            {{ point.description|default:"Khám phá vẻ đẹp đặc sắc tại điểm đến này."|truncatewords:18 }}
                         </p>
-                        
-                        <div class="mt-auto pt-3 border-top text-center">
-                            <a href="{% url 'home' %}?lat={{ point.latitude }}&lng={{ point.longitude }}&name={{ point.name|urlencode }}&img={{ point.img|urlencode }}&address={{ point.address|urlencode }}" class="btn-action">
+                        <div class="btn-container">
+                            <a href="{% url 'home' %}?lat={{ point.latitude }}&lng={{ point.longitude }}&name={{ point.name|urlencode }}&img={{ point.img|urlencode }}" class="btn-action">
                                 <i class="fas fa-route me-2"></i> Khám phá ngay
                             </a>
                         </div>
@@ -215,4 +201,3 @@
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 {% endblock %}
-

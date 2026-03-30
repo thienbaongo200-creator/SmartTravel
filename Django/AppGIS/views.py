@@ -3,11 +3,16 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, JsonResponse
 from .models import TourismPoint, Category 
 from geopy.distance import geodesic
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth import login, logout
+from django.views.decorators.csrf import csrf_exempt
+from django.db.models import Q
+from . import views
+from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.auth.models import User
 import re
 import unicodedata
 import json
-from django.views.decorators.csrf import csrf_exempt
-from django.db.models import Q
 import math
 # ==============================
 # Các trang tĩnh
@@ -67,7 +72,7 @@ def search(request):
             "open_hours": p.open_hours, 
             "rating": p.rating, 
             "img": p.img, 
-            "menu_imgs": [f"/static/images/menus/{folder}/{img}" for img in (p.menu_imgs or [])]
+            "menu_imgs": [img for img in (p.menu_imgs or [])]
         })
     return JsonResponse(data, safe=False)
 
@@ -126,52 +131,6 @@ def get_distance(request, point_id):
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=400)
 
-def hotels_list(request):
-    hotels = TourismPoint.objects.filter(category__name="Khách sạn")
-    return render(request, "hotels.html", {"hotels": hotels})
-
-def restaurants_list(request):
-    restaurants = TourismPoint.objects.filter(category__name="Nhà hàng")
-    return render(request, "restaurants.html", {"restaurants": restaurants})
-
-def tour_list(request):
-    tours = [
-        {"id": 1, "title": "Hành trình Di sản Lịch sử", "desc": "Tham quan Dinh Độc Lập...", "price": "850.000 VND", "duration": "1 ngày", "tag": "Lịch sử"},
-        {"id": 2, "title": "Sài Gòn Street Food & Motorbike", "desc": "Thưởng thức ẩm thực...", "price": "1.100.000 VND", "duration": "4 tiếng (Tối)", "tag": "Ẩm thực"},
-        {"id": 3, "title": "Khám phá Địa đạo Củ Chi", "desc": "Hệ thống địa đạo...", "price": "950.000 VND", "duration": "Nửa ngày", "tag": "Khám phá"},
-        {"id": 4, "title": "Ngắm hoàng hôn trên Sông Sài Gòn", "desc": "Du thuyền hạng sang...", "price": "1.500.000 VND", "duration": "2 tiếng", "tag": "Nghỉ dưỡng"},
-        {"id": 5, "title": "Tour Sinh thái Cần Giờ", "desc": "Lá phổi xanh...", "price": "1.350.000 VND", "duration": "1 ngày", "tag": "Thiên nhiên"},
-        {"id": 6, "title": "Chinatown - Chợ Lớn Sầm uất", "desc": "Văn hóa người Hoa...", "price": "700.000 VND", "duration": "Nửa ngày", "tag": "Văn hóa"}
-    ]
-    return render(request, "tours.html", {"tours": tours})
-
-def book_tour(request, tour_id):
-    # Dữ liệu tour giả lập để phục vụ logic render/post
-    tours = [{"id": i, "title": f"Tour {i}"} for i in range(1, 7)]
-    tour = next((t for t in tours if t["id"] == tour_id), None)
-    if not tour:
-        return HttpResponse("Không tìm thấy tour")
-
-    if request.method == "POST":
-        name = request.POST.get("name")
-        print(f"Đã đặt tour: {tour['title']} cho khách {name}")
-        return redirect("booking_success")
-
-    return render(request, "book_tour.html", {"tour": tour})
-
-def booking_success(request):
-    return render(request, "booking_success.html")
-
-def transport_list(request):
-    transports = [
-        {"id": 1, "title": "Xe máy điện (VinFast)", "desc": "Tiện lợi...", "price": "150.000 VND/ngày", "type": "Xe máy", "capacity": "2 người", "rating": 4.8},
-        {"id": 2, "title": "Xe Ô tô 7 chỗ (Xpander)", "desc": "Rộng rãi...", "price": "1.200.000 VND/ngày", "type": "Ô tô", "capacity": "7 người", "rating": 4.9},
-        {"id": 3, "title": "Xe buýt sông (Saigon Waterbus)", "desc": "Ngắm cảnh sông...", "price": "15.000 VND/lượt", "type": "Đường thủy", "capacity": "60 người", "rating": 4.7},
-        {"id": 4, "title": "Xe Buýt 2 Tầng (Hop-on Hop-off)", "desc": "Toàn cảnh Sài Gòn...", "price": "150.000 VND/vé", "type": "Xe buýt", "capacity": "50 người", "rating": 4.9},
-        {"id": 5, "title": "Xe Buýt Điện (D4)", "desc": "Hiện đại...", "price": "7.000 VND/lượt", "type": "Xe buýt", "capacity": "25 chỗ", "rating": 4.8}
-    ]
-    return render(request, "transport.html", {"transports": transports})
-
 def nearby_places(request):
     lat_str = request.GET.get("lat")
     lng_str = request.GET.get("lng")
@@ -227,12 +186,74 @@ def nearby_places(request):
 
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=400)
-    
+
 # ==============================
-# API Admin & Quản lý địa điểm
+# Dịch Vụ Hiển Thị
 # ==============================
-def admin_places_view(request):
-    return render(request, 'admin_places.html')
+def hotels_list(request):
+    hotels = TourismPoint.objects.filter(category__name="Khách sạn")
+    return render(request, "hotels.html", {"hotels": hotels})
+
+def restaurants_list(request):
+    restaurants = TourismPoint.objects.filter(category__name="Nhà hàng")
+    return render(request, "restaurants.html", {"restaurants": restaurants})
+
+def tour_list(request):
+    tours = [
+        {"id": 1, "title": "Hành trình Di sản Lịch sử", "desc": "Tham quan Dinh Độc Lập...", "price": "850.000 VND", "duration": "1 ngày", "tag": "Lịch sử"},
+        {"id": 2, "title": "Sài Gòn Street Food & Motorbike", "desc": "Thưởng thức ẩm thực...", "price": "1.100.000 VND", "duration": "4 tiếng (Tối)", "tag": "Ẩm thực"},
+        {"id": 3, "title": "Khám phá Địa đạo Củ Chi", "desc": "Hệ thống địa đạo...", "price": "950.000 VND", "duration": "Nửa ngày", "tag": "Khám phá"},
+        {"id": 4, "title": "Ngắm hoàng hôn trên Sông Sài Gòn", "desc": "Du thuyền hạng sang...", "price": "1.500.000 VND", "duration": "2 tiếng", "tag": "Nghỉ dưỡng"},
+        {"id": 5, "title": "Tour Sinh thái Cần Giờ", "desc": "Lá phổi xanh...", "price": "1.350.000 VND", "duration": "1 ngày", "tag": "Thiên nhiên"},
+        {"id": 6, "title": "Chinatown - Chợ Lớn Sầm uất", "desc": "Văn hóa người Hoa...", "price": "700.000 VND", "duration": "Nửa ngày", "tag": "Văn hóa"}
+    ]
+    return render(request, "tours.html", {"tours": tours})
+
+def book_tour(request, tour_id):
+    # Dữ liệu tour giả lập để phục vụ logic render/post
+    tours = [{"id": i, "title": f"Tour {i}"} for i in range(1, 7)]
+    tour = next((t for t in tours if t["id"] == tour_id), None)
+    if not tour:
+        return HttpResponse("Không tìm thấy tour")
+
+    if request.method == "POST":
+        name = request.POST.get("name")
+        print(f"Đã đặt tour: {tour['title']} cho khách {name}")
+        return redirect("booking_success")
+
+    return render(request, "book_tour.html", {"tour": tour})
+
+def booking_success(request):
+    return render(request, "booking_success.html")
+
+def transport_list(request):
+    transports = [
+        {"id": 1, "title": "Xe máy điện (VinFast)", "desc": "Tiện lợi...", "price": "150.000 VND/ngày", "type": "Xe máy", "capacity": "2 người", "rating": 4.8},
+        {"id": 2, "title": "Xe Ô tô 7 chỗ (Xpander)", "desc": "Rộng rãi...", "price": "1.200.000 VND/ngày", "type": "Ô tô", "capacity": "7 người", "rating": 4.9},
+        {"id": 3, "title": "Xe buýt sông (Saigon Waterbus)", "desc": "Ngắm cảnh sông...", "price": "15.000 VND/lượt", "type": "Đường thủy", "capacity": "60 người", "rating": 4.7},
+        {"id": 4, "title": "Xe Buýt 2 Tầng (Hop-on Hop-off)", "desc": "Toàn cảnh Sài Gòn...", "price": "150.000 VND/vé", "type": "Xe buýt", "capacity": "50 người", "rating": 4.9},
+        {"id": 5, "title": "Xe Buýt Điện (D4)", "desc": "Hiện đại...", "price": "7.000 VND/lượt", "type": "Xe buýt", "capacity": "25 chỗ", "rating": 4.8}
+    ]
+    return render(request, "transport.html", {"transports": transports})
+
+# ==============================
+# Admin Dashboard
+# ==============================
+@staff_member_required(login_url='login')
+def admin_dashboard(request):
+    places_count = TourismPoint.objects.count()
+    users_count = User.objects.count()
+    return render(request, 'admin/admin_dashboard.html', {
+        "places_count": places_count,
+        "users_count": users_count
+    })
+
+# ==============================
+# Admin & Quản lý địa điểm
+# ==============================
+@staff_member_required(login_url='login')
+def admin_places(request):
+    return render(request, 'admin/admin_places.html')
 
 @csrf_exempt
 def api_places(request):
@@ -245,7 +266,6 @@ def api_places(request):
                 img_url = settings.STATIC_URL + "images/" + img_value
             else:
                 img_url = img_value
-
             data.append({
                 "id": p.id,
                 "name": p.name,
@@ -254,34 +274,32 @@ def api_places(request):
                 "category": p.category.name if p.category else "Khác",
                 "address": p.address if p.address else "Chưa có địa chỉ",
                 "rating": p.rating if p.rating else 0,
+                "price": p.price if p.price else 0,
                 "img": img_url,
-                "raw_img": p.img 
+                "raw_img": p.img
             })
         return JsonResponse(data, safe=False)
 
     elif request.method == "POST":
         try:
             raw_data = json.loads(request.body)
-
             name = raw_data.get('name')
             if not name:
                 return JsonResponse({"error": "Thiếu tên địa điểm"}, status=400)
-
             lat = raw_data.get('latitude')
             lng = raw_data.get('longitude')
             latitude = float(lat) if lat else 0.0
             longitude = float(lng) if lng else 0.0
-
             cat_name = raw_data.get('category')
             cat_obj, _ = Category.objects.get_or_create(name=cat_name if cat_name else "Khác")
-
-            new_place = TourismPoint.objects.create(
+            TourismPoint.objects.create(
                 name=name,
                 latitude=latitude,
                 longitude=longitude,
-                category=cat_obj,   # gán object Category, không phải chuỗi
+                category=cat_obj,
                 address=raw_data.get('address', ''),
                 img=raw_data.get('img', ''),
+                price=raw_data.get('price', 0),
                 rating=raw_data.get('rating', 5.0)
             )
             return JsonResponse({"message": "Thêm thành công"}, status=201)
@@ -291,11 +309,9 @@ def api_places(request):
 @csrf_exempt
 def api_place_detail(request, pk):
     place = get_object_or_404(TourismPoint, pk=pk)
-    
     if request.method == "DELETE":
         place.delete()
         return JsonResponse({"message": "Xóa thành công"}, status=204)
-    
     elif request.method == "PUT":
         try:
             raw_data = json.loads(request.body)
@@ -303,13 +319,110 @@ def api_place_detail(request, pk):
             place.latitude = raw_data.get('latitude', place.latitude)
             place.longitude = raw_data.get('longitude', place.longitude)
             cat_name = raw_data.get('category')
-
             if cat_name:
                 cat_obj, _ = Category.objects.get_or_create(name=cat_name)
                 place.category = cat_obj
-
             place.address = raw_data.get('address', place.address)
+            place.price = raw_data.get('price', place.price)
             place.save()
             return JsonResponse({"message": "Cập nhật thành công"})
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=400)
+
+# ==============================
+# Admin & Quản lý User
+# ==============================
+@staff_member_required(login_url='login')
+def admin_user(request):
+    return render(request, 'admin/admin_user.html')
+
+@csrf_exempt
+@staff_member_required(login_url='login')
+def api_users(request):
+    if request.method == "GET":
+        users = User.objects.all().order_by('-id')
+        data = []
+        for u in users:
+            data.append({
+                "id": u.id,
+                "username": u.username,
+                "email": u.email,
+                "is_staff": u.is_staff,
+                "is_superuser": u.is_superuser,
+                "is_active": u.is_active,
+            })
+        return JsonResponse(data, safe=False)
+
+    elif request.method == "POST":
+        try:
+            raw_data = json.loads(request.body)
+            username = raw_data.get('username')
+            email = raw_data.get('email')
+            password = raw_data.get('password')
+            if not username or not password:
+                return JsonResponse({"error": "Thiếu username hoặc password"}, status=400)
+
+            user = User.objects.create_user(
+                username=username,
+                email=email,
+                password=password
+            )
+            user.is_staff = raw_data.get('is_staff', False)
+            user.is_superuser = raw_data.get('is_superuser', False)
+            user.is_active = raw_data.get('is_active', True)
+            user.save()
+            return JsonResponse({"message": "Thêm user thành công"}, status=201)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=400)
+
+@csrf_exempt
+@staff_member_required(login_url='login')
+def api_user_detail(request, pk):
+    user = get_object_or_404(User, pk=pk)
+    if request.method == "DELETE":
+        user.delete()
+        return JsonResponse({"message": "Xóa user thành công"}, status=204)
+    elif request.method == "PUT":
+        try:
+            raw_data = json.loads(request.body)
+            user.username = raw_data.get('username', user.username)
+            user.email = raw_data.get('email', user.email)
+            if raw_data.get('password'):
+                user.set_password(raw_data['password'])
+            user.is_staff = raw_data.get('is_staff', user.is_staff)
+            user.is_superuser = raw_data.get('is_superuser', user.is_superuser)
+            user.is_active = raw_data.get('is_active', user.is_active)
+            user.save()
+            return JsonResponse({"message": "Cập nhật user thành công"})
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=400)
+
+# ==============================
+# Đăng Nhập & Đăng Ký & Đăng Xuất
+# ==============================
+def register_view(request):
+    if request.method == "POST":
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            return redirect("home")
+    else:
+        form = UserCreationForm()
+    return render(request, "account/register.html", {"form": form})
+
+def login_view(request):
+    form = AuthenticationForm(request, data=request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        user = form.get_user()
+        login(request, user)
+        # 👉 Nếu là admin (staff hoặc superuser) thì vào dashboard
+        if user.is_staff or user.is_superuser:
+            return redirect("admin_dashboard")
+        # 👉 Nếu là user thường thì về trang home
+        return redirect("home")
+    return render(request, "account/login.html", {"form": form})
+
+def logout_view(request):
+    logout(request)
+    return redirect("home")
