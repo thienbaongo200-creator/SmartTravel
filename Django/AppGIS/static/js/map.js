@@ -48,9 +48,11 @@ var currentMenuIndex = 0;
 
 /**
  * ==========================================
- * 2. ĐỊNH VỊ & TÌM KIẾM
+ * 2. ĐỊNH VỊ & TÌM KIẾM (Bản hoàn chỉnh)
  * ==========================================
  */
+
+// Hàm định vị vị trí người dùng
 function locateUser() {
     if (!navigator.geolocation) return alert("Trình duyệt không hỗ trợ định vị.");
 
@@ -76,102 +78,128 @@ function locateUser() {
             if (loading) loading.style.display = "none";
         },
         function (err) {
-            alert("Lỗi: " + err.message);
+            alert("Lỗi định vị: " + err.message);
             if (loading) loading.style.display = "none";
         },
         { enableHighAccuracy: true }
     );
 }
 
-function searchPlace() {
-    let query = document.getElementById("searchBox").value;
-    if (!query) return;
+// Hàm tìm kiếm thông minh: Ưu tiên Database -> Dự phòng OpenStreetMap
+async function searchPlace() {
+    let query = document.getElementById("searchBox").value.trim();
+    if (!query || query.length < 2) return;
 
-    addToHistory(query);
-    
-    fetch(`/search/?q=${encodeURIComponent(query)}`)
-      .then(res => res.json())
-      .then(data => {
-          if (data && data.length > 0) {
-              let p = data[0];
-              if (searchMarker) map.removeLayer(searchMarker);
+    const loading = document.getElementById("loading");
+    if (loading) loading.style.display = "block";
 
-              map.flyTo([p.latitude, p.longitude], 16);
-              searchMarker = L.marker([p.latitude, p.longitude]).addTo(map)
-                               .bindPopup(`<b>${p.name}</b>`).openPopup();
-              
-              displayInfo(p);
-          } else {
-              alert("Không tìm thấy địa điểm!");
-          }
-      })
-      .catch(err => console.error("Search error:", err));
+    // Lưu vào lịch sử tìm kiếm (Hàm bạn đã viết ở cuối file)
+    if (typeof addToHistory === "function") addToHistory(query);
+
+    try {
+        // --- BƯỚC 1: Tìm trong Database nội bộ của bạn ---
+        const res = await fetch(`/search/?q=${encodeURIComponent(query)}`);
+        const data = await res.json();
+
+        if (data && data.length > 0) {
+            // Nếu tìm thấy trong DB, lấy kết quả đầu tiên
+            const p = data[0];
+            renderSearchResult(p.latitude, p.longitude, p.name, p);
+        } 
+        else {
+            // --- BƯỚC 2: Nếu DB không có, tra cứu trên OpenStreetMap ---
+            console.log("Không có trong DB, đang tìm trên bản đồ toàn cầu...");
+            const osmRes = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query + ", Vietnam")}&limit=1`);
+            const osmData = await osmRes.json();
+            
+            if (osmData && osmData.length > 0) {
+                const lat = parseFloat(osmData[0].lat);
+                const lon = parseFloat(osmData[0].lon);
+                const displayName = osmData[0].display_name;
+                
+                // TỰ ĐỘNG TẠO ẢNH: Sử dụng một icon địa chỉ đẹp hoặc ảnh bản đồ tĩnh
+                // Ở đây tôi dùng một ảnh placeholder chuyên nghiệp cho địa chỉ nhà
+                const defaultAddressImg = "https://images.unsplash.com/photo-1526772662000-3f88f10405ff?q=80&w=400&h=300&auto=format&fit=crop"; 
+
+                const osmPlace = {
+                    name: displayName.split(',')[0], // Tên số nhà/đường
+                    latitude: lat,
+                    longitude: lon,
+                    address: displayName,
+                    description: "Đây là địa chỉ tìm kiếm từ bản đồ vệ tinh.",
+                    category: "Địa chỉ riêng",
+                    rating: "N/A",
+                    img: defaultAddressImg // Gán ảnh này vào để Panel không bị trống
+                };
+
+                renderSearchResult(lat, lon, osmPlace.name, osmPlace);
+            }
+            else {
+                alert("Rất tiếc, không tìm thấy địa điểm này!");
+            }
+        }
+    } catch (err) {
+        console.error("Lỗi thực thi tìm kiếm:", err);
+    } finally {
+        if (loading) loading.style.display = "none";
+    }
 }
 
-function filterCategory(category) {
+// Hàm hỗ trợ: Hiển thị Marker và Panel thông tin
+function renderSearchResult(lat, lon, name, placeObject) {
+    // Xóa marker cũ nếu có
+    if (searchMarker) map.removeLayer(searchMarker);
+
+    // Di chuyển bản đồ
+    map.flyTo([lat, lon], 16);
+
+    // Cắm marker mới
+    searchMarker = L.marker([lat, lon]).addTo(map)
+        .bindPopup(`<b>${name}</b>`)
+        .openPopup();
+
+    // Hiển thị Panel thông tin bên trái (Gọi hàm displayInfo bạn đã có)
+    if (typeof displayInfo === "function") {
+        displayInfo(placeObject);
+    }
+}
+
+// Lọc theo danh mục (Sửa lỗi encode và dọn dẹp bản đồ)
+async function filterCategory(category) {
+    // Dọn dẹp các marker cũ
     nearbyMarkers.forEach(m => map.removeLayer(m));
     nearbyMarkers = [];
     if (routeLine) map.removeLayer(routeLine);
-
-    fetch(`/search_category/?cat=${category}`)
-      .then(res => res.json())
-      .then(data => {
-          if (!data || data.length === 0) {
-              alert("Không có địa điểm nào trong mục này.");
-              return;
-          }
-
-          data.forEach(p => {
-              let m = L.marker([p.latitude, p.longitude])
-                       .addTo(map)
-                       .bindPopup(`<b>${p.name}</b><br>${p.address}`);
-              m.on('click', () => displayInfo(p));
-              nearbyMarkers.push(m);
-          });
-
-          const group = new L.featureGroup(nearbyMarkers);
-          const bounds = group.getBounds();
-          if (bounds.isValid()) {
-              map.fitBounds(bounds, { padding: [30, 30] });
-          }
-      })
-      .catch(err => console.error("Filter category error:", err));
-}
-
-function findNearby() {
-    if (!userMarker) return alert("Vui lòng bật định vị trước!");
-
-    nearbyMarkers.forEach(m => map.removeLayer(m));
-    nearbyMarkers = [];
+    if (searchMarker) map.removeLayer(searchMarker);
     if (bufferLayer) map.removeLayer(bufferLayer);
 
-    let pos = userMarker.getLatLng();
-    fetch(`/nearby_places?lat=${pos.lat}&lng=${pos.lng}&radius=2`)
-      .then(res => res.json())
-      .then(data => {
-          if (data.buffer) {
-              bufferLayer = L.geoJSON(data.buffer, {
-                  style: { color: 'orange', fillColor: 'orange', fillOpacity: 0.2 }
-              }).addTo(map);
-          }
+    try {
+        const res = await fetch(`/search_category/?cat=${encodeURIComponent(category)}`);
+        const data = await res.json();
 
-          if (data.nearby && data.nearby.length > 0) {
-              data.nearby.forEach(p => {
-                  let m = L.marker([p.latitude, p.longitude])
-                    .addTo(map)
-                    .bindPopup(`<b>${p.name}</b><br>${p.distance_km} km`);
-                  nearbyMarkers.push(m);
-              });
-              
-              const group = new L.featureGroup(nearbyMarkers);
-              if (group.getBounds().isValid()) {
-                  map.fitBounds(group.getBounds().pad(0.2));
-              }
-          } else {
-              if (bufferLayer) map.fitBounds(bufferLayer.getBounds());
-          }
-      })
-      .catch(err => console.error("Nearby error:", err));
+        if (!data || data.length === 0) {
+            alert(`Không có địa điểm nào thuộc mục "${category}".`);
+            return;
+        }
+
+        data.forEach(p => {
+            let m = L.marker([p.latitude, p.longitude])
+                     .addTo(map)
+                     .bindPopup(`<b>${p.name}</b><br>${p.address || ''}`);
+            
+            // Click vào marker trên bản đồ để hiện Panel thông tin
+            m.on('click', () => displayInfo(p));
+            nearbyMarkers.push(m);
+        });
+
+        // Tự động căn chỉnh bản đồ bao phủ hết các Marker vừa tìm được
+        const group = new L.featureGroup(nearbyMarkers);
+        if (group.getBounds().isValid()) {
+            map.fitBounds(group.getBounds(), { padding: [50, 50] });
+        }
+    } catch (err) {
+        console.error("Lỗi lọc danh mục:", err);
+    }
 }
 
 /**
@@ -263,11 +291,15 @@ async function showRouteORS(destLat, destLng, startLat = null, startLng = null, 
     }
 }
 
-function showRouteFromSearch(destLat=null, destLng=null) {
+async function showRouteFromSearch(destLat = null, destLng = null) {
     const panel = document.getElementById("info-panel");
-    if (panel) panel.style.display = "none";
     const modal = document.getElementById("route-modal");
-    if (modal) modal.style.display = "block"
+    const startInput = document.getElementById("startPoint");
+    const endInput = document.getElementById("endPoint");
+    const loading = document.getElementById("loading");
+
+    if (panel) panel.style.display = "none";
+    if (modal) modal.style.display = "block";
 
     if (destLat && destLng) {
         endInput.value = `${destLat},${destLng}`;
@@ -382,40 +414,45 @@ function displayInfo(p) {
     const content = document.getElementById("info-content");
     if (!panel || !content) return;
 
-    // Hiển thị panel thông tin
     panel.style.display = "block";
-    
-    // 1. Xử lý đường dẫn ảnh đại diện (Thumbnail)
-    let imgPath = p.img || "";
-    if (imgPath && !imgPath.startsWith('http') && !imgPath.startsWith('/')) {
-        imgPath = "/static/images/" + imgPath.replace("images/", "");
-    } else if (!imgPath) {
-        imgPath = "/static/images/no-image.jpg";
-    }
 
-    // 2. Xử lý danh sách hình ảnh chi tiết (Carousel)
+    // --- CHỈNH SỬA HÀM getCorrectPath ---
+    const getCorrectPath = (path) => {
+        if (!path) return ""; // bỏ default.jpg, trả về rỗng
+        if (path.startsWith('http') || path.startsWith('/static/')) return path;
+
+        const category = p.category ? p.category.toLowerCase() : "";
+
+        if (category.includes("nhà hàng") || category.includes("restaurant")) {
+            if (path.startsWith('restaurants/')) {
+                return "/static/images/" + path;
+            }
+            return "/static/images/restaurants/" + path;
+        }
+
+        return "/static/images/" + path;
+    };
+
+    // Gán imgPath chính
+    let imgPath = getCorrectPath(p.img);
+
+    // 2. Danh sách ảnh chi tiết (carousel)
     let rawMenu = p.menu_imgs || [];
     if (typeof rawMenu === 'string') {
         try { 
-            // Fix lỗi nếu chuỗi JSON dùng dấu nháy đơn
             rawMenu = JSON.parse(rawMenu.replace(/'/g, '"')); 
         } catch (e) { 
             rawMenu = []; 
         }
     }
-
-    // Chuẩn hóa đường dẫn cho mảng ảnh chi tiết
-    currentMenuImgs = rawMenu.map(item => {
-        if (item.startsWith('http') || item.startsWith('/')) return item;
-        return "/static/images/" + item;
-    });
     
+    currentMenuImgs = Array.isArray(rawMenu) ? rawMenu.map(item => getCorrectPath(item)) : [];
     currentMenuIndex = 0;
 
-    // 3. Khởi tạo cấu trúc HTML sử dụng class từ style.css
+    // 3. Khởi tạo HTML
     let html = `
         <div class="info-header">
-            <img src="${imgPath}" alt="${p.name}" onerror="this.src='/static/images/no-image.jpg'">
+            ${imgPath ? `<img src="${imgPath}" alt="${p.name}">` : ""}
         </div>
         <div class="info-body">
             <h2>${p.name}</h2>
@@ -423,43 +460,36 @@ function displayInfo(p) {
             <p><strong>Địa chỉ:</strong> ${p.address || 'Đang cập nhật'}</p>
             <p><strong>Giờ mở cửa:</strong> ${p.open_hours || '8:00 - 21:00'}</p>
             <p><strong>Đánh giá:</strong> ${p.rating || '5.0'}/5</p>
-<<<<<<< HEAD
-            <p><strong>ℹMô tả:</strong> ${p.description || 'Không có mô tả.'}</p>
-=======
             <p><strong>Mô tả:</strong> ${p.description || 'Không có mô tả.'}</p>
->>>>>>> 1949ec8c35408db14a2e93916740ddc7bb9021ae
             
             <div class="button-group">
                 <button class="btn-direction" onclick="showRouteFromSearch(${p.latitude}, ${p.longitude})">
                     <i class="fa-solid fa-route"></i> HƯỚNG ĐI
                 </button>
-                
                 <button class="btn-save" onclick="savePlace('${p.name}')">
                     <i class="fa-solid fa-bookmark"></i> LƯU
                 </button>
+                <button class="btn-review" onclick="openReviewModal('${p.name}', '${p.category}')">
+                    <i class="fa-solid fa-star"></i> ĐÁNH GIÁ
+                </button>
             </div>
-            
             <div id="route-summary"></div>
         </div>
     `;
 
-    // 4. Thêm phần Hình ảnh chi tiết nếu có dữ liệu
+    // 4. Thêm carousel nếu có ảnh menu
     if (currentMenuImgs.length > 0) {
         html += `
         <div class="menu-section">
             <h4><i class="fa-solid fa-images"></i> Hình ảnh chi tiết</h4>
             <div class="carousel-box">
                 <button class="carousel-btn prev" onclick="prevMenu()">❮</button>
-                
                 <div class="carousel-image-container">
                     <img id="menu-img" src="${currentMenuImgs[0]}" 
                          alt="Chi tiết"
-                         onclick="openImageModal(this.src)"
-                         onerror="this.src='/static/images/no-image.jpg'">
+                         onclick="openImageModal(this.src)">
                 </div>
-
                 <button class="carousel-btn next" onclick="nextMenu()">❯</button>
-                
                 <div class="menu-counter-tag">
                     <span id="menu-counter">1 / ${currentMenuImgs.length}</span>
                 </div>
@@ -467,14 +497,13 @@ function displayInfo(p) {
         </div>`;
     }
 
-    // Gán HTML vào giao diện
     content.innerHTML = html;
 
-    // 5. Cập nhật thời tiết thực tế cho địa điểm
     if (typeof showWeather === "function") {
         showWeather(p.latitude, p.longitude);
     }
 }
+
 /**
  * ==========================================
  * 5. CÁC HÀM BỔ TRỢ CAROUSEL & MODAL ẢNH
@@ -537,15 +566,40 @@ var LocateControl = L.Control.extend({
 map.addControl(new LocateControl());
 
 // --- LƯU TRỮ DỮ LIỆU ---
-function savePlace(name) {
-    let saved = JSON.parse(localStorage.getItem('myPlaces')) || [];
-    if (!saved.includes(name)) {
-        saved.push(name);
-        localStorage.setItem('myPlaces', JSON.stringify(saved));
-        alert("Đã lưu địa điểm: " + name);
-    } else {
-        alert("Địa điểm này đã có trong danh sách lưu!");
+function saveRoute() {
+    console.log("Đang gọi hàm saveRoute..."); 
+    
+    const start = document.getElementById("startPoint").value;
+    const end = document.getElementById("endPoint").value;
+    const mode = document.getElementById("transportMode") ? document.getElementById("transportMode").value : "DRIVING";
+    const summary = document.getElementById("route-modal-summary") ? document.getElementById("route-modal-summary").innerText : "";
+
+    if (!start || !end) {
+        alert("Không có thông tin tuyến đường để lưu!");
+        return;
     }
+
+    let savedRoutes = JSON.parse(localStorage.getItem('mySavedRoutes')) || [];
+    
+    const isDuplicate = savedRoutes.some(r => r.start === start && r.end === end);
+    if (isDuplicate) {
+        alert("Tuyến đường này đã có trong danh sách lưu!");
+        return;
+    }
+
+    const newRoute = {
+        id: Date.now(),
+        start: start,
+        end: end,
+        mode: mode,
+        summary: summary,
+        time: new Date().toLocaleString('vi-VN')
+    };
+
+    savedRoutes.push(newRoute);
+    localStorage.setItem('mySavedRoutes', JSON.stringify(savedRoutes));
+
+    alert("Đã lưu tuyến đường thành công!");
 }
 
 function addToHistory(query) {
@@ -556,31 +610,66 @@ function addToHistory(query) {
 }
 
 function showSavedRoutes() {
-    const saved = JSON.parse(localStorage.getItem('myPlaces')) || [];
+    const savedPlaces = JSON.parse(localStorage.getItem('myPlaces')) || [];
+    const savedRoutes = JSON.parse(localStorage.getItem('mySavedRoutes')) || [];
+    
     const panel = document.getElementById("info-panel");
     const content = document.getElementById("info-content");
 
-    let html = `<h3><i class="fa-solid fa-star" style="color:#fbbc04"></i> Địa điểm đã lưu</h3>`;
-    if (saved.length === 0) {
-        html += "<p class='text-muted'>Bạn chưa lưu địa điểm nào.</p>";
+    let html = `<h3><i class="fa-solid fa-star" style="color:#fbbc04"></i> Dữ liệu đã lưu</h3>`;
+
+    if (savedPlaces.length === 0 && savedRoutes.length === 0) {
+        html += "<p class='text-muted' style='padding:20px;'>Bạn chưa lưu dữ liệu nào.</p>";
     } else {
-        html += "<ul>" + saved.map(item => `
-            <li class="list-item">
-                <div style="display:flex; align-items:center;">
-                    <div class="item-icon icon-saved"><i class="fa-solid fa-bookmark"></i></div>
-                    <div class="item-info">
-                        <span class="item-name">${item}</span>
-                        <span class="item-sub">Địa điểm yêu thích của bạn</span>
+        // Phần hiển thị Tuyến đường
+        if (savedRoutes.length > 0) {
+            html += `<h4 style="margin-top:15px; border-bottom:1px solid #eee;">Tuyến đường</h4><ul>`;
+            html += savedRoutes.map((route, index) => `
+                <li class="list-item" style="padding:10px; border-bottom:1px solid #f9f9f9;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <strong style="color:#1a73e8;">Từ:</strong> ${route.start}<br>
+                            <strong style="color:#1a73e8;">Đến:</strong> ${route.end}<br>
+                            <small class="text-muted">${route.summary} (${route.time})</small>
+                        </div>
+                        <button onclick="deleteRoute(${index})" style="border:none; background:none; color:red; cursor:pointer;">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
                     </div>
-                </div>
-            </li>`).join('') + "</ul>";
-        html += `<button class="btn-clear-all" onclick="localStorage.removeItem('myPlaces'); showSavedRoutes()">Xóa tất cả đã lưu</button>`;
+                </li>`).join('');
+            html += "</ul>";
+        }
+
+        // Phần hiển thị Địa điểm
+        if (savedPlaces.length > 0) {
+            html += `<h4 style="margin-top:15px; border-bottom:1px solid #eee;">Địa điểm</h4><ul>`;
+            html += savedPlaces.map((place, index) => `
+                <li class="list-item">
+                    <div style="display:flex; align-items:center; justify-content:space-between; width:100%;">
+                        <div style="display:flex; align-items:center;">
+                            <div class="item-icon icon-saved"><i class="fa-solid fa-location-dot"></i></div>
+                            <div class="item-info">
+                                <span class="item-name">${place}</span>
+                            </div>
+                        </div>
+                    </div>
+                </li>`).join('');
+            html += "</ul>";
+        }
+
+        html += `<button class="btn-clear-all" onclick="clearAllData()" style="width:100%; margin-top:20px; padding:10px; background:#f44336; color:white; border:none; border-radius:5px; cursor:pointer;">Xóa tất cả</button>`;
     }
-    
+
     content.innerHTML = html;
     panel.style.display = "block";
 }
-
+function clearAllData() {
+    if(confirm("Bạn có chắc chắn muốn xóa toàn bộ địa điểm và tuyến đường đã lưu?")) {
+        localStorage.removeItem('myPlaces');
+        localStorage.removeItem('mySavedRoutes');
+        showSavedRoutes();
+    }
+}
 function showSearchHistory() {
     const history = JSON.parse(localStorage.getItem('searchHistory')) || [];
     const content = document.getElementById("info-content");
@@ -605,4 +694,142 @@ function showSearchHistory() {
     content.innerHTML = html;
     document.getElementById("info-panel").style.display = "block";
 }
+function showNearbyPlaces() {
+    if (!navigator.geolocation) {
+        alert("Trình duyệt không hỗ trợ định vị.");
+        return;
+    }
+
+    navigator.geolocation.getCurrentPosition(async position => {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+
+        try {
+            // Gọi API backend (đúng route trong urls.py)
+            const res = await fetch(`/nearby_places/?lat=${lat}&lng=${lng}&radius=20`);
+            const data = await res.json();
+
+            // Lấy mảng địa điểm từ key "nearby"
+            const places = data.nearby || [];
+
+            // Xóa layer cũ nếu có
+            if (window.nearbyLayer) {
+                map.removeLayer(window.nearbyLayer);
+            }
+
+            // Tạo layer mới
+            window.nearbyLayer = L.layerGroup().addTo(map);
+
+            // Vẽ vòng tròn bán kính 20km quanh vị trí người dùng
+            L.circle([lat, lng], {
+                radius: data.radius_km * 1000, // km → mét
+                color: "#007bff",
+                fillColor: "#007bff",
+                fillOpacity: 0.1
+            }).addTo(window.nearbyLayer);
+
+            // Thêm marker vị trí người dùng
+            L.marker([lat, lng]).bindPopup("📍 Vị trí của bạn").addTo(window.nearbyLayer);
+
+            // Thêm các địa điểm xung quanh
+            places.forEach(p => {
+                const marker = L.marker([p.latitude, p.longitude])
+                    .bindPopup(`<strong>${p.name}</strong><br>${p.address || ''}<br>📏 ${p.distance_km} km`);
+                window.nearbyLayer.addLayer(marker);
+            });
+
+            // Zoom bản đồ vào vị trí người dùng
+            map.setView([lat, lng], 12);
+
+        } catch (err) {
+            console.error("Lỗi khi tải dữ liệu:", err);
+            alert("Không thể tải danh sách địa điểm quanh bạn.");
+        }
+
+    }, () => {
+        alert("Không thể lấy vị trí hiện tại.");
+    });
+}
+
+function openReviewModal(placeName, category) {
+    const modal = document.getElementById('reviewModal');
+    const title = document.getElementById('reviewTitle');
+    const form = document.getElementById('reviewForm');
+
+    if (!modal || !title || !form) return;
+
+    title.innerText = "Đánh giá địa điểm: " + placeName;
+    form.innerHTML = "";
+
+    // Nếu là nhà hàng
+    if (category && category.toLowerCase().includes("nhà hàng")) {
+        form.innerHTML = `
+            <label>Chất lượng món ăn</label>
+            ${renderStarRating('food')}
+            
+            <label>Dịch vụ</label>
+            ${renderStarRating('service')}
+            
+            <label>Không gian</label>
+            ${renderStarRating('ambience')}
+            
+            <label>Giá cả</label>
+            ${renderStarRating('price')}
+            
+            <label>Mô tả trải nghiệm</label>
+            <textarea name="description" rows="4" class="full-width"></textarea>
+            
+            <div class="flex-row">
+                <button type="submit" class="btn btn-add">Gửi đánh giá</button>
+                <button type="button" class="btn btn-delete" onclick="closeReviewModal()">Đóng</button>
+            </div>
+        `;
+    } else {
+        // Form mặc định
+        form.innerHTML = `
+            <label>Trải nghiệm tổng thể</label>
+            ${renderStarRating('overall')}
+            
+            <label>Mô tả trải nghiệm</label>
+            <textarea name="description" rows="4" class="full-width"></textarea>
+            
+            <div class="flex-row">
+                <button type="submit" class="btn btn-add">Gửi đánh giá</button>
+                <button type="button" class="btn btn-delete" onclick="closeReviewModal()">Đóng</button>
+            </div>
+        `;
+    }
+
+    modal.style.display = 'flex';
+
+    form.onsubmit = function(e) {
+        e.preventDefault();
+        const rating = document.querySelector('input[name="overall"]:checked')?.value;
+        alert("Cảm ơn bạn đã gửi đánh giá cho " + placeName + (rating ? ` (${rating} sao)` : ""));
+        closeReviewModal();
+    };
+}
+
+function renderStarRating(name) {
+    return `
+        <div class="star-rating">
+            <input type="radio" id="${name}5" name="${name}" value="5">
+            <label for="${name}5">★</label>
+            <input type="radio" id="${name}4" name="${name}" value="4">
+            <label for="${name}4">★</label>
+            <input type="radio" id="${name}3" name="${name}" value="3">
+            <label for="${name}3">★</label>
+            <input type="radio" id="${name}2" name="${name}" value="2">
+            <label for="${name}2">★</label>
+            <input type="radio" id="${name}1" name="${name}" value="1">
+            <label for="${name}1">★</label>
+        </div>
+    `;
+}
+
+function closeReviewModal() {
+    const modal = document.getElementById('reviewModal');
+    if (modal) modal.style.display = 'none';
+}
+
 

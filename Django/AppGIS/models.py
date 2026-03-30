@@ -20,7 +20,7 @@ class TourismPoint(models.Model):
     rating = models.FloatField(blank=True, null=True)
     img = models.CharField(max_length=500, blank=True, null=True)
     menu_imgs = models.JSONField(default=list, blank=True)
-
+    price = models.DecimalField(max_digits=12, decimal_places=0, null=True, blank=True, verbose_name="Giá từ")
     def __str__(self):
         return self.name
 
