@@ -848,8 +848,5 @@ function closeReviewModal() {
     const modal = document.getElementById('reviewModal');
     if (modal) modal.style.display = 'none';
 }
-<<<<<<< HEAD
 
 
-=======
->>>>>>> 9b307d78f4165a7d9537e9465349e0fe900b9ec9
