@@ -1850,4 +1850,38 @@ destinations-section {
     transition: color 0.3s;
 }
 .toggle-password:hover { color: #2575fc; }
+/* Container chứa ảnh */
+.info-header {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    border-radius: 8px 8px 0 0;
+}
 
+/* Badge giá đè lên ảnh */
+.price-badge {
+    position: absolute;
+    bottom: 10px;    /* Cách đáy ảnh 10px */
+    right: 10px;     /* Cách phải ảnh 10px */
+    background-color: white;
+    color: #e74c3c;  /* Màu đỏ giá cả */
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-weight: bold;
+    font-size: 0.95rem;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    z-index: 10;
+    border: 1px solid rgba(0,0,0,0.1);
+}
+
+/* Màu xanh nếu là miễn phí */
+.price-badge.free {
+    color: #27ae60;
+}
+
+/* Đảm bảo ảnh chiếm hết chiều rộng header */
+.info-header img {
+    width: 100%;
+    height: 180px; /* Hoặc chiều cao tùy chỉnh */
+    object-fit: cover;
+}

@@ -210,7 +210,10 @@
                             longitude: lng,
                             address: place.address || "Đang cập nhật",
                             description: place.description || "Không có mô tả.",
-                            rating: place.rating || "5.0"
+                            rating: place.rating || "5.0",
+                            price: place.price,
+                            category: place.category || "",
+                            menu_imgs: place.menu_imgs || []
                         });
                     });
 
@@ -267,12 +270,16 @@
                     longitude: lng,
                     address: urlParams.get('address') ? decodeURIComponent(urlParams.get('address')) : "Đang cập nhật",
                     description: urlParams.get('desc') ? decodeURIComponent(urlParams.get('desc')) : "Không có mô tả.",
-                    rating: urlParams.get('rating') || "5.0"
+                    rating: urlParams.get('rating') || "5.0",
+                    price: urlParams.get('price') || "0",
+                    category: urlParams.get('category') || "",
+                    menu_imgs: urlParams.get('menu') ? JSON.parse(decodeURIComponent(urlParams.get('menu'))) : []
                 });
             }
             if (++retryCount > 50) clearInterval(checkMapReady);
         }, 100);
     }
+    
 
     window.addEventListener('load', focusPlaceFromURL);
 </script>
