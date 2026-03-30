@@ -4,6 +4,144 @@
 {% block title %}Điểm đến - Smart Travel Map{% endblock %}
 
 {% block content %}
+<style>
+    /* Tổng thể section */
+    .destinations-section { 
+        background-color: #f8f9fa; 
+        padding: 60px 0; 
+    }
+    
+    .destination-card {
+        border: none;
+        border-radius: 15px;
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        background: #fff;
+        
+        /* CHỖ THAY ĐỔI CHÍNH: Chuyển từ cột sang hàng */
+        display: flex;
+        flex-direction: row; 
+        align-items: stretch;
+        margin-bottom: 30px;
+    }
+
+    /* Khi di chuột vào card */
+    .destination-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.1) !important;
+    }
+
+    /* PHẦN HÌNH ẢNH (Bên trái) */
+    .dest-img-container {
+        position: relative;
+        overflow: hidden;
+        flex: 0 0 45%; /* Ảnh chiếm 45% chiều rộng */
+        height: 350px; /* Tăng chiều cao để phù hợp với bố cục ngang */
+    }
+
+    .dest-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .card-text {
+         position: relative;
+     top: -15px; /* dịch chữ lên trên, chỉnh số px theo ý */
+    }
+    /* PHẦN NỘI DUNG (Bên phải) */
+    .card-body {
+        flex: 1;
+        padding: 40px; /* Tạo khoảng trống rộng rãi như hình mẫu */
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    /* Tiêu đề có vạch vàng phía trước */
+    .dest-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        text-transform: uppercase;
+    }
+
+    /* Tạo vạch vàng giống trong ảnh */
+    .dest-title::before {
+        content: "";
+        display: inline-block;
+        width: 40px;
+        height: 3px;
+        background-color: #ffc107; /* Màu vàng cam */
+        margin-right: 15px;
+    }
+
+   /* Đoạn văn mô tả */
+.info-list {
+    list-style: none;
+    padding: 0;
+    font-size: 1rem;
+    color: #666;
+    line-height: 1.8;
+    
+    /* Tăng số này lên để đẩy đoạn văn lên trên, nhường chỗ cho nút */
+    margin-bottom: 80px; 
+    
+    /* Thêm dòng này để đảm bảo chữ không bao giờ bị tràn xuống dưới nút */
+    display: block; 
+    position: relative;
+}
+
+    /* NÚT BẤM (Góc phải dưới) */
+    .btn-container {
+        display: flex;
+        justify-content: flex-end; /* Đẩy nút sang phải */
+        position: relative;
+    }
+
+    .btn-action {
+        padding: 10px 25px;
+        font-weight: 600;
+        background: #fff; /* Nút nền trắng hoặc xám nhẹ theo hình */
+        color: #333;
+        border: 1px solid #ddd;
+        text-decoration: none;
+        transition: all 0.3s;
+        z-index: 2;
+    }
+
+    /* Khung vàng trang trí cho nút giống trong ảnh */
+    .btn-container::after {
+        content: "";
+        position: absolute;
+        width: 80px;
+        height: 40px;
+        border-right: 3px solid #ffc107;
+        border-bottom: 3px solid #ffc107;
+        right: -10px;
+        bottom: -10px;
+        z-index: 1;
+    }
+
+    .btn-action:hover {
+        background-color: #f8f9fa;
+        transform: scale(1.05);
+    }
+
+    /* Responsive cho điện thoại: Quay về dạng dọc */
+    @media (max-width: 768px) {
+        .destination-card {
+            flex-direction: column;
+        }
+        .dest-img-container {
+            flex: 0 0 250px;
+        }
+    }
+</style>
+
 <section class="destinations-section">
     <div class="container">
         <div class="text-center mb-5">

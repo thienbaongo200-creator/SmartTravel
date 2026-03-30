@@ -72,6 +72,7 @@ def search(request):
             "address": p.address, 
             "open_hours": p.open_hours, 
             "rating": p.rating, 
+            "price": int(p.price) if p.price is not None else None, 
             "img": p.img, 
             "menu_imgs": [img for img in (p.menu_imgs or [])]
         })
@@ -96,13 +97,13 @@ def get_places_by_category(request):
     places = TourismPoint.objects.filter(
         Q(category__name__icontains=target_type_vn)
     ).values(
-        'id', 'name', 'latitude', 'longitude', 'address', 'description', 'rating', 'img'
+        'id', 'name', 'latitude', 'longitude', 'address', 'description', 'rating', 'img', 'price'
     )
 
     data = list(places)
     for item in data:
         item['image'] = item.get('img', '')
-
+        item['price'] = int(item['price']) if item['price'] is not None else None
     return JsonResponse(data, safe=False)
 
 def distance(request):
