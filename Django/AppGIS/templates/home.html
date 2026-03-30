@@ -136,6 +136,7 @@
 </div>
 
 <!-- Modal đánh giá -->
+<<<<<<< HEAD
 <div id="reviewModal" class="modal" style="display:none;">
   <div class="modal-content">
     <span class="close-modal" onclick="closeReviewModal()">×</span>
@@ -145,6 +146,48 @@
       <!-- Nội dung form sẽ được JS render -->
     </form>
   </div>
+=======
+<!-- Modal đánh giá đã được chuẩn hóa -->
+<div id="reviewModal" class="review-modal-overlay" style="display:none;">
+    <div class="review-modal-content">
+        <span class="close-review-modal" onclick="closeReviewModal()">&times;</span>
+        
+        <div class="modal-header-custom">
+            <i class="fa-solid fa-pen-to-square"></i>
+            <h2 id="reviewTitle" style="margin:0;">Đánh giá địa điểm</h2>
+        </div>
+        
+        <p class="review-subtitle">Trải nghiệm của bạn sẽ giúp ích cho cộng đồng</p>
+
+        <form id="reviewForm">
+            {% csrf_token %}
+            <div class="rating-section">
+                <label>Bạn chấm bao nhiêu sao?</label>
+                <div class="star-rating">
+                    <input type="radio" id="star5" name="rating" value="5"><label for="star5"><i class="fa-solid fa-star"></i></label>
+                    <input type="radio" id="star4" name="rating" value="4"><label for="star4"><i class="fa-solid fa-star"></i></label>
+                    <input type="radio" id="star3" name="rating" value="3"><label for="star3"><i class="fa-solid fa-star"></i></label>
+                    <input type="radio" id="star2" name="rating" value="2"><label for="star2"><i class="fa-solid fa-star"></i></label>
+                    <input type="radio" id="star1" name="rating" value="1"><label for="star1"><i class="fa-solid fa-star"></i></label>
+                </div>
+            </div>
+
+            <div class="comment-section">
+                <label for="reviewComment">Cảm nhận chi tiết:</label>
+                <textarea id="reviewComment" rows="4" placeholder="Ví dụ: Đồ ăn ngon, phục vụ rất chu đáo..."></textarea>
+            </div>
+
+            <div class="modal-footer-btns">
+                <button type="button" class="btn-review-delete" onclick="deleteReview()">
+                    <i class="fa-solid fa-trash-can"></i> XÓA
+                </button>
+                <button type="button" class="btn-review-submit" onclick="submitReview()">
+                    GỬI ĐÁNH GIÁ <i class="fa-solid fa-paper-plane"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+>>>>>>> 5ea14e6407073bf0aab6ed79736934907290caeb
 </div>
 
 
@@ -196,43 +239,40 @@
             }
 
             data.forEach(place => {
-                const lat = parseFloat(place.latitude);
-                const lng = parseFloat(place.longitude);
+            const lat = parseFloat(place.latitude);
+            const lng = parseFloat(place.longitude);
 
-                if (!isNaN(lat) && !isNaN(lng)) {
-                    // Tạo Marker
-                    const marker = L.marker([lat, lng]);
-
-                    // Tooltip hiện tên địa điểm ngay trên bản đồ
-                    marker.bindTooltip(place.name, {
-                        permanent: false, // Để false để chỉ hiện khi hover hoặc bạn có thể để true nếu muốn hiện tất cả
-                        direction: 'top',
-                        offset: [0, -10],
-                        className: 'custom-marker-label'
+            if (!isNaN(lat) && !isNaN(lng)) {
+                const marker = L.marker([lat, lng]);
+            marker.bindTooltip(`<b>${place.name}</b>`, {
+                        permanent: false,  
+                        direction: 'top',   
+                        sticky: true,       
+                        opacity: 0.9
                     });
+                // Gán ID vào marker để dễ quản lý
+                marker.placeId = place.id; 
 
-                    // Sự kiện click hiện bảng thông tin chi tiết (Info Panel)
-                    marker.on('click', () => {
-                        // Di chuyển bản đồ đến điểm được chọn
-                        map.flyTo([lat, lng], 16);
-                        
-                        displayInfo({
-                            name: place.name,
-                            img: place.img || place.image || "", // Hỗ trợ cả 2 key img hoặc image từ API
-                            latitude: lat,
-                            longitude: lng,
-                            address: place.address || "Đang cập nhật",
-                            description: place.description || "Không có mô tả.",
-                            rating: place.rating || "5.0",
-                            price: place.price,
-                            category: place.category || "",
-                            menu_imgs: place.menu_imgs || []
-                        });
+                marker.on('click', () => {
+                    map.flyTo([lat, lng], 16);
+                    
+                    displayInfo({
+                        id: place.id, // ĐẢM BẢO CÓ ID Ở ĐÂY
+                        name: place.name,
+                        img: place.img || place.image || "",
+                        latitude: lat,
+                        longitude: lng,
+                        address: place.address || "Đang cập nhật",
+                        description: place.description || "Không có mô tả.",
+                        rating: place.rating || "5.0",
+                        price: place.price,
+                        category: place.category || "",
+                        menu_imgs: place.menu_imgs || []
                     });
-
-                    categoryLayerGroup.addLayer(marker);
-                }
-            });
+                });
+                categoryLayerGroup.addLayer(marker);
+            }
+        });
 
             // Thêm group marker vào bản đồ
             categoryLayerGroup.addTo(map);
