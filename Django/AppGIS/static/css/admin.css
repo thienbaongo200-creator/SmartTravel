@@ -326,3 +326,37 @@ td {
     border-color: var(--primary);
     transform: translateX(-5px); /* Hiệu ứng nhích nhẹ sang trái */
 }
+/* ===========================
+   XEM TRƯỚC HÌNH ẢNH
+   =========================== */
+   .image-preview-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 10px;
+}
+.image-preview-container img {
+    width: 100%;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+}
+/* Container chứa các ảnh preview siêu nhỏ */
+.image-preview-mini {
+    display: grid;
+    /* Tạo lưới 3 cột cố định */
+    grid-template-columns: repeat(3, 35px); 
+    gap: 4px; /* Khoảng cách rất nhỏ giữa các ảnh */
+    margin-top: 8px;
+    justify-content: start; /* Căn lề trái */
+}
+
+/* Định dạng cho từng tấm ảnh con siêu nhỏ */
+.image-preview-mini img {
+    width: 35px;  /* Chiều rộng siêu nhỏ */
+    height: 35px; /* Chiều cao siêu nhỏ */
+    object-fit: cover; /* Giúp ảnh không bị méo khi ép kích thước */
+    border-radius: 3px; /* Bo góc rất nhẹ */
+    border: 1px solid #ddd; /* Viền xám rất nhạt */
+}
