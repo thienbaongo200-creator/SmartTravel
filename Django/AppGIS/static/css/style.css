@@ -1851,3 +1851,132 @@ destinations-section {
 }
 .toggle-password:hover { color: #2575fc; }
 
+/* ===========================
+   Modal Đánh Giá
+   =========================== */
+#reviewModal.modal {
+    display: none;
+    position: fixed;
+    z-index: 10000;
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(3px);
+}
+
+#reviewModal .modal-content {
+    background: #fff;
+    padding: 25px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 480px;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+    animation: fadeInScale 0.3s ease;
+    font-family: "Segoe UI", sans-serif;
+}
+
+#reviewTitle {
+    margin-bottom: 20px;
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: #222;
+    text-align: center;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+#reviewForm label {
+    display: block;
+    margin-top: 12px;
+    font-weight: 600;
+    color: #333;
+}
+
+#reviewForm textarea {
+    width: 100%;
+    margin-top: 6px;
+    padding: 10px;
+    border: 1px solid #d0d7de;
+    border-radius: 8px;
+    box-sizing: border-box;
+    font-size: 14px;
+    transition: border-color 0.2s;
+}
+
+#reviewForm textarea:focus {
+    border-color: #1a73e8;
+    outline: none;
+}
+
+#reviewForm .flex-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 18px;
+}
+
+#reviewForm .btn-add {
+    flex: 1;
+    background: linear-gradient(135deg, #28a745, #34d058);
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.3s;
+}
+
+#reviewForm .btn-add:hover {
+    background: linear-gradient(135deg, #218838, #28a745);
+}
+
+#reviewForm .btn-delete {
+    flex: 1;
+    background: linear-gradient(135deg, #f44336, #ff6b6b);
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.3s;
+}
+
+#reviewForm .btn-delete:hover {
+    background: linear-gradient(135deg, #d32f2f, #f44336);
+}
+
+/* Rating bằng sao */
+.star-rating {
+  display: flex;
+  flex-direction: row-reverse; /* quan trọng để checked + label hoạt động đúng */
+  justify-content: flex-start;
+  font-size: 1.8rem;
+  cursor: pointer;
+  margin-top: 6px;
+}
+
+.star-rating input {
+  display: none;
+}
+
+.star-rating label {
+  color: #ddd;
+  padding: 0 4px;
+  transition: color 0.2s, transform 0.2s;
+}
+
+.star-rating input:checked + label,
+.star-rating label:hover,
+.star-rating label:hover ~ label {
+  color: #f5b301;
+  transform: scale(1.1);
+}
+
+@keyframes fadeInScale {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+}

@@ -1,19 +1,19 @@
+import re
+import json
+import math
+import unicodedata
 from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, JsonResponse
-from .models import TourismPoint, Category 
-from geopy.distance import geodesic
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
-from django.contrib.auth import login, logout
-from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Q
-from . import views
-from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.auth import login, logout
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
-import re
-import unicodedata
-import json
-import math
+from django.contrib.admin.views.decorators import staff_member_required
+from django.views.decorators.csrf import csrf_exempt
+from geopy.distance import geodesic
+from django.contrib.auth.decorators import login_required
+from .models import TourismPoint, Category, Review
 # ==============================
 # Các trang tĩnh
 # ==============================
@@ -236,6 +236,21 @@ def transport_list(request):
     ]
     return render(request, "transport.html", {"transports": transports})
 
+@login_required
+def submit_review(request, point_id):
+    if request.method == "POST":
+        tourismpoint = get_object_or_404(TourismPoint, id=point_id)
+        comment = request.POST.get("comment")
+        rating = float(request.POST.get("rating"))
+
+        review = Review.objects.create(
+            tourismpoint=tourismpoint,
+            user=request.user,
+            comment=comment,
+            rating=rating
+        )
+        return JsonResponse({"message": "Đánh giá đã được lưu", "id": review.id})
+    return JsonResponse({"error": "Chỉ hỗ trợ POST"}, status=400)
 # ==============================
 # Admin Dashboard
 # ==============================
