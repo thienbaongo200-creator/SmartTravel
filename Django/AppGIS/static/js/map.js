@@ -486,6 +486,9 @@ function displayInfo(p) {
                 <button class="btn-save" onclick="savePlace('${p.name}')">
                     <i class="fa-solid fa-bookmark"></i> LƯU
                 </button>
+                <button class="btn-review" onclick="openReviewModal('${p.name}', '${p.category}')">
+                    <i class="fa-solid fa-star"></i> ĐÁNH GIÁ
+                </button>
             </div>
             <div id="route-summary"></div>
         </div>
@@ -763,4 +766,85 @@ function showNearbyPlaces() {
     }, () => {
         alert("Không thể lấy vị trí hiện tại.");
     });
+}
+
+function openReviewModal(placeName, category) {
+    const modal = document.getElementById('reviewModal');
+    const title = document.getElementById('reviewTitle');
+    const form = document.getElementById('reviewForm');
+
+    if (!modal || !title || !form) return;
+
+    title.innerText = "Đánh giá địa điểm: " + placeName;
+    form.innerHTML = "";
+
+    // Nếu là nhà hàng
+    if (category && category.toLowerCase().includes("nhà hàng")) {
+        form.innerHTML = `
+            <label>Chất lượng món ăn</label>
+            ${renderStarRating('food')}
+            
+            <label>Dịch vụ</label>
+            ${renderStarRating('service')}
+            
+            <label>Không gian</label>
+            ${renderStarRating('ambience')}
+            
+            <label>Giá cả</label>
+            ${renderStarRating('price')}
+            
+            <label>Mô tả trải nghiệm</label>
+            <textarea name="description" rows="4" class="full-width"></textarea>
+            
+            <div class="flex-row">
+                <button type="submit" class="btn btn-add">Gửi đánh giá</button>
+                <button type="button" class="btn btn-delete" onclick="closeReviewModal()">Đóng</button>
+            </div>
+        `;
+    } else {
+        // Form mặc định
+        form.innerHTML = `
+            <label>Trải nghiệm tổng thể</label>
+            ${renderStarRating('overall')}
+            
+            <label>Mô tả trải nghiệm</label>
+            <textarea name="description" rows="4" class="full-width"></textarea>
+            
+            <div class="flex-row">
+                <button type="submit" class="btn btn-add">Gửi đánh giá</button>
+                <button type="button" class="btn btn-delete" onclick="closeReviewModal()">Đóng</button>
+            </div>
+        `;
+    }
+
+    modal.style.display = 'flex';
+
+    form.onsubmit = function(e) {
+        e.preventDefault();
+        const rating = document.querySelector('input[name="overall"]:checked')?.value;
+        alert("Cảm ơn bạn đã gửi đánh giá cho " + placeName + (rating ? ` (${rating} sao)` : ""));
+        closeReviewModal();
+    };
+}
+
+function renderStarRating(name) {
+    return `
+        <div class="star-rating">
+            <input type="radio" id="${name}5" name="${name}" value="5">
+            <label for="${name}5">★</label>
+            <input type="radio" id="${name}4" name="${name}" value="4">
+            <label for="${name}4">★</label>
+            <input type="radio" id="${name}3" name="${name}" value="3">
+            <label for="${name}3">★</label>
+            <input type="radio" id="${name}2" name="${name}" value="2">
+            <label for="${name}2">★</label>
+            <input type="radio" id="${name}1" name="${name}" value="1">
+            <label for="${name}1">★</label>
+        </div>
+    `;
+}
+
+function closeReviewModal() {
+    const modal = document.getElementById('reviewModal');
+    if (modal) modal.style.display = 'none';
 }
