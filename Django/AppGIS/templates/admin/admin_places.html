@@ -39,7 +39,15 @@
                     <input type="number" step="any" id="longitude" name="longitude" placeholder="Kinh độ" required>
                 </div>
 
-                <input type="text" name="img" placeholder="Tên file ảnh">
+                <input type="file" name="img" placeholder="Tên file ảnh">
+                <div class="image-upload-section">
+            <div class="image-upload-section">
+    <label style="font-size: 13px;">📷 Hình ảnh (Tối đa 6-9 ảnh):</label>
+    <input type="file" id="image_files" name="images" accept="image/*" multiple 
+           style="font-size: 12px; width: 100%;">
+    
+    <div id="image_preview"></div>
+</div>
                 <input type="number" name="price" placeholder="Giá tiền (VNĐ)">
 
                 <button type="submit" class="btn btn-add">Thêm mới</button>
@@ -68,28 +76,6 @@
         </table>
     </section>
 </div>
-<!-- Modal Sửa -->
-<div id="editModal" class="modal">
-    <div class="modal-content">
-        <h3>Sửa địa điểm</h3>
-        <form id="editForm">
-            <input type="hidden" id="editId">
-            <input type="text" id="editName" placeholder="Tên" required class="full-width">
-            <input type="text" id="editCategory" placeholder="Loại" required class="full-width">
-            <input type="text" id="editAddress" placeholder="Địa chỉ" class="full-width">
-            <div class="flex-row">
-                <input type="number" step="any" id="editLat" required>
-                <input type="number" step="any" id="editLng" required>
-            </div>
-            <input type="text" id="editImg" placeholder="Tên file ảnh" class="full-width">
-            <input type="number" id="editPrice" placeholder="Giá tiền (VNĐ)" class="full-width">
-            <div id="editMap"></div>
-            <div class="modal-actions" style="margin-top:15px; text-align:right;">
-                <button type="submit" class="btn btn-edit">Lưu thay đổi</button>
-                <button type="button" class="btn btn-delete" onclick="closeEditModal()">✖ Đóng</button>
-            </div>
-        </form>
-=======
 <!-- Modal sửa địa điểm -->
 <div id="editModal" class="modal">
     <div class="modal-content">
@@ -248,6 +234,30 @@ async function deletePlace(id) {
         loadPlaces();
     }
 }
+
+document.getElementById('image_files').addEventListener('change', function(e) {
+    const previewContainer = document.getElementById('image_preview');
+    previewContainer.innerHTML = ''; // Xóa preview cũ
+    
+    const files = e.target.files;
+
+    if (files.length > 6) {
+        alert("Bạn chỉ được chọn tối đa 6 ảnh!");
+        e.target.value = ""; // Reset input
+        return;
+    }
+
+    // Hiển thị ảnh xem trước
+    Array.from(files).forEach(file => {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            const img = document.createElement('img');
+            img.src = event.target.result;
+            previewContainer.appendChild(img);
+        }
+        reader.readAsDataURL(file);
+    });
+});
 
 window.onload = () => { initMainMap(); loadPlaces(); };
 </script>
