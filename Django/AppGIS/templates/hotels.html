@@ -138,7 +138,18 @@
                     <div class="hotel-content-body">
                         <h5 class="hotel-title">{{ hotel.name }}</h5>
                         
+<<<<<<< HEAD
                         <div class="hotel-price-wrapper">
+=======
+                        <div class="mt-auto pt-3 border-top text-center">
+                          <div class="mt-auto pt-3 border-top text-center">
+                            <a href="{% url 'home' %}?lat={{ hotel.latitude }}&lng={{ hotel.longitude }}&name={{ hotel.name|urlencode }}&img={{ hotel.img|urlencode }}&address={{ hotel.address|urlencode }}&desc={{ hotel.description|urlencode }}&rating={{ hotel.rating }}&price={{ hotel.price }}&category=Khách sạn" class="btn-view-map">
+                                <i class="fas fa-directions me-2"></i> Xem trên bản đồ
+                            </a>
+                        </div>
+                        <p class="card-text hotel-price-wrapper">
+                            <strong>Giá phòng: </strong> 
+>>>>>>> a8b2cbfbbac2e2c099735de69b0b01ae84f3b4e1
                             {% if hotel.price %}
                                 <span class="hotel-price">{{ hotel.price|intcomma }} VNĐ</span>
                                 <span class="hotel-price-muted">/ đêm</span>

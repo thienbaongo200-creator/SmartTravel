@@ -45,7 +45,6 @@ class TourismPoint(models.Model):
             "time_minutes": round(time_minutes, 1)
         }
 
-
 class Review(models.Model):
     tourismpoint = models.ForeignKey(TourismPoint, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -57,3 +56,7 @@ class Review(models.Model):
     def __str__(self):
         return f"{self.user.username} - {self.tourismpoint.name}"
 
+class ImageGallery(models.Model):
+    tourismpoint = models.ForeignKey(TourismPoint, on_delete=models.CASCADE, related_name="images")
+    image = models.ImageField(upload_to="tourism_images/")
+    caption = models.CharField(max_length=200, blank=True)
