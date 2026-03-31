@@ -168,11 +168,6 @@ function renderSearchResult(lat, lon, name, placeObject) {
         .bindPopup(`
             <div style="min-width:150px;">
                 <b>${name}</b><br>
-                <button class="btn-review" 
-                    onclick="openReviewModal(${placeId}, '${name.replace(/'/g, "\\'")}')"
-                    style="margin-top:8px; width:100%; cursor:pointer; background:#28a745; color:white; border:none; padding:5px; border-radius:3px;">
-                    ⭐ Viết đánh giá
-                </button>
             </div>
         `)
         .openPopup();
@@ -505,7 +500,7 @@ function displayInfo(p) {
                 <button class="btn-save" onclick="savePlace('${p.name}')">
                     <i class="fa-solid fa-bookmark"></i> LƯU
                 </button>
-                <button class="btn-review" onclick="openReviewModal('${p.name}', '${p.category}')">
+                <button class="btn-review" onclick="openReviewModal('${p.id}', '${p.name.replace(/'/g, "\\'")}')">
                     <i class="fa-solid fa-star"></i> ĐÁNH GIÁ
                 </button>
             </div>
@@ -820,19 +815,23 @@ function openReviewModal(placeId, placeName) {
 
     // 2. Render nội dung form (đảm bảo có CSRF Token)
     form.innerHTML = `
-        <input type="hidden" name="csrfmiddlewaretoken" value="${getCSRFToken()}">
-        <div class="rating-group">
-            <label>Số sao:</label>
-            ${renderStarRating('overall')}
-        </div>
-        <div class="comment-group" style="margin-top:10px;">
-            <label>Nội dung:</label>
-            <textarea name="comment" rows="4" style="width:100%"></textarea>
-        </div>
-        <div class="modal-footer" style="margin-top:15px;">
-            <button type="submit" class="btn btn-add">Gửi</button>
-            <button type="button" class="btn btn-delete" onclick="closeReviewModal()">Hủy</button>
-        </div>
+    <input type="hidden" name="csrfmiddlewaretoken" value="${getCSRFToken()}">
+    <div class="rating-group">
+        <label>Số sao:</label>
+        ${renderStarRating('overall')}
+    </div>
+    <div class="comment-group" style="margin-top:10px;">
+        <label>Nội dung:</label>
+        <textarea name="comment" rows="4" style="width:100%; padding:10px; border-radius:5px; border:1px solid #ddd;"></textarea>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-delete" onclick="closeReviewModal()">
+            <i class="fa-solid fa-xmark" style="margin-right:5px;"></i> Hủy
+        </button>
+        <button type="submit" class="btn btn-add">
+            Gửi đánh giá <i class="fa-solid fa-paper-plane" style="margin-left:5px;"></i>
+        </button>
+    </div>
     `;
 
     // 3. Xử lý Submit
@@ -890,5 +889,3 @@ function closeReviewModal() {
     const modal = document.getElementById('reviewModal');
     if (modal) modal.style.display = 'none';
 }
-
-

@@ -342,21 +342,33 @@ td {
     border-radius: 5px;
     border: 1px solid #ddd;
 }
-/* Container chứa các ảnh preview siêu nhỏ */
-.image-preview-mini {
-    display: grid;
-    /* Tạo lưới 3 cột cố định */
-    grid-template-columns: repeat(3, 35px); 
-    gap: 4px; /* Khoảng cách rất nhỏ giữa các ảnh */
-    margin-top: 8px;
-    justify-content: start; /* Căn lề trái */
+/* Khung cố định cho khu vực chứa ảnh */
+.image-upload-section {
+    max-width: 100%; /* Không vượt quá chiều rộng form */
+    margin-bottom: 15px;
 }
 
-/* Định dạng cho từng tấm ảnh con siêu nhỏ */
-.image-preview-mini img {
-    width: 35px;  /* Chiều rộng siêu nhỏ */
-    height: 35px; /* Chiều cao siêu nhỏ */
-    object-fit: cover; /* Giúp ảnh không bị méo khi ép kích thước */
-    border-radius: 3px; /* Bo góc rất nhẹ */
-    border: 1px solid #ddd; /* Viền xám rất nhạt */
+/* Ô chứa ảnh preview: Cố định kích thước, có thanh cuộn riêng */
+#image_preview {
+    display: grid;
+    grid-template-columns: repeat(3, 40px); /* 3 cột, mỗi cột 40px */
+    gap: 5px;
+    margin-top: 10px;
+    
+    /* KHÓA KHUNG TẠI ĐÂY */
+    max-height: 100px;    /* Chiều cao tối đa (khoảng 2 hàng ảnh) */
+    overflow-y: auto;     /* Nếu nhiều ảnh quá 2 hàng sẽ có thanh cuộn dọc nội bộ */
+    padding: 5px;
+    border: 1px dashed #ccc; /* Viền nét đứt để phân biệt khu vực ảnh */
+    background: #f9f9f9;
+    width: fit-content;   /* Ô chỉ rộng bằng đúng 3 cột ảnh */
+}
+
+/* Định dạng từng tấm ảnh siêu nhỏ */
+#image_preview img {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 3px;
+    display: block;
 }
