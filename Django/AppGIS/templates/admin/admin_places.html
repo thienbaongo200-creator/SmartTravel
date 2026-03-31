@@ -4,7 +4,6 @@
 <head>
     <meta charset="UTF-8">
     <title>Admin - Quản lý Địa điểm Du lịch</title>
-    <link rel="stylesheet" href="{% static 'css/style_admin_places.css' %}">
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>    
     <link rel="stylesheet" href="{% static 'css/admin.css' %}">
 </head>
@@ -24,12 +23,11 @@
         <button onclick="loadPlaces('Khách sạn')">Khách sạn</button>
     </nav>
 
-    <!-- Form thêm mới + Map song song -->
+    <!-- Form thêm mới -->
     <section class="form-card">
         <h2>➕ Thêm địa điểm mới</h2>
         <div class="admin-grid">
-            <!-- Form bên trái -->
-            <form id="addForm" class="form-side">
+            <form id="addForm" class="form-side" enctype="multipart/form-data">
                 <input type="text" name="name" placeholder="Tên địa điểm" required>
                 <input type="text" name="category" placeholder="Loại (VD: Khách sạn)" required>
                 <div class="flex-row">
@@ -40,18 +38,15 @@
                     <input type="number" step="any" id="latitude" name="latitude" placeholder="Vĩ độ" required>
                     <input type="number" step="any" id="longitude" name="longitude" placeholder="Kinh độ" required>
                 </div>
-            <div class="image-upload-section">
-                <label style="font-size: 13px;">📷 Hình ảnh :</label>
-                <input type="file" id="image_files" name="images" accept="image/*" multiple 
-                    style="font-size: 12px; width: 100%;">
-                
-                <div id="image_preview"></div>
-            </div>
+                <div class="image-upload-section">
+                    <label style="font-size: 13px;">📷 Ảnh menu (tối đa 6):</label>
+                    <input type="file" id="image_files" name="images" accept="image/*" multiple>
+                    <div id="image_preview"></div>
+                </div>
                 <input type="number" name="price" placeholder="Giá tiền (VNĐ)">
                 <button type="submit" class="btn btn-add">Thêm mới</button>
             </form>
 
-            <!-- Map bên phải -->
             <div class="map-side">
                 <div id="map" style="height:400px;"></div>
             </div>
@@ -77,31 +72,38 @@
 
 <!-- Modal Sửa -->
 <div id="editModal" class="modal">
-    <div class="modal-content">
-        <h3>Sửa địa điểm</h3>
-        <form id="editForm" class="form-side">
-            <input type="hidden" id="editId">
-            <input type="text" id="editName" placeholder="Tên" required class="full-width">
-            <input type="text" id="editCategory" placeholder="Loại" required class="full-width">
-            <div class="flex-row">
-                <input type="text" id="editAddress" name="address" placeholder="Sửa địa chỉ để tìm lại vị trí" class="full-width">
-                <button type="button" onclick="searchAddress('editAddress','editLat','editLng', editMap, 'editMarker')">🔍</button>
-            </div>
-            <div class="flex-row">
-                <input type="number" step="any" id="editLat" placeholder="Vĩ độ" required>
-                <input type="number" step="any" id="editLng" placeholder="Kinh độ" required>
-            </div>
-            <input type="text" id="editImg" placeholder="Tên file ảnh" class="full-width">
-            <input type="number" id="editPrice" placeholder="Giá tiền (VNĐ)" class="full-width">
-            
-            <div id="editMap" style="height:300px; margin-top:10px;"></div>
-            
-            <div class="modal-actions" style="margin-top:15px; text-align:right;">
-                <button type="submit" class="btn btn-edit">💾 Lưu thay đổi</button>
-                <button type="button" class="btn btn-delete" onclick="closeEditModal()">✖ Đóng</button>
-            </div>
-        </form>
-    </div>
+  <div class="modal-content">
+    <h3>Sửa địa điểm</h3>
+    <form id="editForm" class="form-side" enctype="multipart/form-data">
+      <input type="hidden" id="editId">
+      <input type="text" id="editName" placeholder="Tên" required class="full-width">
+      <input type="text" id="editCategory" placeholder="Loại" required class="full-width">
+      <div class="flex-row">
+        <input type="text" id="editAddress" placeholder="Sửa địa chỉ" class="full-width">
+        <button type="button" onclick="searchAddress('editAddress','editLat','editLng', editMap, 'editMarker')">🔍</button>
+      </div>
+      <div class="flex-row">
+        <input type="number" step="any" id="editLat" placeholder="Vĩ độ" required>
+        <input type="number" step="any" id="editLng" placeholder="Kinh độ" required>
+      </div>
+      <input type="text" id="editImg" placeholder="Tên file ảnh chính" class="full-width">
+      <input type="number" id="editPrice" placeholder="Giá tiền (VNĐ)" class="full-width">
+
+      <!-- Trường ảnh phụ -->
+      <div class="image-upload-section">
+        <label style="font-size: 13px;">📷 Ảnh phụ (gallery):</label>
+        <input type="file" id="edit_image_files" name="images" accept="image/*" multiple>
+        <div id="edit_image_preview"></div>
+      </div>
+
+      <div id="editMap" style="height:300px; margin-top:10px;"></div>
+      
+      <div class="modal-actions" style="margin-top:15px; text-align:right;">
+        <button type="submit" class="btn btn-edit">💾 Lưu thay đổi</button>
+        <button type="button" class="btn btn-delete" onclick="closeEditModal()">✖ Đóng</button>
+      </div>
+    </form>
+  </div>
 </div>
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -180,19 +182,30 @@ async function loadPlaces(categoryFilter = null) {
 function renderTable(data, filter = null) {
     const tbody = document.getElementById("placesTable");
     tbody.innerHTML = "";
+
     data.filter(p => !filter || (p.category && p.category.toLowerCase() === filter.toLowerCase()))
         .forEach(p => {
-            const priceDisplay = p.price ? new Intl.NumberFormat('vi-VN').format(p.price) + ' VNĐ' : 'Chưa có giá';
+            const priceDisplay = p.price 
+                ? new Intl.NumberFormat('vi-VN').format(p.price) + ' VNĐ' 
+                : 'Chưa có giá';
+
+            // Nếu có gallery thì hiển thị tất cả ảnh, nếu không thì hiển thị ảnh chính, nếu không có thì để trống
+            const imagesHtml = p.gallery && p.gallery.length > 0
+                ? p.gallery.map(url => `<img src="${url}" class="thumb">`).join('')
+                : (p.img ? `<img src="${p.img}" class="thumb">` : '');
+
             tbody.innerHTML += `
                 <tr>
-                    <td><img src="${p.img}" class="thumb" onerror="this.src='https://via.placeholder.com/80x60'"></td>
+                    <td>${imagesHtml}</td>
                     <td>
-                        <strong>${p.name}</strong><br><small>${p.category}</small><br>
+                        <strong>${p.name}</strong><br>
+                        <small>${p.category}</small><br>
                         <span class="price-tag">💰 ${priceDisplay}</span>
                     </td>
                     <td>${p.latitude.toFixed(4)}, ${p.longitude.toFixed(4)}</td>
                     <td>
-                        <button class="btn btn-edit" onclick="openEditModal(${p.id}, '${p.name}', '${p.category}', '${p.address}', ${p.latitude}, ${p.longitude}, '${p.img}', ${p.price || 0})">✏️</button>
+                        <button class="btn btn-edit" 
+                            onclick="openEditModal(${p.id}, '${p.name}', '${p.category}', '${p.address}', ${p.latitude}, ${p.longitude}, '${p.img || ''}', ${p.price || 0})">✏️</button>
                         <button class="btn btn-delete" onclick="deletePlace(${p.id})">🗑️</button>
                     </td>
                 </tr>`;
@@ -234,22 +247,37 @@ function closeEditModal() {
     document.getElementById('editModal').style.display = 'none';
 }
 
-// Form thêm mới
-document.getElementById("addForm").addEventListener("submit", async e => {
-    e.preventDefault();
-    const data = Object.fromEntries(new FormData(e.target).entries());
-    const res = await fetch("/api/admin/places/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token }}" },
-        body: JSON.stringify(data)
+// Preview ảnh khi chọn file trong modal sửa
+document.getElementById('edit_image_files').addEventListener('change', function(e) {
+    const previewContainer = document.getElementById('edit_image_preview');
+    previewContainer.innerHTML = ''; 
+    
+    const files = e.target.files;
+    if (files.length > 6) {
+        alert("Bạn chỉ được chọn tối đa 6 ảnh!");
+        e.target.value = ""; 
+        return;
+    }
+
+    Array.from(files).forEach(file => {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            const img = document.createElement('img');
+            img.src = event.target.result;
+            img.style.width = "80px";
+            img.style.margin = "5px";
+            previewContainer.appendChild(img);
+        }
+        reader.readAsDataURL(file);
     });
-    if (res.ok) { e.target.reset(); loadPlaces(); alert("Đã thêm thành công!"); }
 });
 
-// Form sửa
+// Form sửa (cập nhật thông tin + thêm ảnh mới)
 document.getElementById("editForm").addEventListener("submit", async e => {
     e.preventDefault();
     const id = document.getElementById("editId").value;
+
+    // Lấy dữ liệu text
     const data = {
         name: document.getElementById("editName").value,
         category: document.getElementById("editCategory").value,
@@ -259,12 +287,29 @@ document.getElementById("editForm").addEventListener("submit", async e => {
         img: document.getElementById("editImg").value,
         price: parseFloat(document.getElementById("editPrice").value) || 0
     };
+
+    // Tạo FormData để gửi cả text và file
+    const formData = new FormData();
+    for (const key in data) {
+        formData.append(key, data[key]);
+    }
+
+    // Thêm ảnh mới (nếu có)
+    const files = document.getElementById("edit_image_files").files;
+    Array.from(files).forEach(file => {
+        formData.append("images", file);
+    });
+
     const res = await fetch(`/api/admin/places/${id}/`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token }}" },
-        body: JSON.stringify(data)
+        body: formData
     });
-    if (res.ok) { closeEditModal(); loadPlaces(); }
+
+    if (res.ok) { 
+        closeEditModal(); 
+        loadPlaces(); 
+        alert("Đã cập nhật thành công!"); 
+    }
 });
 
 async function deletePlace(id) {
@@ -276,24 +321,25 @@ async function deletePlace(id) {
     }
 }
 
+// Preview ảnh khi chọn file
 document.getElementById('image_files').addEventListener('change', function(e) {
     const previewContainer = document.getElementById('image_preview');
-    previewContainer.innerHTML = ''; // Xóa preview cũ
+    previewContainer.innerHTML = ''; 
     
     const files = e.target.files;
-
     if (files.length > 6) {
         alert("Bạn chỉ được chọn tối đa 6 ảnh!");
-        e.target.value = ""; // Reset input
+        e.target.value = ""; 
         return;
     }
 
-    // Hiển thị ảnh xem trước
     Array.from(files).forEach(file => {
         const reader = new FileReader();
         reader.onload = function(event) {
             const img = document.createElement('img');
             img.src = event.target.result;
+            img.style.width = "80px";
+            img.style.margin = "5px";
             previewContainer.appendChild(img);
         }
         reader.readAsDataURL(file);

@@ -1,4 +1,5 @@
 import re
+import os
 import json
 import math
 import unicodedata
@@ -13,7 +14,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.views.decorators.csrf import csrf_exempt
 from geopy.distance import geodesic
 from django.contrib.auth.decorators import login_required
-from .models import TourismPoint, Category, Review
+from .models import TourismPoint, Category, Review, ImageGallery
 # ==============================
 # Các trang tĩnh
 # ==============================
@@ -287,47 +288,75 @@ def api_places(request):
         places = TourismPoint.objects.all().order_by('-id')
         data = []
         for p in places:
-            img_value = p.img if p.img else ""
-            if img_value and not img_value.startswith(('http', '/')):
-                img_url = settings.STATIC_URL + "images/" + img_value
+            gallery = []
+
+            # Lấy ảnh từ ImageGallery (ảnh upload mới)
+            for img in p.images.all():
+                media_path = os.path.join(settings.MEDIA_ROOT, img.image.name)
+                if os.path.exists(media_path):
+                    gallery.append(settings.MEDIA_URL + img.image.name)
+                else:
+                    gallery.append(settings.STATIC_URL + "images/" + img.image.name)
+
+            # Nếu gallery rỗng nhưng có dữ liệu menu_imgs (chuỗi JSON)
+            if not gallery and hasattr(p, "menu_imgs") and p.menu_imgs:
+                try:
+                    imgs = json.loads(p.menu_imgs)
+                    gallery = [settings.STATIC_URL + "images/" + path for path in imgs]
+                except Exception:
+                    gallery = []
+
+            # Ảnh chính
+            if gallery:
+                img_url = gallery[0]
+            elif p.img:
+                media_path = os.path.join(settings.MEDIA_ROOT, p.img)
+                if os.path.exists(media_path):
+                    img_url = settings.MEDIA_URL + p.img
+                else:
+                    img_url = settings.STATIC_URL + "images/" + p.img
             else:
-                img_url = img_value
+                img_url = None
+
             data.append({
                 "id": p.id,
                 "name": p.name,
                 "latitude": float(p.latitude) if p.latitude else 0,
                 "longitude": float(p.longitude) if p.longitude else 0,
                 "category": p.category.name if p.category else "Khác",
-                "address": p.address if p.address else "Chưa có địa chỉ",
-                "rating": p.rating if p.rating else 0,
-                "price": p.price if p.price else 0,
+                "address": p.address or "Chưa có địa chỉ",
+                "rating": p.rating or 0,
+                "price": p.price or 0,
                 "img": img_url,
-                "raw_img": p.img
+                "gallery": gallery
             })
         return JsonResponse(data, safe=False)
 
     elif request.method == "POST":
         try:
-            raw_data = json.loads(request.body)
-            name = raw_data.get('name')
+            name = request.POST.get('name')
             if not name:
                 return JsonResponse({"error": "Thiếu tên địa điểm"}, status=400)
-            lat = raw_data.get('latitude')
-            lng = raw_data.get('longitude')
-            latitude = float(lat) if lat else 0.0
-            longitude = float(lng) if lng else 0.0
-            cat_name = raw_data.get('category')
+
+            latitude = float(request.POST.get('latitude', 0.0))
+            longitude = float(request.POST.get('longitude', 0.0))
+            cat_name = request.POST.get('category')
             cat_obj, _ = Category.objects.get_or_create(name=cat_name if cat_name else "Khác")
-            TourismPoint.objects.create(
+
+            place = TourismPoint.objects.create(
                 name=name,
                 latitude=latitude,
                 longitude=longitude,
                 category=cat_obj,
-                address=raw_data.get('address', ''),
-                img=raw_data.get('img', ''),
-                price=raw_data.get('price', 0),
-                rating=raw_data.get('rating', 5.0)
+                address=request.POST.get('address', ''),
+                price=request.POST.get('price', 0),
+                rating=request.POST.get('rating', 5.0)
             )
+
+            # Lưu nhiều ảnh (nếu upload mới)
+            for f in request.FILES.getlist("images"):
+                ImageGallery.objects.create(tourismpoint=place, image=f)
+
             return JsonResponse({"message": "Thêm thành công"}, status=201)
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=400)
@@ -335,26 +364,39 @@ def api_places(request):
 @csrf_exempt
 def api_place_detail(request, pk):
     place = get_object_or_404(TourismPoint, pk=pk)
+
     if request.method == "DELETE":
         place.delete()
         return JsonResponse({"message": "Xóa thành công"}, status=204)
+
     elif request.method == "PUT":
         try:
-            raw_data = json.loads(request.body)
+            if request.content_type == "application/json":
+                raw_data = json.loads(request.body)
+            else:
+                raw_data = request.POST
+
             place.name = raw_data.get('name', place.name)
             place.latitude = raw_data.get('latitude', place.latitude)
             place.longitude = raw_data.get('longitude', place.longitude)
+
             cat_name = raw_data.get('category')
             if cat_name:
                 cat_obj, _ = Category.objects.get_or_create(name=cat_name)
                 place.category = cat_obj
+
             place.address = raw_data.get('address', place.address)
             place.price = raw_data.get('price', place.price)
             place.save()
+
+            # Nếu có ảnh mới thì thêm vào gallery
+            for f in request.FILES.getlist("images"):
+                ImageGallery.objects.create(tourismpoint=place, image=f)
+
             return JsonResponse({"message": "Cập nhật thành công"})
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=400)
-
+                
 # ==============================
 # Admin & Quản lý User
 # ==============================
