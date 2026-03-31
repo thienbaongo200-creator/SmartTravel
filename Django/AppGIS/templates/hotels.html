@@ -100,7 +100,7 @@
                         
                         <div class="mt-auto pt-3 border-top text-center">
                           <div class="mt-auto pt-3 border-top text-center">
-                            <a href="{% url 'home' %}?lat={{ hotel.latitude }}&lng={{ hotel.longitude }}&name={{ hotel.name|urlencode }}&img={{ hotel.img|urlencode }}&address={{ hotel.address|urlencode }}&desc={{ hotel.description|urlencode }}&rating={{ hotel.rating }}" class="btn-view-map">
+                            <a href="{% url 'home' %}?lat={{ hotel.latitude }}&lng={{ hotel.longitude }}&name={{ hotel.name|urlencode }}&img={{ hotel.img|urlencode }}&address={{ hotel.address|urlencode }}&desc={{ hotel.description|urlencode }}&rating={{ hotel.rating }}&price={{ hotel.price }}&category=Khách sạn" class="btn-view-map">
                                 <i class="fas fa-directions me-2"></i> Xem trên bản đồ
                             </a>
                         </div>
