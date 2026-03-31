@@ -7,11 +7,11 @@
 {% block content %}
 <style>
     .hotels-section { background-color: #f8f9fa; padding: 60px 0; }
-
-    /* CARD TỔNG THỂ */
+    
+    /* CARD TỔNG THỂ (Dạng ngang đồng bộ toàn hệ thống) */
     .hotel-card {
         display: flex;
-        flex-direction: row; /* Dạng nằm ngang */
+        flex-direction: row;
         border: none;
         border-radius: 15px;
         overflow: hidden;
@@ -30,89 +30,111 @@
         position: relative;
         overflow: hidden;
     }
-    .hotel-img { width: 100%; height: 100%; object-fit: cover; }
+    .hotel-img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
+    .hotel-card:hover .hotel-img { transform: scale(1.1); }
     
     .rating-badge {
         position: absolute;
         top: 15px; left: 15px;
-        background: rgba(255,255,255,0.9);
-        padding: 4px 10px;
+        background: rgba(255,255,255,0.95);
+        padding: 4px 12px;
         border-radius: 20px;
         font-weight: bold;
-        font-size: 0.85rem;
+        color: #f1c40f; /* Vàng đặc trưng khách sạn */
         z-index: 2;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
 
     /* KHỐI NỘI DUNG */
     .hotel-content-body {
         flex: 1;
-        padding: 30px 190px 30px 40px; /* Padding phải rộng để nhường chỗ cho giá/nút */
+        padding: 25px 30px;
         display: flex;
         flex-direction: column;
         position: relative;
+        /* FIX: Hành lang trống 180px bên phải tránh đè giá/nút */
+        padding-right: 180px; 
     }
 
     .hotel-title {
-        font-size: 1.4rem;
+        font-size: 1.35rem;
         font-weight: 700;
         color: #1a2b48;
-        margin-bottom: 15px;
+        margin-bottom: 12px;
         display: flex;
         align-items: center;
         text-transform: uppercase;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
     }
     .hotel-title::before {
-        content: ""; width: 30px; height: 3px;
+        content: ""; width: 25px; height: 3px;
         background: #ffc107; margin-right: 12px;
+        flex-shrink: 0;
     }
 
-    .hotel-info-list { list-style: none; padding: 0; margin-bottom: 15px; }
-    .hotel-info-list li { margin-bottom: 8px; color: #5e6d77; font-size: 0.95rem; }
-    .hotel-info-list i { color: #ffc107; margin-right: 10px; width: 18px; text-align: center; }
+    .info-list { list-style: none; padding: 0; margin-bottom: 10px; }
+    .info-list li { 
+        margin-bottom: 6px; 
+        color: #555; 
+        font-size: 0.9rem; 
+        display: flex; 
+        align-items: flex-start;
+    }
+    .info-list i { color: #ffc107; margin-right: 10px; width: 18px; text-align: center; margin-top: 3px; }
 
     .hotel-desc {
-        color: #777; font-size: 0.9rem; line-height: 1.6;
+        color: #777; font-size: 0.85rem; line-height: 1.5;
         display: -webkit-box; -webkit-line-clamp: 2;
         -webkit-box-orient: vertical; overflow: hidden;
     }
 
-    /* GIÁ PHÒNG - GÓC TRÊN PHẢI */
+    /* KHỐI GIÁ (Góc trên phải) */
     .hotel-price-wrapper {
         position: absolute;
-        top: 30px; right: 30px;
+        top: 25px; right: 25px;
         text-align: right;
     }
-    .hotel-price { font-size: 1.25rem; font-weight: 800; color: #e74c3c; display: block; }
-    .hotel-price-muted { font-size: 0.8rem; color: #888; }
+    .hotel-price-label { font-size: 0.75rem; color: #888; display: block; margin-bottom: -2px; }
+    .hotel-price-value { 
+        color: #e74c3c; 
+        font-weight: 800; 
+        font-size: 1.2rem; 
+    }
 
-    /* NÚT BẤM - GÓC DƯỚI PHẢI */
+    /* NÚT BẤM (Góc dưới phải - Có khung trang trí) */
     .hotel-btn-container {
         position: absolute;
-        right: 30px; bottom: 30px;
+        right: 25px; bottom: 25px;
     }
-    .btn-view-map {
-        padding: 10px 20px;
+    .btn-hotel-action {
+        padding: 9px 18px;
         font-weight: 600;
         background: #fff;
         color: #333;
         border: 1px solid #ddd;
         text-decoration: none !important;
         display: flex; align-items: center; gap: 8px;
-        font-size: 0.85rem;
+        font-size: 0.8rem;
         position: relative; z-index: 2;
         transition: 0.3s;
     }
     .hotel-btn-container::after {
-        content: ""; position: absolute; width: 50px; height: 25px;
+        content: ""; position: absolute; width: 40px; height: 20px;
         border-right: 3px solid #ffc107; border-bottom: 3px solid #ffc107;
-        right: -6px; bottom: -6px; z-index: 1;
+        right: -5px; bottom: -5px; z-index: 1;
     }
-    .btn-view-map:hover { border-color: #ffc107; color: #ffc107; }
+    .btn-hotel-action:hover { border-color: #ffc107; color: #ffc107; background: #fffdf5; }
 
+    /* Mobile Responsive */
     @media (max-width: 992px) {
         .hotel-card { flex-direction: column; height: auto; }
-        .hotel-content-body { padding: 25px; }
+        .hotel-img-container { flex: 0 0 220px; }
+        .hotel-content-body { padding: 20px; padding-right: 20px; }
         .hotel-price-wrapper, .hotel-btn-container { position: static; text-align: left; margin-top: 15px; }
+        .hotel-btn-container::after { display: none; }
     }
 </style>
 
@@ -120,60 +142,61 @@
     <div class="container">
         <div class="text-center mb-5">
             <h2 class="fw-bold text-uppercase">Khách sạn nổi bật</h2>
-            <div style="width: 60px; height: 3px; background: #ffc107; margin: 10px auto;"></div>
+            <div style="width: 50px; height: 3px; background: #ffc107; margin: 10px auto;"></div>
+            <p class="text-muted small">Tận hưởng dịch vụ nghỉ dưỡng cao cấp và tiện nghi</p>
         </div>
 
         <div class="row">
             {% for hotel in hotels %}
-            <div class="col-12 mb-4"> <div class="hotel-card">
+            <div class="col-12 mb-4">
+                <div class="hotel-card">
                     <div class="hotel-img-container">
                         {% if hotel.img %}
                             <img src="{% static 'images/' %}{{ hotel.img }}" class="hotel-img" alt="{{ hotel.name }}">
                         {% else %}
-                            <img src="{% static 'images/default-hotel.jpg' %}" class="hotel-img" alt="Default">
+                            <img src="{% static 'images/default-hotel.jpg' %}" class="hotel-img" alt="No image">
                         {% endif %}
-                        <div class="rating-badge">⭐ {{ hotel.rating|default:"5.0" }}</div>
+                        <div class="rating-badge">
+                            <i class="fas fa-star"></i> {{ hotel.rating|default:"5.0" }}
+                        </div>
                     </div>
 
                     <div class="hotel-content-body">
-                        <h5 class="hotel-title">{{ hotel.name }}</h5>
+                        <h5 class="hotel-title" title="{{ hotel.name }}">{{ hotel.name }}</h5>
                         
-<<<<<<< HEAD
                         <div class="hotel-price-wrapper">
-=======
-                        <div class="mt-auto pt-3 border-top text-center">
-                          <div class="mt-auto pt-3 border-top text-center">
-                            <a href="{% url 'home' %}?lat={{ hotel.latitude }}&lng={{ hotel.longitude }}&name={{ hotel.name|urlencode }}&img={{ hotel.img|urlencode }}&address={{ hotel.address|urlencode }}&desc={{ hotel.description|urlencode }}&rating={{ hotel.rating }}&price={{ hotel.price }}&category=Khách sạn" class="btn-view-map">
-                                <i class="fas fa-directions me-2"></i> Xem trên bản đồ
-                            </a>
-                        </div>
-                        <p class="card-text hotel-price-wrapper">
-                            <strong>Giá phòng: </strong> 
->>>>>>> a8b2cbfbbac2e2c099735de69b0b01ae84f3b4e1
-                            {% if hotel.price %}
-                                <span class="hotel-price">{{ hotel.price|intcomma }} VNĐ</span>
-                                <span class="hotel-price-muted">/ đêm</span>
-                            {% else %}
-                                <span class="hotel-price-muted">Liên hệ để biết giá</span>
-                            {% endif %}
+                            <span class="hotel-price-label">Giá phòng từ:</span>
+                            <span class="hotel-price-value">
+                                {% if hotel.price %}{{ hotel.price|intcomma }} VNĐ{% else %}Liên hệ{% endif %}
+                            </span>
                         </div>
 
-                        <ul class="hotel-info-list">
-                            <li><i class="fas fa-map-marker-alt"></i> {{ hotel.address|default:"Đang cập nhật" }}</li>
-                            <li><i class="fas fa-clock"></i> {{ hotel.open_hours|default:"24/7" }}</li>
+                        <ul class="info-list">
+                            <li>
+                                <i class="fas fa-map-marker-alt"></i> 
+                                <span>{{ hotel.address|default:"Đang cập nhật địa chỉ" }}</span>
+                            </li>
+                            <li>
+                                <i class="fas fa-clock"></i> 
+                                <span>Phục vụ: {{ hotel.open_hours|default:"24/7" }}</span>
+                            </li>
                         </ul>
 
                         <p class="hotel-desc">
-                            {{ hotel.description|default:"Dịch vụ nghỉ dưỡng cao cấp với đầy đủ tiện nghi hiện đại." }}
+                            {{ hotel.description|default:"Dịch vụ nghỉ dưỡng cao cấp với đầy đủ tiện nghi hiện đại cho kỳ nghỉ của bạn." }}
                         </p>
                         
                         <div class="hotel-btn-container">
-                            <a href="{% url 'home' %}?lat={{ hotel.latitude }}&lng={{ hotel.longitude }}&name={{ hotel.name|urlencode }}&img={{ hotel.img|urlencode }}&address={{ hotel.address|urlencode }}&desc={{ hotel.description|urlencode }}&rating={{ hotel.rating }}" class="btn-view-map">
-                                <i class="fas fa-directions"></i> XEM TRÊN BẢN ĐỒ
+                            <a href="{% url 'home' %}?lat={{ hotel.latitude }}&lng={{ hotel.longitude }}&name={{ hotel.name|urlencode }}&img={{ hotel.img|urlencode }}&address={{ hotel.address|urlencode }}" class="btn-hotel-action">
+                                <i class="fas fa-map-marked-alt"></i> XEM TRÊN BẢN ĐỒ
                             </a>
                         </div>
                     </div>
                 </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center py-5">
+                <p class="text-muted italic">Hiện chưa có dữ liệu khách sạn.</p>
             </div>
             {% endfor %}
         </div>
