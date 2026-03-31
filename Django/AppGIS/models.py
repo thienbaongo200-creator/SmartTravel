@@ -45,14 +45,6 @@ class TourismPoint(models.Model):
             "time_minutes": round(time_minutes, 1)
         }
 
-class OpeningHours(models.Model):
-    tourismpoint = models.ForeignKey(TourismPoint, on_delete=models.CASCADE)
-    day_of_week = models.CharField(max_length=20)
-    open_time = models.TimeField()
-    close_time = models.TimeField()
-
-    def __str__(self):
-        return f"{self.tourismpoint.name} - {self.day_of_week}"
 
 class Review(models.Model):
     tourismpoint = models.ForeignKey(TourismPoint, on_delete=models.CASCADE)
@@ -65,20 +57,3 @@ class Review(models.Model):
     def __str__(self):
         return f"{self.user.username} - {self.tourismpoint.name}"
 
-class ImageGallery(models.Model):
-    tourismpoint = models.ForeignKey(TourismPoint, on_delete=models.CASCADE)
-    img_path = models.CharField(max_length=200)
-    caption = models.CharField(max_length=200, blank=True)
-
-    def __str__(self):
-        return f"{self.tourismpoint.name} - {self.img_path}"
-
-class Event(models.Model):
-    tourismpoint = models.ForeignKey(TourismPoint, on_delete=models.CASCADE)
-    title = models.CharField(max_length=200)
-    description = models.TextField()
-    start_date = models.DateField()
-    end_date = models.DateField()
-
-    def __str__(self):
-        return f"{self.title} - {self.tourismpoint.name}"
