@@ -187,7 +187,7 @@
                         </p>
                         
                         <div class="hotel-btn-container">
-                            <a href="{% url 'home' %}?lat={{ hotel.latitude }}&lng={{ hotel.longitude }}&name={{ hotel.name|urlencode }}&img={{ hotel.img|urlencode }}&address={{ hotel.address|urlencode }}" class="btn-hotel-action">
+                            <a href="{% url 'home' %}?lat={{ hotel.latitude }}&lng={{ hotel.longitude }}&name={{ hotel.name|urlencode }}&img={{ hotel.img|urlencode }}&address={{ hotel.address|urlencode }}&price={{ hotel.price|default:0 }}" class="btn-hotel-action">
                                 <i class="fas fa-map-marked-alt"></i> XEM TRÊN BẢN ĐỒ
                             </a>
                         </div>
