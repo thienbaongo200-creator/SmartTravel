@@ -1,8 +1,7 @@
 from django.conf import settings
-from django.urls import path
 from django.conf.urls.static import static
+from django.urls import path
 from . import views
-from .views import register_view, login_view, logout_view
 
 urlpatterns = [
     # Trang chính
@@ -13,9 +12,9 @@ urlpatterns = [
     path("services/", views.services, name="services"),
 
     # Đăng nhập / Đăng ký
-    path("login/", login_view, name="login"),
-    path("register/", register_view, name="register"),
-    path("logout/", logout_view, name="logout"),
+    path("login/", views.login_view, name="login"),
+    path("register/", views.register_view, name="register"),
+    path("logout/", views.logout_view, name="logout"),
 
     # Dịch vụ chi tiết
     path("hotels/", views.hotels_list, name="hotels"),
@@ -51,5 +50,6 @@ urlpatterns = [
     path("api/admin/users/<int:pk>/", views.api_user_detail, name="api_admin_user_detail"),
 ]
 
+# Chỉ thêm static khi DEBUG = True
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -424,7 +424,7 @@ async function showWeather(lat, lng) {
 }
 
 function displayInfo(p) {
-    console.log("Dữ liệu nhận được:", p);
+    const encodedData = btoa(unescape(encodeURIComponent(JSON.stringify(p))));
     const panel = document.getElementById("info-panel");
     const content = document.getElementById("info-content");
     if (!panel || !content) return;
@@ -497,7 +497,7 @@ function displayInfo(p) {
                 <button class="btn-direction" onclick="showRouteFromSearch(${p.latitude}, ${p.longitude})">
                     <i class="fa-solid fa-route"></i> HƯỚNG ĐI
                 </button>
-                <button class="btn-save" onclick="savePlace('${p.name}')">
+                <button id="btn-save-main" class="btn-save" onclick="savePlace('${encodedData}', event)">
                     <i class="fa-solid fa-bookmark"></i> LƯU
                 </button>
                 <button class="btn-review" onclick="openReviewModal('${p.id}', '${p.name.replace(/'/g, "\\'")}')">
@@ -529,7 +529,16 @@ function displayInfo(p) {
     }
 
     content.innerHTML = html;
+    const savedPlaces = JSON.parse(localStorage.getItem("mySavedPlaces")) || [];
+    const isAlreadySaved = savedPlaces.some(item => item.name === p.name);
 
+    if (isAlreadySaved) {
+        const btnSave = document.getElementById("btn-save-main");
+        if (btnSave) {
+            btnSave.style.color = "gold";
+            btnSave.innerHTML = '<i class="fa-solid fa-check"></i> ĐÃ LƯU';
+        }
+    }
     if (typeof showWeather === "function") {
         showWeather(p.latitude, p.longitude);
     }
@@ -769,12 +778,8 @@ function showNearbyPlaces() {
                     .bindPopup(`
                         <strong>${p.name}</strong><br>
                         ${p.address || ''}<br>
-                        📏 ${p.distance_km ? p.distance_km + ' km' : ''}<br>
+                        ${p.distance_km ? p.distance_km + ' km' : ''}<br>
                         <hr>
-                        <button class="btn-review" onclick="openReviewModal(${p.id}, '${p.name.replace(/'/g, "\\'")}')" 
-                            style="cursor:pointer; background:#28a745; color:white; border:none; padding:5px 10px; border-radius:3px; width:100%;">
-                            ⭐ Viết đánh giá
-                        </button>
                     `);
                 window.nearbyLayer.addLayer(marker);
             });
@@ -888,4 +893,103 @@ function renderStarRating(name) {
 function closeReviewModal() {
     const modal = document.getElementById('reviewModal');
     if (modal) modal.style.display = 'none';
+}
+function savePlace(placeName) {
+    let savedPlaces = JSON.parse(localStorage.getItem("mySavedPlaces")) || [];
+
+    const isExisted = savedPlaces.some(place => place.name === placeName);
+
+    if (isExisted) {
+        alert("Địa điểm này đã có trong danh sách lưu của bạn!");
+        return;
+    }
+
+    const newPlace = {
+        name: placeName,
+        savedAt: new Date().toLocaleString('vi-VN'),
+    };
+
+    savedPlaces.push(newPlace);
+    localStorage.setItem("mySavedPlaces", JSON.stringify(savedPlaces));
+
+    alert(`Đã lưu "${placeName}" thành công!`);
+}
+function savePlace(encodedData, event) {
+    // 1. Giải mã dữ liệu
+    let placeObj;
+    try {
+        placeObj = JSON.parse(decodeURIComponent(escape(atob(encodedData))));
+    } catch (e) {
+        console.error("Lỗi giải mã dữ liệu:", e);
+        return;
+    }
+
+    const btnSave = event ? event.currentTarget : null;
+    let savedPlaces = JSON.parse(localStorage.getItem("mySavedPlaces")) || [];
+    
+    const existingIndex = savedPlaces.findIndex(item => item.name === placeObj.name);
+
+    if (existingIndex !== -1) {
+        if (confirm(`Bạn có muốn bỏ lưu "${placeObj.name}" không?`)) {
+            savedPlaces.splice(existingIndex, 1);
+            localStorage.setItem("mySavedPlaces", JSON.stringify(savedPlaces));
+
+            if (btnSave) {
+                btnSave.style.color = ""; 
+                btnSave.innerHTML = '<i class="fa-solid fa-bookmark"></i> LƯU';
+            }
+        }
+    } else {
+        savedPlaces.push({
+            ...placeObj,
+            savedAt: new Date().toLocaleString('vi-VN')
+        });
+        localStorage.setItem("mySavedPlaces", JSON.stringify(savedPlaces));
+
+        if (btnSave) {
+            btnSave.style.color = "gold";
+            btnSave.innerHTML = '<i class="fa-solid fa-check"></i> ĐÃ LƯU';
+        }
+        alert("Đã lưu vào danh sách yêu thích!");
+    }
+}
+function showSavedPlaces() {
+    const savedPlaces = JSON.parse(localStorage.getItem("mySavedPlaces")) || [];
+    const content = document.getElementById("info-content");
+    
+    let html = `<h3><i class="fa-solid fa-star" style="color: #ffc107;"></i> Địa điểm đã lưu</h3>`;
+    
+    if (savedPlaces.length === 0) {
+        html += "<p class='text-muted'>Danh sách yêu thích trống.</p>";
+    } else {
+        html += "<ul>" + savedPlaces.map(p => {
+            // Mã hóa dữ liệu để truyền vào hàm an toàn
+            const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(p))));
+            
+            return `
+            <li class="list-item" onclick="handleSavedItemClick('${encoded}')">
+                <div style="display:flex; align-items:center;">
+                    <div class="item-icon"><i class="fa-solid fa-location-dot"></i></div>
+                    <div class="item-info">
+                        <span class="item-name">${p.name}</span>
+                    </div>
+                </div>
+                <i class="fa-solid fa-chevron-right" style="color:#ccc; font-size:0.8rem;"></i>
+            </li>`;
+        }).join('') + "</ul>";
+        
+        html += `<button class="btn-clear-all" onclick="if(confirm('Xóa hết?')){localStorage.removeItem('mySavedPlaces'); showSavedPlaces();}">Xóa tất cả</button>`;
+    }
+    
+    content.innerHTML = html;
+    document.getElementById("info-panel").style.display = "block";
+}
+
+function handleSavedItemClick(encodedData) {
+    const p = JSON.parse(decodeURIComponent(escape(atob(encodedData))));
+    displayInfo(p); 
+    
+    if (window.map) {
+        window.map.flyTo([p.latitude, p.longitude], 15);
+    }
 }
