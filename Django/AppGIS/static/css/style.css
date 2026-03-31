@@ -2049,3 +2049,71 @@ destinations-section {
     from { transform: translateY(50px); opacity: 0; }
     to { transform: translateY(0); opacity: 1; }
 }
+.modal-footer {
+    display: flex;
+    justify-content: flex-end; /* Căn nút sang bên phải */
+    gap: 12px;                /* Khoảng cách giữa 2 nút */
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+}
+
+/* Định dạng chung cho nút */
+.btn {
+    padding: 10px 20px;
+    border-radius: 8px;       /* Bo góc hiện đại */
+    border: none;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease; /* Hiệu ứng mượt mà khi hover */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Nút GỬI (Màu xanh dương hoặc xanh lá) */
+.btn-add {
+    background-color: #007bff; /* Màu xanh đặc trưng */
+    color: white;
+    box-shadow: 0 4px 6px rgba(0, 123, 255, 0.2);
+}
+
+.btn-add:hover {
+    background-color: #0056b3;
+    transform: translateY(-2px); /* Nhích nhẹ lên khi hover */
+    box-shadow: 0 6px 12px rgba(0, 123, 255, 0.3);
+}
+
+/* Nút HỦY (Màu xám hoặc đỏ nhạt) */
+.btn-delete {
+    background-color: #f8f9fa;
+    color: #6c757d;
+    border: 1px solid #ddd;
+}
+
+.btn-delete:hover {
+    background-color: #e2e6ea;
+    color: #343a40;
+}
+
+/* Hiệu ứng khi nhấn giữ nút */
+.btn:active {
+    transform: translateY(0);
+}
+/* Tùy chỉnh giao diện Tooltip khi hover */
+.leaflet-tooltip {
+    background-color: rgba(0, 0, 0, 0.8); /* Nền đen mờ */
+    color: white;                         /* Chữ trắng */
+    border: none;
+    border-radius: 4px;
+    padding: 5px 10px;
+    font-size: 13px;
+    font-weight: 500;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+}
+
+/* Tùy chỉnh mũi tên của Tooltip */
+.leaflet-tooltip-top:before {
+    border-top-color: rgba(0, 0, 0, 0.8);
+}
