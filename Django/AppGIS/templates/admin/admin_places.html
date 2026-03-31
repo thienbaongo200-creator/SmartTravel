@@ -347,4 +347,48 @@ document.getElementById('image_files').addEventListener('change', function(e) {
 });
 
 window.onload = () => { initMainMap(); loadPlaces(); };
+// Xử lý thêm địa điểm mới
+document.getElementById("addForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    
+    const formData = new FormData();
+    // Lấy tất cả các field bình thường
+    formData.append("name", e.target.name.value);
+    formData.append("category", e.target.category.value);
+    formData.append("address", e.target.address.value);
+    formData.append("latitude", e.target.latitude.value);
+    formData.append("longitude", e.target.longitude.value);
+    formData.append("price", e.target.price.value || 0);
+
+    // Lấy danh sách file ảnh (Thêm 1 hoặc nhiều ảnh)
+    const fileInput = document.getElementById('image_files');
+    const files = fileInput.files;
+    for (let i = 0; i < files.length; i++) {
+        formData.append("images", files[i]); // Key "images" phải khớp với backend xử lý
+    }
+
+    try {
+        const res = await fetch("/api/admin/places/", {
+            method: "POST",
+            body: formData,
+            // Lưu ý: Không đặt Content-Type khi gửi FormData để trình duyệt tự set với Boundary
+            headers: {
+                "X-CSRFToken": "{{ csrf_token }}"
+            }
+        });
+
+        if (res.ok) {
+            alert("Thêm địa điểm thành công!");
+            e.target.reset(); // Xóa sạch form
+            document.getElementById('image_preview').innerHTML = ''; // Xóa preview
+            loadPlaces(); // Load lại bảng
+        } else {
+            const errorData = await res.json();
+            alert("Lỗi: " + (errorData.message || "Không thể thêm địa điểm"));
+        }
+    } catch (error) {
+        console.error("Error:", error);
+        alert("Đã xảy ra lỗi khi gửi dữ liệu!");
+    }
+});
 </script>

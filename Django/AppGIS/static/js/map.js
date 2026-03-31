@@ -447,7 +447,7 @@ function displayInfo(p) {
 
         return "/static/images/" + path;
     };
-
+    
     // Gán imgPath chính
     let imgPath = getCorrectPath(p.img);
 
