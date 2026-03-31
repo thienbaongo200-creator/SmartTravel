@@ -153,7 +153,7 @@
                         </p>
                         
                         <div class="mt-auto pt-3 border-top text-center">
-                            <a href="{% url 'home' %}?lat={{ restaurant.latitude }}&lng={{ restaurant.longitude }}&name={{ restaurant.name|urlencode }}&img={{ restaurant.img|urlencode }}&address={{ restaurant.address|urlencode }}" class="btn-view-map">
+                            <a href="{% url 'home' %}?lat={{ restaurant.latitude }}&lng={{ restaurant.longitude }}&name={{ restaurant.name|urlencode }}&img={{ restaurant.img|urlencode }}&address={{ restaurant.address|urlencode }}&desc={{ restaurant.description|urlencode }}&rating={{ restaurant.rating }}&price={{ restaurant.price|default:0 }}&category=Nhà hàng" class="btn-view-map">
                                 <i class="fas fa-map-marked-alt me-2"></i> Chỉ đường ngay
                             </a>
                         </div>
