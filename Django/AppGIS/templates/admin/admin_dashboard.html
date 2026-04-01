@@ -13,15 +13,16 @@
     </header>
 
     <nav class="admin-nav">
-        <a href="{% url 'admin_places' %}" class="nav-link">📍 Quản lý Địa điểm</a>
-        <a href="{% url 'admin_user' %}" class="nav-link">👤 Quản lý Người dùng</a>
-        <a href="{% url 'logout' %}" class="nav-link">🚪 Đăng xuất</a>
+        <a href="{% url 'admin_places' %}" class="nav-link">Quản lý Địa điểm</a>
+        <a href="{% url 'admin_user' %}" class="nav-link">Quản lý Người dùng</a>
+        <a href="{% url 'admin_contacts' %}" class="nav-link">Xem Liên hệ</a>
+        <a href="{% url 'logout' %}" class="nav-link">Đăng xuất</a>
     </nav>
 
     <main>
         <div class="section stats">
-            <div class="stat-card">📍 Địa điểm: {{ places_count }}</div>
-            <div class="stat-card">👤 Người dùng: {{ users_count }}</div>
+            <div class="stat-card">Địa điểm: {{ places_count }}</div>
+            <div class="stat-card">Người dùng: {{ users_count }}</div>
         </div>
 
         <div class="section">
@@ -47,9 +48,9 @@
 
         <div class="section guide">
             <h2>Hướng dẫn sử dụng</h2>
-            <p>📍 Vào mục <b>Quản lý Địa điểm</b> để thêm, sửa, xóa địa điểm du lịch.</p>
-            <p>👤 Vào mục <b>Quản lý Người dùng</b> để tạo hoặc chỉnh sửa tài khoản.</p>
-            <p>🚪 Dùng <b>Đăng xuất</b> để thoát khỏi hệ thống quản trị.</p>
+            <p>Vào mục <b>Quản lý Địa điểm</b> để thêm, sửa, xóa địa điểm du lịch.</p>
+            <p>Vào mục <b>Quản lý Người dùng</b> để tạo hoặc chỉnh sửa tài khoản.</p>
+            <p>Dùng <b>Đăng xuất</b> để thoát khỏi hệ thống quản trị.</p>
         </div>
     </main>
 </div>
