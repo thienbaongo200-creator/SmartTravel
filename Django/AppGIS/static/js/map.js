@@ -147,34 +147,41 @@ async function searchPlace() {
 
 // Hàm hỗ trợ: Hiển thị Marker và Panel thông tin
 function renderSearchResult(lat, lon, name, placeObject) {
-    // 1. Lấy ID từ placeObject (Đảm bảo Backend đã trả về field 'id')
-    const placeId = placeObject.id; 
-
-    // Kiểm tra nếu không có ID thì báo lỗi ngay để debug
-    if (!placeId) {
-        console.error("Lỗi: placeObject không có trường 'id'!", placeObject);
+    // 1. Kiểm tra và gán ID dự phòng nếu Backend không trả về
+    // Nếu không có id, dùng osm_id hoặc tạo một chuỗi tạm để tránh lỗi logic
+    if (!placeObject.id) {
+        placeObject.id = placeObject.osm_id || "temp_" + Date.now();
+        console.warn("Cảnh báo: placeObject thiếu ID, đã gán ID tạm thời:", placeObject.id);
     }
 
-    // 2. Xóa marker cũ nếu có
-    if (typeof searchMarker !== 'undefined' && searchMarker) {
-        map.removeLayer(searchMarker);
+    const placeId = placeObject.id; 
+
+    // 2. Xóa marker cũ
+    if (window.searchMarker) {
+        map.removeLayer(window.searchMarker);
     }
 
     // 3. Di chuyển bản đồ
     map.flyTo([lat, lon], 16);
 
-    // 4. Cắm marker mới (Sửa biến 'id' thành 'placeId')
-    searchMarker = L.marker([lat, lon]).addTo(map)
+    // 4. Cắm marker mới
+    window.searchMarker = L.marker([lat, lon]).addTo(map)
         .bindPopup(`
-            <div style="min-width:150px;">
-                <b>${name}</b><br>
+            <div style="min-width:150px; text-align:center;">
+                <b style="color:#e67e22;">${name}</b><br>
+                <small>Nhấp để xem chi tiết</small>
             </div>
         `)
         .openPopup();
         
-    // 5. Hiển thị Panel thông tin bên trái
+    // 5. Hiển thị Panel thông tin
     if (typeof displayInfo === "function") {
         displayInfo(placeObject);
+    }
+
+    // 6. Lưu vào lịch sử (Đã có ID nên xem được review)
+    if (typeof addToHistory === "function") {
+        addToHistory(placeObject);
     }
 }
 
@@ -481,7 +488,7 @@ async function displayInfo(p) {
         return `${formatted} VNĐ<small style="font-size: 0.7rem; font-weight: normal; margin-left: 2px;">/đêm</small>`;
     }
     return `${formatted} VNĐ`;
-    };
+};
 
     const getCorrectPath = (path) => {
         if (!path) return "";
@@ -1164,5 +1171,31 @@ async function calculateRoute() {
         alert("Lỗi tính toán đường đi.");
     } finally {
         if (loading) loading.style.display = "none";
+    }
+}
+async function searchGlobal(query) {
+    console.log("Tìm kiếm toàn cầu cho:", query);
+    try {
+        const osmRes = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query + ", Vietnam")}&limit=1`);
+        const osmData = await osmRes.json();
+        
+        if (osmData && osmData.length > 0) {
+            const item = osmData[0];
+            const osmPlace = {
+                id: "temp_" + Date.now(), // Gán ID tạm để ko bị lỗi code hiển thị
+                name: item.display_name.split(',')[0],
+                latitude: parseFloat(item.lat),
+                longitude: parseFloat(item.lon),
+                address: item.display_name,
+                description: "Địa chỉ từ vệ tinh.",
+                category: "Địa chỉ",
+                img: "https://images.unsplash.com/photo-1526772662000-3f88f10405ff?w=400"
+            };
+            renderSearchResult(osmPlace.latitude, osmPlace.longitude, osmPlace.name, osmPlace);
+        } else {
+            alert("Không tìm thấy địa điểm!");
+        }
+    } catch (e) {
+        console.error("Lỗi tìm global:", e);
     }
 }

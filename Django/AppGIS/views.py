@@ -61,26 +61,55 @@ def slugify(value):
     return re.sub(r'[-\s]+', '', value)
 
 def search(request):
-    query = request.GET.get("q", "")
-    results = TourismPoint.objects.filter(name__icontains=query)
-    data = [] 
-    for p in results: 
-        folder = slugify(p.name)  # tên thư mục theo tên địa điểm
-        data.append({ 
-            'id': p.id,
-            "name": p.name, 
-            "description": p.description, 
-            "latitude": p.latitude, 
-            "longitude": p.longitude, 
-            "category": p.category.name if p.category else None, 
-            "address": p.address, 
-            "open_hours": p.open_hours, 
-            "rating": p.rating, 
-            "price": int(p.price) if p.price is not None else None, 
-            "img": p.img, 
-            "menu_imgs": [img for img in (p.menu_imgs or [])]
-        })
-    return JsonResponse(data, safe=False)
+    query = request.GET.get("q", "").strip()
+    if not query:
+        return JsonResponse([], safe=False)
+
+    try:
+        # Tìm kiếm theo tên
+        results = TourismPoint.objects.filter(name__icontains=query)
+        data = [] 
+        for p in results: 
+            # XỬ LÝ ẢNH AN TOÀN: 
+            # Nếu p.img là ImageField, phải dùng .url. Nếu là CharField, dùng str().
+            img_url = ""
+            if p.img:
+                try:
+                    img_url = p.img.url if hasattr(p.img, 'url') else str(p.img)
+                except:
+                    img_url = str(p.img)
+
+            # XỬ LÝ MENU_IMGS AN TOÀN:
+            # Code cũ của bạn: [img for img in (p.menu_imgs or [])] gây lỗi nếu menu_imgs là chuỗi JSON
+            safe_menu = []
+            if p.menu_imgs:
+                if isinstance(p.menu_imgs, list):
+                    safe_menu = p.menu_imgs
+                elif isinstance(p.menu_imgs, str):
+                    try:
+                        import json
+                        safe_menu = json.loads(p.menu_imgs)
+                    except:
+                        safe_menu = []
+
+            data.append({ 
+                'id': p.id, # BẮT BUỘC PHẢI CÓ ID ĐỂ KHÔNG BỊ TEMP_ID
+                "name": p.name, 
+                "description": p.description or "", 
+                "latitude": float(p.latitude) if p.latitude else 0.0, 
+                "longitude": float(p.longitude) if p.longitude else 0.0, 
+                "category": p.category.name if p.category else "Địa điểm", 
+                "address": p.address or "Đang cập nhật", 
+                "rating": float(p.rating) if p.rating else 5.0, 
+                "price": int(p.price) if p.price else 0, 
+                "img": img_url, 
+                "menu_imgs": safe_menu
+            })
+        return JsonResponse(data, safe=False)
+    except Exception as e:
+        # In lỗi cụ thể ra Terminal để bạn debug
+        print(f"CRITICAL ERROR IN SEARCH: {e}")
+        return JsonResponse({"error": str(e)}, status=500)
 
 def get_places_by_category(request):
     category_slug = request.GET.get('category', '').strip().lower()
