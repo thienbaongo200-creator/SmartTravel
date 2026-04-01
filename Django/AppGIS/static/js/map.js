@@ -462,8 +462,26 @@ async function displayInfo(p) {
     const content = document.getElementById("info-content");
     if (!panel || !content) return;
 
+    // --- KIỂM TRA ID TRƯỚC KHI CHẠY ---
+    // Thử lấy p.id hoặc p.pk (tùy theo cấu trúc Django/Database của bạn)
+    const placeId = p.id || p.pk; 
+
     panel.style.display = "block";
     const encodedData = btoa(unescape(encodeURIComponent(JSON.stringify(p))));
+
+    // Hàm định dạng giá
+    // Đoạn này nằm trong map.js (hàm displayInfo)
+    const formatPrice = (price, category) => {
+    if (!price || price === "0" || price === 0 || price === "None") return "Liên hệ";
+    const formatted = new Intl.NumberFormat('vi-VN').format(price);
+    const cat = category ? category.toLowerCase() : "";
+
+    // Kiểm tra từ khóa khách sạn
+    if (cat.includes("khách sạn") || cat.includes("hotel")) {
+        return `${formatted} VNĐ<small style="font-size: 0.7rem; font-weight: normal; margin-left: 2px;">/đêm</small>`;
+    }
+    return `${formatted} VNĐ`;
+    };
 
     const getCorrectPath = (path) => {
         if (!path) return "";
@@ -493,8 +511,11 @@ async function displayInfo(p) {
 
     // --- KHỞI TẠO HTML CƠ BẢN ---
     let html = `
-        <div class="info-header">
+        <div class="info-header" style="position: relative;">
             ${imgPath ? `<img src="${imgPath}" alt="${p.name}" class="main-info-img">` : ""}
+            <div style="position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.7); color: #fff; padding: 5px 10px; border-radius: 4px; font-weight: bold; font-size: 0.9rem; z-index: 2;">
+                <i class="fa-solid fa-tags" style="color: #ffc107;"></i> ${formatPrice(p.price)}
+            </div>
         </div>
         <div class="info-body">
             <h2>${p.name}</h2>
@@ -510,7 +531,7 @@ async function displayInfo(p) {
                 <button id="btn-save-main" class="btn-save" onclick="savePlace('${encodedData}', event)">
                     <i class="fa-solid fa-bookmark"></i> LƯU
                 </button>
-                <button class="btn-review" onclick="openReviewModal('${p.id}', '${p.name.replace(/'/g, "\\'")}')">
+                <button class="btn-review" onclick="openReviewModal('${placeId}', '${p.name.replace(/'/g, "\\'")}')">
                     <i class="fa-solid fa-pen-to-square"></i> VIẾT ĐÁNH GIÁ
                 </button>
             </div>
@@ -519,7 +540,7 @@ async function displayInfo(p) {
         <div class="reviews-display-section" style="padding: 15px; border-top: 8px solid #f0f2f5;">
             <h4><i class="fa-solid fa-comments"></i> Đánh giá từ cộng đồng</h4>
             <div id="direct-reviews-list" style="margin-top: 10px;">
-                <p style="color: #666; font-size: 14px;">Đang tải đánh giá...</p>
+                ${placeId ? '<p style="color: #666; font-size: 14px;">Đang tải đánh giá...</p>' : '<p style="color: #666; font-size: 14px;">Không thể tải đánh giá (Thiếu ID).</p>'}
             </div>
         </div>
     `;
@@ -541,8 +562,12 @@ async function displayInfo(p) {
 
     content.innerHTML = html;
 
-    // --- GỌI HÀM TẢI ĐÁNH GIÁ NGAY LẬP TỨC ---
-    loadReviewsToPanel(p.id);
+    // --- CHỈ GỌI LOAD REVIEWS NẾU CÓ ID ---
+    if (placeId && placeId !== 'undefined') {
+        loadReviewsToPanel(placeId);
+    } else {
+        console.error("Lỗi: Không tìm thấy ID cho địa điểm:", p.name);
+    }
 
     // Kiểm tra trạng thái lưu
     const savedPlaces = JSON.parse(localStorage.getItem("mySavedPlaces")) || [];
@@ -1139,19 +1164,5 @@ async function calculateRoute() {
         alert("Lỗi tính toán đường đi.");
     } finally {
         if (loading) loading.style.display = "none";
-    }
-}
-function useMyLocation(inputId) {
-    const input = document.getElementById(inputId);
-    if (window.userMarker) {
-        const pos = window.userMarker.getLatLng();
-        input.value = "Vị trí của bạn";
-        input.dataset.lat = pos.lat;
-        input.dataset.lng = pos.lng;
-        
-        // Di chuyển bản đồ về vị trí của bạn
-        map.flyTo([pos.lat, pos.lng], 15);
-    } else {
-        alert("Chưa xác định được vị trí GPS của bạn. Vui lòng bật định vị!");
     }
 }

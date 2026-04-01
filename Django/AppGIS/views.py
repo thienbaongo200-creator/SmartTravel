@@ -17,6 +17,7 @@ from django.contrib.auth.decorators import login_required
 from .models import TourismPoint, Category, Review, ImageGallery
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
+from django.core.paginator import Paginator
 # ==============================
 # Các trang tĩnh
 # ==============================
@@ -197,6 +198,9 @@ def nearby_places(request):
 # ==============================
 def hotels_list(request):
     hotels = TourismPoint.objects.filter(category__name="Khách sạn")
+    paginator = Paginator(hotels, 5) 
+    page_number = request.GET.get('page') 
+    hotels = paginator.get_page(page_number)
     return render(request, "hotels.html", {"hotels": hotels})
 
 def restaurants_list(request):
