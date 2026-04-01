@@ -2117,3 +2117,16 @@ destinations-section {
 .leaflet-tooltip-top:before {
     border-top-color: rgba(0, 0, 0, 0.8);
 }
+.click-location-popup {
+    text-align: center;
+}
+.click-location-popup button {
+    margin-top: 5px;
+    padding: 3px 8px;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+}
