@@ -183,7 +183,7 @@
                             {{ point.description|default:"Khám phá vẻ đẹp đặc sắc tại điểm đến này."|truncatewords:18 }}
                         </p>
                         <div class="btn-container">
-                            <a href="{% url 'home' %}?lat={{ point.latitude }}&lng={{ point.longitude }}&name={{ point.name|urlencode }}&img={{ point.img|urlencode }}" class="btn-action">
+                            <a href="{% url 'home' %}?lat={{ point.latitude }}&lng={{ point.longitude }}&name={{ point.name|urlencode }}&img={{ point.img|urlencode }}&description={{ point.description|urlencode }}&price={{ point.price|default:"Liên hệ" }}" class="btn-action">
                                 <i class="fas fa-route me-2"></i> Khám phá ngay
                             </a>
                         </div>
