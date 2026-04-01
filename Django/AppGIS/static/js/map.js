@@ -998,7 +998,7 @@ function savePlace(encodedData, event) {
         console.error("Lỗi giải mã dữ liệu:", e);
         return;
     }
-
+    
     const btnSave = event ? event.currentTarget : null;
     let savedPlaces = JSON.parse(localStorage.getItem("mySavedPlaces")) || [];
     
@@ -1061,11 +1061,34 @@ function showSavedPlaces() {
 }
 
 function handleSavedItemClick(encodedData) {
-    const p = JSON.parse(decodeURIComponent(escape(atob(encodedData))));
+    // 1. Giải mã dữ liệu từ chuỗi encoded
+    let p;
+    try {
+        p = JSON.parse(decodeURIComponent(escape(atob(encodedData))));
+    } catch (e) {
+        console.error("Lỗi giải mã dữ liệu lưu trữ:", e);
+        return;
+    }
+
+    // 2. Hiển thị bảng thông tin (Panel) và nạp Review
     displayInfo(p); 
-    
+
     if (window.map) {
-        window.map.flyTo([p.latitude, p.longitude], 15);
+        // 3. Di chuyển bản đồ đến vị trí địa điểm
+        window.map.flyTo([p.latitude, p.longitude], 16);
+
+        // 4. TỰ ĐỘNG HIỆN MARKER (Đây là phần bạn đang thiếu)
+        
+        // Xóa marker cũ nếu có (tùy chọn - để tránh chồng chéo)
+        if (window.currentSearchMarker) {
+            window.map.removeLayer(window.currentSearchMarker);
+        }
+
+        // Tạo marker mới tại tọa độ địa điểm đã lưu
+        window.currentSearchMarker = L.marker([p.latitude, p.longitude])
+            .addTo(window.map)
+            .bindPopup(`<b>${p.name}</b><br>${p.address || ''}`)
+            .openPopup();
     }
 }
 function getCookie(name) {
