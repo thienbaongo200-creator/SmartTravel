@@ -686,9 +686,9 @@ function saveRoute() {
 
 function addToHistory(query) {
     let history = JSON.parse(localStorage.getItem('searchHistory')) || [];
-    history = history.filter(item => item !== query); // Xóa bản cũ nếu có
-    history.unshift(query); // Đẩy vào đầu mảng
-    localStorage.setItem('searchHistory', JSON.stringify(history.slice(0, 10))); // Lưu tối đa 10 cái
+    history = history.filter(item => item !== query);
+    history.unshift(query); 
+    localStorage.setItem('searchHistory', JSON.stringify(history.slice(0, 10))); 
 }
 
 function showSavedRoutes() {
