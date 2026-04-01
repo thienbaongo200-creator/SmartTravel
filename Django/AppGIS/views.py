@@ -14,7 +14,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.views.decorators.csrf import csrf_exempt
 from geopy.distance import geodesic
 from django.contrib.auth.decorators import login_required
-from .models import TourismPoint, Category, Review, ImageGallery
+from .models import TourismPoint, Category, Review, ImageGallery, Tour, TourBooking
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 # ==============================
@@ -73,7 +73,7 @@ def search(request):
             "longitude": p.longitude, 
             "category": p.category.name if p.category else None, 
             "address": p.address, 
-            "open_hours": p.open_hours, 
+            "open_hours": f"{p.open_time.strftime('%H:%M')} - {p.close_time.strftime('%H:%M')}",
             "rating": p.rating, 
             "price": int(p.price) if p.price is not None else None, 
             "img": p.img, 
@@ -203,31 +203,31 @@ def restaurants_list(request):
     restaurants = TourismPoint.objects.filter(category__name="Nhà hàng")
     return render(request, "restaurants.html", {"restaurants": restaurants})
 
-def tour_list(request):
-    tours = [
-        {"id": 1, "title": "Hành trình Di sản Lịch sử", "desc": "Tham quan Dinh Độc Lập...", "price": "850.000 VND", "duration": "1 ngày", "tag": "Lịch sử"},
-        {"id": 2, "title": "Sài Gòn Street Food & Motorbike", "desc": "Thưởng thức ẩm thực...", "price": "1.100.000 VND", "duration": "4 tiếng (Tối)", "tag": "Ẩm thực"},
-        {"id": 3, "title": "Khám phá Địa đạo Củ Chi", "desc": "Hệ thống địa đạo...", "price": "950.000 VND", "duration": "Nửa ngày", "tag": "Khám phá"},
-        {"id": 4, "title": "Ngắm hoàng hôn trên Sông Sài Gòn", "desc": "Du thuyền hạng sang...", "price": "1.500.000 VND", "duration": "2 tiếng", "tag": "Nghỉ dưỡng"},
-        {"id": 5, "title": "Tour Sinh thái Cần Giờ", "desc": "Lá phổi xanh...", "price": "1.350.000 VND", "duration": "1 ngày", "tag": "Thiên nhiên"},
-        {"id": 6, "title": "Chinatown - Chợ Lớn Sầm uất", "desc": "Văn hóa người Hoa...", "price": "700.000 VND", "duration": "Nửa ngày", "tag": "Văn hóa"}
-    ]
+def tours_list(request):
+    tours = Tour.objects.all()
     return render(request, "tours.html", {"tours": tours})
 
+@login_required
 def book_tour(request, tour_id):
-    # Dữ liệu tour giả lập để phục vụ logic render/post
-    tours = [{"id": i, "title": f"Tour {i}"} for i in range(1, 7)]
-    tour = next((t for t in tours if t["id"] == tour_id), None)
-    if not tour:
-        return HttpResponse("Không tìm thấy tour")
-
+    tour = get_object_or_404(Tour, pk=tour_id)
     if request.method == "POST":
-        name = request.POST.get("name")
-        print(f"Đã đặt tour: {tour['title']} cho khách {name}")
-        return redirect("booking_success")
+        guests = int(request.POST.get("guests", 1))
+        start_date = request.POST.get("start_date")
 
-    return render(request, "book_tour.html", {"tour": tour})
+        # Tính tổng giá
+        total_price = tour.price * guests
 
+        # Tạo booking mới
+        TourBooking.objects.create(
+            tour=tour,
+            user=request.user,
+            status="pending",
+            guests=guests,
+            start_date=start_date,
+            total_price=total_price
+        )
+        return redirect("tours_list") 
+        
 def booking_success(request):
     return render(request, "booking_success.html")
 
@@ -272,9 +272,11 @@ def submit_review(request, point_id):
 def admin_dashboard(request):
     places_count = TourismPoint.objects.count()
     users_count = User.objects.count()
+    bookings_count = TourBooking.objects.count()  
     return render(request, 'admin/admin_dashboard.html', {
         "places_count": places_count,
-        "users_count": users_count
+        "users_count": users_count,
+        "bookings_count": bookings_count
     })
 
 # ==============================
@@ -468,6 +470,43 @@ def api_user_detail(request, pk):
             return JsonResponse({"error": str(e)}, status=400)
 
 # ==============================
+# Admin & Quản lý đặt tour
+# ==============================
+def admin_tour_booking(request):
+    bookings = TourBooking.objects.select_related("tour", "user").all()
+    return render(request, "admin/admin_tour_booking.html", {"bookings": bookings})
+
+@csrf_exempt
+def api_booking_detail(request, pk):
+    booking = get_object_or_404(TourBooking, pk=pk)
+
+    if request.method == "GET":
+        return JsonResponse({
+            "id": booking.id,
+            "tour": booking.tour.title,
+            "user": booking.user.username,
+            "guests": booking.guests,
+            "start_date": booking.start_date.strftime("%Y-%m-%d") if booking.start_date else None,
+            "total_price": float(booking.total_price),
+            "status": booking.status,
+        })
+
+    elif request.method == "PUT":
+        try:
+            raw_data = json.loads(request.body)
+            booking.guests = raw_data.get("guests", booking.guests)
+            booking.start_date = raw_data.get("start_date", booking.start_date)
+            booking.status = raw_data.get("status", booking.status)
+            booking.save()
+            return JsonResponse({"message": "Cập nhật booking thành công"})
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=400)
+
+    elif request.method == "DELETE":
+        booking.delete()
+        return JsonResponse({"message": "Xóa booking thành công"}, status=204)
+    
+# ==============================
 # Đăng Nhập & Đăng Ký & Đăng Xuất
 # ==============================
 def register_view(request):
@@ -496,6 +535,10 @@ def login_view(request):
 def logout_view(request):
     logout(request)
     return redirect("home")
+
+# ==============================
+# API cho địa điểm & review
+# ==============================
 @api_view(['POST'])
 def add_tourism_place(request):
     # 1. Lấy các thông tin text từ request.data

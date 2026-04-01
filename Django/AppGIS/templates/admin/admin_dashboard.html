@@ -15,6 +15,7 @@
     <nav class="admin-nav">
         <a href="{% url 'admin_places' %}" class="nav-link">📍 Quản lý Địa điểm</a>
         <a href="{% url 'admin_user' %}" class="nav-link">👤 Quản lý Người dùng</a>
+        <a href="{% url 'admin_tour_booking' %}" class="nav-link">🎫 Quản lý Đặt Tour</a>
         <a href="{% url 'logout' %}" class="nav-link">🚪 Đăng xuất</a>
     </nav>
 
@@ -22,6 +23,7 @@
         <div class="section stats">
             <div class="stat-card">📍 Địa điểm: {{ places_count }}</div>
             <div class="stat-card">👤 Người dùng: {{ users_count }}</div>
+            <div class="stat-card">🎫 Đặt tour: {{ bookings_count }}</div>        
         </div>
 
         <div class="section">
@@ -49,6 +51,7 @@
             <h2>Hướng dẫn sử dụng</h2>
             <p>📍 Vào mục <b>Quản lý Địa điểm</b> để thêm, sửa, xóa địa điểm du lịch.</p>
             <p>👤 Vào mục <b>Quản lý Người dùng</b> để tạo hoặc chỉnh sửa tài khoản.</p>
+            <p>🎫 Vào mục <b>Quản lý Đặt Tour</b> để xem và xử lý các booking của khách.</p>
             <p>🚪 Dùng <b>Đăng xuất</b> để thoát khỏi hệ thống quản trị.</p>
         </div>
     </main>
