@@ -147,34 +147,41 @@ async function searchPlace() {
 
 // Hàm hỗ trợ: Hiển thị Marker và Panel thông tin
 function renderSearchResult(lat, lon, name, placeObject) {
-    // 1. Lấy ID từ placeObject (Đảm bảo Backend đã trả về field 'id')
-    const placeId = placeObject.id; 
-
-    // Kiểm tra nếu không có ID thì báo lỗi ngay để debug
-    if (!placeId) {
-        console.error("Lỗi: placeObject không có trường 'id'!", placeObject);
+    // 1. Kiểm tra và gán ID dự phòng nếu Backend không trả về
+    // Nếu không có id, dùng osm_id hoặc tạo một chuỗi tạm để tránh lỗi logic
+    if (!placeObject.id) {
+        placeObject.id = placeObject.osm_id || "temp_" + Date.now();
+        console.warn("Cảnh báo: placeObject thiếu ID, đã gán ID tạm thời:", placeObject.id);
     }
 
-    // 2. Xóa marker cũ nếu có
-    if (typeof searchMarker !== 'undefined' && searchMarker) {
-        map.removeLayer(searchMarker);
+    const placeId = placeObject.id; 
+
+    // 2. Xóa marker cũ
+    if (window.searchMarker) {
+        map.removeLayer(window.searchMarker);
     }
 
     // 3. Di chuyển bản đồ
     map.flyTo([lat, lon], 16);
 
-    // 4. Cắm marker mới (Sửa biến 'id' thành 'placeId')
-    searchMarker = L.marker([lat, lon]).addTo(map)
+    // 4. Cắm marker mới
+    window.searchMarker = L.marker([lat, lon]).addTo(map)
         .bindPopup(`
-            <div style="min-width:150px;">
-                <b>${name}</b><br>
+            <div style="min-width:150px; text-align:center;">
+                <b style="color:#e67e22;">${name}</b><br>
+                <small>Nhấp để xem chi tiết</small>
             </div>
         `)
         .openPopup();
         
-    // 5. Hiển thị Panel thông tin bên trái
+    // 5. Hiển thị Panel thông tin
     if (typeof displayInfo === "function") {
         displayInfo(placeObject);
+    }
+
+    // 6. Lưu vào lịch sử (Đã có ID nên xem được review)
+    if (typeof addToHistory === "function") {
+        addToHistory(placeObject);
     }
 }
 
@@ -462,8 +469,26 @@ async function displayInfo(p) {
     const content = document.getElementById("info-content");
     if (!panel || !content) return;
 
+    // --- KIỂM TRA ID TRƯỚC KHI CHẠY ---
+    // Thử lấy p.id hoặc p.pk (tùy theo cấu trúc Django/Database của bạn)
+    const placeId = p.id || p.pk; 
+
     panel.style.display = "block";
     const encodedData = btoa(unescape(encodeURIComponent(JSON.stringify(p))));
+
+    // Hàm định dạng giá
+    // Đoạn này nằm trong map.js (hàm displayInfo)
+    const formatPrice = (price, category) => {
+    if (!price || price === "0" || price === 0 || price === "None") return "Liên hệ";
+    const formatted = new Intl.NumberFormat('vi-VN').format(price);
+    const cat = category ? category.toLowerCase() : "";
+
+    // Kiểm tra từ khóa khách sạn
+    if (cat.includes("khách sạn") || cat.includes("hotel")) {
+        return `${formatted} VNĐ<small style="font-size: 0.7rem; font-weight: normal; margin-left: 2px;">/đêm</small>`;
+    }
+    return `${formatted} VNĐ`;
+};
 
     const getCorrectPath = (path) => {
         if (!path) return "";
@@ -493,8 +518,11 @@ async function displayInfo(p) {
 
     // --- KHỞI TẠO HTML CƠ BẢN ---
     let html = `
-        <div class="info-header">
+        <div class="info-header" style="position: relative;">
             ${imgPath ? `<img src="${imgPath}" alt="${p.name}" class="main-info-img">` : ""}
+            <div style="position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.7); color: #fff; padding: 5px 10px; border-radius: 4px; font-weight: bold; font-size: 0.9rem; z-index: 2;">
+                <i class="fa-solid fa-tags" style="color: #ffc107;"></i> ${formatPrice(p.price)}
+            </div>
         </div>
         <div class="info-body">
             <h2>${p.name}</h2>
@@ -510,7 +538,7 @@ async function displayInfo(p) {
                 <button id="btn-save-main" class="btn-save" onclick="savePlace('${encodedData}', event)">
                     <i class="fa-solid fa-bookmark"></i> LƯU
                 </button>
-                <button class="btn-review" onclick="openReviewModal('${p.id}', '${p.name.replace(/'/g, "\\'")}')">
+                <button class="btn-review" onclick="openReviewModal('${placeId}', '${p.name.replace(/'/g, "\\'")}')">
                     <i class="fa-solid fa-pen-to-square"></i> VIẾT ĐÁNH GIÁ
                 </button>
             </div>
@@ -519,7 +547,7 @@ async function displayInfo(p) {
         <div class="reviews-display-section" style="padding: 15px; border-top: 8px solid #f0f2f5;">
             <h4><i class="fa-solid fa-comments"></i> Đánh giá từ cộng đồng</h4>
             <div id="direct-reviews-list" style="margin-top: 10px;">
-                <p style="color: #666; font-size: 14px;">Đang tải đánh giá...</p>
+                ${placeId ? '<p style="color: #666; font-size: 14px;">Đang tải đánh giá...</p>' : '<p style="color: #666; font-size: 14px;">Không thể tải đánh giá (Thiếu ID).</p>'}
             </div>
         </div>
     `;
@@ -541,8 +569,12 @@ async function displayInfo(p) {
 
     content.innerHTML = html;
 
-    // --- GỌI HÀM TẢI ĐÁNH GIÁ NGAY LẬP TỨC ---
-    loadReviewsToPanel(p.id);
+    // --- CHỈ GỌI LOAD REVIEWS NẾU CÓ ID ---
+    if (placeId && placeId !== 'undefined') {
+        loadReviewsToPanel(placeId);
+    } else {
+        console.error("Lỗi: Không tìm thấy ID cho địa điểm:", p.name);
+    }
 
     // Kiểm tra trạng thái lưu
     const savedPlaces = JSON.parse(localStorage.getItem("mySavedPlaces")) || [];
@@ -654,9 +686,9 @@ function saveRoute() {
 
 function addToHistory(query) {
     let history = JSON.parse(localStorage.getItem('searchHistory')) || [];
-    history = history.filter(item => item !== query); // Xóa bản cũ nếu có
-    history.unshift(query); // Đẩy vào đầu mảng
-    localStorage.setItem('searchHistory', JSON.stringify(history.slice(0, 10))); // Lưu tối đa 10 cái
+    history = history.filter(item => item !== query);
+    history.unshift(query); 
+    localStorage.setItem('searchHistory', JSON.stringify(history.slice(0, 10))); 
 }
 
 function showSavedRoutes() {
@@ -966,7 +998,7 @@ function savePlace(encodedData, event) {
         console.error("Lỗi giải mã dữ liệu:", e);
         return;
     }
-
+    
     const btnSave = event ? event.currentTarget : null;
     let savedPlaces = JSON.parse(localStorage.getItem("mySavedPlaces")) || [];
     
@@ -1029,11 +1061,34 @@ function showSavedPlaces() {
 }
 
 function handleSavedItemClick(encodedData) {
-    const p = JSON.parse(decodeURIComponent(escape(atob(encodedData))));
+    // 1. Giải mã dữ liệu từ chuỗi encoded
+    let p;
+    try {
+        p = JSON.parse(decodeURIComponent(escape(atob(encodedData))));
+    } catch (e) {
+        console.error("Lỗi giải mã dữ liệu lưu trữ:", e);
+        return;
+    }
+
+    // 2. Hiển thị bảng thông tin (Panel) và nạp Review
     displayInfo(p); 
-    
+
     if (window.map) {
-        window.map.flyTo([p.latitude, p.longitude], 15);
+        // 3. Di chuyển bản đồ đến vị trí địa điểm
+        window.map.flyTo([p.latitude, p.longitude], 16);
+
+        // 4. TỰ ĐỘNG HIỆN MARKER (Đây là phần bạn đang thiếu)
+        
+        // Xóa marker cũ nếu có (tùy chọn - để tránh chồng chéo)
+        if (window.currentSearchMarker) {
+            window.map.removeLayer(window.currentSearchMarker);
+        }
+
+        // Tạo marker mới tại tọa độ địa điểm đã lưu
+        window.currentSearchMarker = L.marker([p.latitude, p.longitude])
+            .addTo(window.map)
+            .bindPopup(`<b>${p.name}</b><br>${p.address || ''}`)
+            .openPopup();
     }
 }
 function getCookie(name) {
@@ -1141,17 +1196,29 @@ async function calculateRoute() {
         if (loading) loading.style.display = "none";
     }
 }
-function useMyLocation(inputId) {
-    const input = document.getElementById(inputId);
-    if (window.userMarker) {
-        const pos = window.userMarker.getLatLng();
-        input.value = "Vị trí của bạn";
-        input.dataset.lat = pos.lat;
-        input.dataset.lng = pos.lng;
+async function searchGlobal(query) {
+    console.log("Tìm kiếm toàn cầu cho:", query);
+    try {
+        const osmRes = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query + ", Vietnam")}&limit=1`);
+        const osmData = await osmRes.json();
         
-        // Di chuyển bản đồ về vị trí của bạn
-        map.flyTo([pos.lat, pos.lng], 15);
-    } else {
-        alert("Chưa xác định được vị trí GPS của bạn. Vui lòng bật định vị!");
+        if (osmData && osmData.length > 0) {
+            const item = osmData[0];
+            const osmPlace = {
+                id: "temp_" + Date.now(), // Gán ID tạm để ko bị lỗi code hiển thị
+                name: item.display_name.split(',')[0],
+                latitude: parseFloat(item.lat),
+                longitude: parseFloat(item.lon),
+                address: item.display_name,
+                description: "Địa chỉ từ vệ tinh.",
+                category: "Địa chỉ",
+                img: "https://images.unsplash.com/photo-1526772662000-3f88f10405ff?w=400"
+            };
+            renderSearchResult(osmPlace.latitude, osmPlace.longitude, osmPlace.name, osmPlace);
+        } else {
+            alert("Không tìm thấy địa điểm!");
+        }
+    } catch (e) {
+        console.error("Lỗi tìm global:", e);
     }
 }
