@@ -1,0 +1,60 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Quản lý Liên hệ</title>
+    <link rel="stylesheet" href="{% static 'css/admin.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; }
+        th, td { padding: 12px; border: 1px solid #ddd; text-align: left; }
+        th { background-color: #f4f4f4; }
+        tr:hover { background-color: #f9f9f9; }
+        .msg-text { max-width: 400px; font-size: 0.9rem; color: #555; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>Quản lý Tin nhắn Liên hệ</h1>
+    </header>
+
+    <nav class="admin-nav">
+        <a href="{% url 'admin_dashboard' %}" class="nav-link">Quay lại Dashboard</a>
+        <a href="{% url 'admin_places' %}" class="nav-link">Quản lý Địa điểm</a>
+        <a href="{% url 'admin_user' %}" class="nav-link">Quản lý Người dùng</a>
+    </nav>
+
+    <main>
+        <div class="section">
+            <h2>Danh sách tin nhắn từ người dùng</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Ngày gửi</th>
+                        <th>Họ tên</th>
+                        <th>Email</th>
+                        <th>Nội dung</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for msg in messages %}
+                    <tr>
+                        <td>{{ msg.created_at|date:"d/m/Y H:i" }}</td>
+                        <td><strong>{{ msg.name }}</strong></td>
+                        <td>{{ msg.email }}</td>
+                        <td class="msg-text">{{ msg.message }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" style="text-align: center;">Chưa có tin nhắn nào.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>
+</body>
+</html>

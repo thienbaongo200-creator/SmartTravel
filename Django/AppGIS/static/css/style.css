@@ -2130,3 +2130,43 @@ destinations-section {
     cursor: pointer;
     font-size: 12px;
 }
+/* Pagination Styling */
+.pagination-container {
+    margin-top: 40px;
+    display: flex;
+    justify-content: center;
+}
+.pagination {
+    display: flex;
+    gap: 8px;
+    list-style: none;
+    padding: 0;
+}
+.page-link-custom {
+    padding: 8px 16px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    color: #333;
+    text-decoration: none;
+    transition: 0.3s;
+    background: #fff;
+}
+.page-link-custom:hover {
+    background: #ffc107;
+    color: white;
+    border-color: #ffc107;
+}
+.pagination .active .page-link-custom {
+    background: #ffc107;
+    color: white;
+    border-color: #ffc107;
+    font-weight: bold;
+}
+.page-disabled {
+    padding: 8px 16px;
+    border: 1px solid #eee;
+    color: #ccc;
+    cursor: not-allowed;
+    background: #f9f9f9;
+    border-radius: 5px;
+}

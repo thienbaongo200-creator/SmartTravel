@@ -166,9 +166,13 @@
                         
                         <div class="hotel-price-wrapper">
                             <span class="hotel-price-label">Giá phòng từ:</span>
-                            <span class="hotel-price-value">
-                                {% if hotel.price %}{{ hotel.price|intcomma }} VNĐ{% else %}Liên hệ{% endif %}
-                            </span>
+                                <span class="hotel-price-value">
+                                    {% if hotel.price %}
+                                        {{ hotel.price|intcomma }} VNĐ<small style="font-size: 0.7rem; color: #888; font-weight: normal;">/đêm</small>
+                                    {% else %}
+                                        Liên hệ
+                                    {% endif %}
+                                </span>
                         </div>
 
                         <ul class="info-list">
@@ -187,7 +191,7 @@
                         </p>
                         
                         <div class="hotel-btn-container">
-                            <a href="{% url 'home' %}?lat={{ hotel.latitude }}&lng={{ hotel.longitude }}&name={{ hotel.name|urlencode }}&img={{ hotel.img|urlencode }}&address={{ hotel.address|urlencode }}&price={{ hotel.price|default:0 }}" class="btn-hotel-action">
+                            <a href="{% url 'home' %}?id={{ hotel.id }}&lat={{ hotel.latitude }}&lng={{ hotel.longitude }}&name={{ hotel.name|urlencode }}&img={{ hotel.img|urlencode }}&address={{ hotel.address|urlencode }}&price={{ hotel.price|default:0 }}&category=Khách sạn" class="btn-hotel-action">
                                 <i class="fas fa-map-marked-alt"></i> XEM TRÊN BẢN ĐỒ
                             </a>
                         </div>
@@ -199,8 +203,37 @@
                 <p class="text-muted italic">Hiện chưa có dữ liệu khách sạn.</p>
             </div>
             {% endfor %}
-        </div>
-    </div>
+            {% if hotels.has_other_pages %}
+            <div class="col-12">
+                <div class="pagination-container">
+                    <ul class="pagination">
+                        
+                        {% if hotels.has_previous %}
+                            <li><a href="?page={{ hotels.previous_page_number }}" class="page-link-custom">&laquo; Trước</a></li>
+                        {% else %}
+                            <li class="page-disabled"><span>&laquo; Trước</span></li>
+                        {% endif %}
+
+                        {% for i in hotels.paginator.page_range %}
+                            {% if hotels.number == i %}
+                                <li class="active"><span class="page-link-custom">{{ i }}</span></li>
+                            {% elif i > hotels.number|add:'-3' and i < hotels.number|add:'3' %}
+                                <li><a href="?page={{ i }}" class="page-link-custom">{{ i }}</a></li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if hotels.has_next %}
+                            <li><a href="?page={{ hotels.next_page_number }}" class="page-link-custom">Sau &raquo;</a></li>
+                        {% else %}
+                            <li class="page-disabled"><span>Sau &raquo;</span></li>
+                        {% endif %}
+
+                    </ul>
+                </div>
+            </div>
+            {% endif %}
+
+        </div> </div>
 </section>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">

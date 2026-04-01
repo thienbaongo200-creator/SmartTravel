@@ -14,9 +14,10 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.views.decorators.csrf import csrf_exempt
 from geopy.distance import geodesic
 from django.contrib.auth.decorators import login_required
-from .models import TourismPoint, Category, Review, ImageGallery, Tour, TourBooking
+from .models import TourismPoint, Category, Review, ImageGallery, Tour, TourBooking, ContactMessage
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
+from django.core.paginator import Paginator
 # ==============================
 # Các trang tĩnh
 # ==============================
@@ -41,7 +42,8 @@ def contact(request):
         name = request.POST.get("name") 
         email = request.POST.get("email") 
         message = request.POST.get("message") 
-        print(f"Liên hệ từ {name} - {email}: {message}") 
+        ContactMessage.objects.create(name=name, email=email, message=message)
+        
         return redirect("contact_success") 
     return render(request, "contact.html")
 
@@ -72,8 +74,7 @@ def search(request):
             "latitude": p.latitude, 
             "longitude": p.longitude, 
             "category": p.category.name if p.category else None, 
-            "address": p.address, 
-            "open_hours": f"{p.open_time.strftime('%H:%M')} - {p.close_time.strftime('%H:%M')}",
+            "address": p.address,
             "rating": p.rating, 
             "price": int(p.price) if p.price is not None else None, 
             "img": p.img, 
@@ -197,10 +198,16 @@ def nearby_places(request):
 # ==============================
 def hotels_list(request):
     hotels = TourismPoint.objects.filter(category__name="Khách sạn")
+    paginator = Paginator(hotels, 5) 
+    page_number = request.GET.get('page') 
+    hotels = paginator.get_page(page_number)
     return render(request, "hotels.html", {"hotels": hotels})
 
 def restaurants_list(request):
     restaurants = TourismPoint.objects.filter(category__name="Nhà hàng")
+    paginator = Paginator(restaurants, 5) 
+    page_number = request.GET.get('page')
+    restaurants = paginator.get_page(page_number)
     return render(request, "restaurants.html", {"restaurants": restaurants})
 
 def tours_list(request):
@@ -505,7 +512,15 @@ def api_booking_detail(request, pk):
     elif request.method == "DELETE":
         booking.delete()
         return JsonResponse({"message": "Xóa booking thành công"}, status=204)
-    
+
+# ==============================
+# Admin & Liên Hệ
+# ==============================
+@staff_member_required(login_url='login')
+def admin_contacts(request):
+    messages = ContactMessage.objects.all().order_by('-created_at')
+    return render(request, 'admin/admin_contacts.html', {"messages": messages})
+
 # ==============================
 # Đăng Nhập & Đăng Ký & Đăng Xuất
 # ==============================

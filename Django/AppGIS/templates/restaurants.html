@@ -154,23 +154,12 @@
                         </div>
 
                         <ul class="info-list">
-                            <li>
-                                <i class="fas fa-map-marker-alt"></i> 
-                                <span>{{ restaurant.address|default:"Đang cập nhật địa chỉ" }}</span>
-                            </li>
-                            <li>
-                                <i class="fas fa-clock"></i> 
-                                <span>{{ restaurant.open_time|default:"09:00" }} - {{ restaurant.close_time|default:"22:00" }}</span>
-                            </li>
-                            <li>
-                                <i class="fas fa-utensils"></i> 
-                                <span>Ẩm thực địa phương & Quốc tế</span>
-                            </li>
+                            <li><i class="fas fa-map-marker-alt"></i> <span>{{ restaurant.address|default:"Đang cập nhật địa chỉ" }}</span></li>
+                            <li><i class="fas fa-clock"></i> <span>{{ restaurant.open_time|default:"09:00" }} - {{ restaurant.close_time|default:"22:00" }}</span></li>
+                            <li><i class="fas fa-utensils"></i> <span>Ẩm thực địa phương & Quốc tế</span></li>
                         </ul>
 
-                        <p class="restaurant-desc">
-                            {{ restaurant.description|default:"Trải nghiệm hương vị ẩm thực đặc sắc trong không gian ấm cúng và sang trọng." }}
-                        </p>
+                        <p class="restaurant-desc">{{ restaurant.description|default:"Trải nghiệm hương vị ẩm thực đặc sắc." }}</p>
                         
                         <div class="restaurant-btn-container">
                             <a href="{% url 'home' %}?lat={{ restaurant.latitude }}&lng={{ restaurant.longitude }}&name={{ restaurant.name|urlencode }}&img={{ restaurant.img|urlencode }}&address={{ restaurant.address|urlencode }}&desc={{ restaurant.description|urlencode }}&rating={{ restaurant.rating }}&price={{ restaurant.price|default:0 }}&category=Nhà hàng" class="btn-view-map">
@@ -186,7 +175,36 @@
                 <p class="text-muted italic">Hiện chưa có dữ liệu nhà hàng nào để hiển thị.</p>
             </div>
             {% endfor %}
-        </div>
+
+            {% if restaurants.has_other_pages %}
+            <div class="col-12">
+                <div class="pagination-container">
+                    <ul class="pagination">
+                        
+                        {% if restaurants.has_previous %}
+                            <li><a href="?page={{ restaurants.previous_page_number }}" class="page-link-custom">&laquo; Trước</a></li>
+                        {% else %}
+                            <li class="page-disabled"><span>&laquo; Trước</span></li>
+                        {% endif %}
+
+                        {% for i in restaurants.paginator.page_range %}
+                            {% if restaurants.number == i %}
+                                <li class="active"><span class="page-link-custom">{{ i }}</span></li>
+                            {% elif i > restaurants.number|add:'-3' and i < restaurants.number|add:'3' %}
+                                <li><a href="?page={{ i }}" class="page-link-custom">{{ i }}</a></li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if restaurants.has_next %}
+                            <li><a href="?page={{ restaurants.next_page_number }}" class="page-link-custom">Sau &raquo;</a></li>
+                        {% else %}
+                            <li class="page-disabled"><span>Sau &raquo;</span></li>
+                        {% endif %}
+
+                    </ul>
+                </div>
+            </div>
+            {% endif %}
     </div>
 </section>
 
