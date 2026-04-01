@@ -15,6 +15,8 @@ from django.views.decorators.csrf import csrf_exempt
 from geopy.distance import geodesic
 from django.contrib.auth.decorators import login_required
 from .models import TourismPoint, Category, Review, ImageGallery
+from rest_framework.response import Response
+from rest_framework.decorators import api_view
 # ==============================
 # Các trang tĩnh
 # ==============================
@@ -494,3 +496,87 @@ def login_view(request):
 def logout_view(request):
     logout(request)
     return redirect("home")
+@api_view(['POST'])
+def add_tourism_place(request):
+    # 1. Lấy các thông tin text từ request.data
+    name = request.data.get('name')
+    category_name = request.data.get('category')
+    address = request.data.get('address')
+    latitude = request.data.get('latitude')
+    longitude = request.data.get('longitude')
+    price = request.data.get('price', 0)
+
+    category_obj, _ = Category.objects.get_or_create(name=category_name)
+
+    place = TourismPoint.objects.create(
+        name=name,
+        category=category_obj,
+        address=address,
+        latitude=latitude,
+        longitude=longitude,
+        price=price
+    )
+
+    images = request.FILES.getlist('images')
+
+    for img in images:
+        ImageGallery.objects.create(
+            tourismpoint=place,
+            image=img
+        )
+
+    return Response({"message": "Thêm địa điểm và ảnh thành công!"}, status=201)
+
+
+def get_places(request):
+    places = TourismPoint.objects.all()
+    data = []
+    
+    for p in places:
+        # Lấy tất cả ảnh từ ImageGallery liên quan đến địa điểm này
+        # images là related_name bạn đặt trong model ImageGallery
+        gallery_urls = [img.image.url for img in p.images.all()]
+        
+        data.append({
+            "id": p.id,
+            "name": p.name,
+            "address": p.address,
+            "latitude": p.latitude,
+            "longitude": p.longitude,
+            "category": p.category.name if p.category else "",
+            "description": p.description,
+            "price": float(p.price) if p.price else 0,
+            "img": p.img, # Đây là field cũ
+            "gallery": gallery_urls, # ĐÂY LÀ DỮ LIỆU MỚI
+        })
+        
+    return JsonResponse(data, safe=False)
+
+def get_reviews(request, place_id):
+    try:
+        # Sửa: Sử dụng tourismpoint_id theo đúng model của bạn
+        reviews = Review.objects.filter(tourismpoint_id=place_id).order_by('-created_at')
+        
+        has_reviewed = False
+        if request.user.is_authenticated:
+            # Sửa: Sử dụng tourismpoint_id
+            has_reviewed = Review.objects.filter(
+                tourismpoint_id=place_id, 
+                user=request.user
+            ).exists()
+            
+        data = {
+            "has_reviewed": has_reviewed,
+            "reviews": [
+                {
+                    "id": r.id, # Quan trọng: Gửi ID để JS có thể dùng cho hàm Xóa
+                    "rating": r.rating,
+                    "comment": r.comment,
+                    "user_name": r.user.username,
+                    "created_at": r.created_at.strftime("%d/%m/%Y")
+                } for r in reviews
+            ]
+        }
+        return JsonResponse(data)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)

@@ -48,6 +48,7 @@ urlpatterns = [
     # API cho user
     path("api/admin/users/", views.api_users, name="api_admin_users"),
     path("api/admin/users/<int:pk>/", views.api_user_detail, name="api_admin_user_detail"),
+    path('api/reviews/<int:place_id>/', views.get_reviews, name='get_reviews'),
 ]
 
 # Chỉ thêm static khi DEBUG = True

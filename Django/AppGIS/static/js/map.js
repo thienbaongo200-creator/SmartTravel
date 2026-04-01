@@ -423,74 +423,50 @@ async function showWeather(lat, lng) {
     }
 }
 
-function displayInfo(p) {
-    const encodedData = btoa(unescape(encodeURIComponent(JSON.stringify(p))));
+async function displayInfo(p) {
     const panel = document.getElementById("info-panel");
     const content = document.getElementById("info-content");
     if (!panel || !content) return;
 
     panel.style.display = "block";
+    const encodedData = btoa(unescape(encodeURIComponent(JSON.stringify(p))));
 
-    // --- CHỈNH SỬA HÀM getCorrectPath ---
     const getCorrectPath = (path) => {
-        if (!path) return ""; // bỏ default.jpg, trả về rỗng
-        if (path.startsWith('http') || path.startsWith('/static/')) return path;
-
+        if (!path) return "";
+        if (path.startsWith('/media/') || path.startsWith('http')) return path;
         const category = p.category ? p.category.toLowerCase() : "";
-
         if (category.includes("nhà hàng") || category.includes("restaurant")) {
-            if (path.startsWith('restaurants/')) {
-                return "/static/images/" + path;
-            }
-            return "/static/images/restaurants/" + path;
+            return "/static/images/restaurants/" + path.replace('restaurants/', '');
         }
-
         return "/static/images/" + path;
     };
-    
-    // Gán imgPath chính
-    let imgPath = getCorrectPath(p.img);
 
-    // 2. Danh sách ảnh chi tiết (carousel)
-    let rawMenu = p.menu_imgs || [];
-    if (typeof rawMenu === 'string') {
-        try { 
-            rawMenu = JSON.parse(rawMenu.replace(/'/g, '"')); 
-        } catch (e) { 
-            rawMenu = []; 
+    // --- XỬ LÝ DANH SÁCH ẢNH ---
+    let finalGallery = [];
+    if (p.gallery && Array.isArray(p.gallery) && p.gallery.length > 0) {
+        finalGallery = p.gallery.map(item => getCorrectPath(item));
+    } else if (p.menu_imgs) {
+        let rawMenu = p.menu_imgs;
+        if (typeof rawMenu === 'string') {
+            try { rawMenu = JSON.parse(rawMenu.replace(/'/g, '"')); } catch (e) { rawMenu = []; }
         }
+        finalGallery = Array.isArray(rawMenu) ? rawMenu.map(item => getCorrectPath(item)) : [];
     }
-    
-    currentMenuImgs = Array.isArray(rawMenu) ? rawMenu.map(item => getCorrectPath(item)) : [];
+
+    let imgPath = finalGallery.length > 0 ? finalGallery[0] : (p.img ? getCorrectPath(p.img) : "");
+    currentMenuImgs = finalGallery;
     currentMenuIndex = 0;
 
-    let priceBadgeHTML = ""; // Đổi tên để tránh nhầm lẫn
-    if (p.price !== null && p.price !== undefined) {
-        const priceValue = Number(p.price);
-        if (priceValue > 0) {
-            const formattedPrice = new Intl.NumberFormat('vi-VN').format(priceValue);
-            const isHotel = p.category && p.category.toLowerCase().includes("khách sạn");
-            // Thêm class 'price-badge' để định vị
-            priceBadgeHTML = `
-                <div class="price-badge">
-                    ${formattedPrice}đ${isHotel ? ' / đêm' : ''}
-                </div>`;
-        } else {
-            priceBadgeHTML = `<div class="price-badge free">Miễn phí</div>`;
-        }
-    }
-    // 3. Khởi tạo HTML
+    // --- KHỞI TẠO HTML CƠ BẢN ---
     let html = `
         <div class="info-header">
-            ${imgPath ? `<img src="${imgPath}" alt="${p.name}">` : ""}
-            ${priceBadgeHTML}
+            ${imgPath ? `<img src="${imgPath}" alt="${p.name}" class="main-info-img">` : ""}
         </div>
         <div class="info-body">
             <h2>${p.name}</h2>
             <p id="weather-info"><strong>🌦 Thời tiết:</strong> đang tải...</p>
             <p><strong>Địa chỉ:</strong> ${p.address || 'Đang cập nhật'}</p>
             <p><strong>Giờ mở cửa:</strong> ${p.open_hours || '8:00 - 21:00'}</p>
-            <p><strong>Đánh giá:</strong> ${p.rating || '5.0'}/5</p>
             <p><strong>Mô tả:</strong> ${p.description || 'Không có mô tả.'}</p>
             
             <div class="button-group">
@@ -501,47 +477,47 @@ function displayInfo(p) {
                     <i class="fa-solid fa-bookmark"></i> LƯU
                 </button>
                 <button class="btn-review" onclick="openReviewModal('${p.id}', '${p.name.replace(/'/g, "\\'")}')">
-                    <i class="fa-solid fa-star"></i> ĐÁNH GIÁ
+                    <i class="fa-solid fa-pen-to-square"></i> VIẾT ĐÁNH GIÁ
                 </button>
             </div>
-            <div id="route-summary"></div>
+        </div>
+
+        <div class="reviews-display-section" style="padding: 15px; border-top: 8px solid #f0f2f5;">
+            <h4><i class="fa-solid fa-comments"></i> Đánh giá từ cộng đồng</h4>
+            <div id="direct-reviews-list" style="margin-top: 10px;">
+                <p style="color: #666; font-size: 14px;">Đang tải đánh giá...</p>
+            </div>
         </div>
     `;
 
-    // 4. Thêm carousel nếu có ảnh menu
+    // Thêm Carousel ảnh nếu có
     if (currentMenuImgs.length > 0) {
         html += `
-        <div class="menu-section">
+        <div class="menu-section" style="border-top: 8px solid #f0f2f5;">
             <h4><i class="fa-solid fa-images"></i> Hình ảnh chi tiết</h4>
             <div class="carousel-box">
                 <button class="carousel-btn prev" onclick="prevMenu()">❮</button>
                 <div class="carousel-image-container">
-                    <img id="menu-img" src="${currentMenuImgs[0]}" 
-                         alt="Chi tiết"
-                         onclick="openImageModal(this.src)">
+                    <img id="menu-img" src="${currentMenuImgs[0]}" onclick="openImageModal(this.src)">
                 </div>
                 <button class="carousel-btn next" onclick="nextMenu()">❯</button>
-                <div class="menu-counter-tag">
-                    <span id="menu-counter">1 / ${currentMenuImgs.length}</span>
-                </div>
             </div>
         </div>`;
     }
 
     content.innerHTML = html;
-    const savedPlaces = JSON.parse(localStorage.getItem("mySavedPlaces")) || [];
-    const isAlreadySaved = savedPlaces.some(item => item.name === p.name);
 
-    if (isAlreadySaved) {
+    // --- GỌI HÀM TẢI ĐÁNH GIÁ NGAY LẬP TỨC ---
+    loadReviewsToPanel(p.id);
+
+    // Kiểm tra trạng thái lưu
+    const savedPlaces = JSON.parse(localStorage.getItem("mySavedPlaces")) || [];
+    if (savedPlaces.some(item => item.name === p.name)) {
         const btnSave = document.getElementById("btn-save-main");
-        if (btnSave) {
-            btnSave.style.color = "gold";
-            btnSave.innerHTML = '<i class="fa-solid fa-check"></i> ĐÃ LƯU';
-        }
+        if (btnSave) { btnSave.style.color = "gold"; btnSave.innerHTML = '<i class="fa-solid fa-check"></i> ĐÃ LƯU'; }
     }
-    if (typeof showWeather === "function") {
-        showWeather(p.latitude, p.longitude);
-    }
+
+    if (typeof showWeather === "function") showWeather(p.latitude, p.longitude);
 }
 
 /**
@@ -802,77 +778,110 @@ function getCSRFToken() {
     return tokenInput ? tokenInput.value : null;
 }
 
-function openReviewModal(placeId, placeName) {
-    // 1. Ép kiểu và kiểm tra ID
-    const numericId = parseInt(placeId);
-    if (isNaN(numericId)) {
-        console.error("Lỗi: ID địa điểm không phải là số!", placeId);
-        alert("Không thể đánh giá: Dữ liệu ID bị lỗi.");
-        return;
-    }
-
+async function openReviewModal(placeId, placeName) {
     const modal = document.getElementById('reviewModal');
     const title = document.getElementById('reviewTitle');
     const form = document.getElementById('reviewForm');
+    
+    if (!modal || !form) return;
 
-    title.innerText = "Đánh giá: " + placeName;
+    title.innerText = "Viết đánh giá cho: " + placeName;
     modal.style.display = 'flex';
+    
+    // Hiển thị trạng thái đang kiểm tra
+    form.innerHTML = "<p style='text-align:center;'>Đang kiểm tra trạng thái...</p>";
 
-    // 2. Render nội dung form (đảm bảo có CSRF Token)
-    form.innerHTML = `
-    <input type="hidden" name="csrfmiddlewaretoken" value="${getCSRFToken()}">
-    <div class="rating-group">
-        <label>Số sao:</label>
-        ${renderStarRating('overall')}
-    </div>
-    <div class="comment-group" style="margin-top:10px;">
-        <label>Nội dung:</label>
-        <textarea name="comment" rows="4" style="width:100%; padding:10px; border-radius:5px; border:1px solid #ddd;"></textarea>
-    </div>
-    <div class="modal-footer">
-        <button type="button" class="btn btn-delete" onclick="closeReviewModal()">
-            <i class="fa-solid fa-xmark" style="margin-right:5px;"></i> Hủy
-        </button>
-        <button type="submit" class="btn btn-add">
-            Gửi đánh giá <i class="fa-solid fa-paper-plane" style="margin-left:5px;"></i>
-        </button>
-    </div>
-    `;
+    try {
+        // Vẫn gọi API để kiểm tra xem user đã đánh giá địa điểm này chưa
+        const response = await fetch(`/api/reviews/${placeId}/`);
+        const data = await response.json();
 
-    // 3. Xử lý Submit
-    form.onsubmit = async function(e) {
-        e.preventDefault();
-        const rating = form.querySelector('input[name="overall"]:checked')?.value;
-        const comment = form.querySelector('textarea[name="comment"]').value;
+        if (data.has_reviewed) {
+            form.innerHTML = `
+                <div class="alert-info" style="text-align:center; padding:20px; background:#e1f5fe; border-radius:8px;">
+                    <i class="fa-solid fa-circle-check" style="font-size: 24px; color: #0288d1;"></i>
+                    <p style="margin-top:10px;">Bạn đã thực hiện đánh giá cho địa điểm này.</p>
+                    <button type="button" class="btn" style="margin-top:10px;" onclick="closeReviewModal()">Đóng</button>
+                </div>`;
+        } else {
+            // Chỉ hiện Form nhập
+            form.innerHTML = `
+                <div class="rating-group" style="text-align: center; margin-bottom: 15px;">
+                    <label style="display:block; margin-bottom:10px; font-weight:bold;">Chất lượng dịch vụ:</label>
+                    ${renderStarRating('overall')}
+                </div>
+                <div class="comment-group">
+                    <textarea id="commentText" name="comment" rows="4" 
+                        style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px; resize:none;" 
+                        placeholder="Hãy chia sẻ trải nghiệm của bạn về địa điểm này..."></textarea>
+                </div>
+                <div class="modal-footer" style="margin-top:20px; display:flex; gap:10px; justify-content: flex-end;">
+                    <button type="button" class="btn" onclick="closeReviewModal()" style="background:#eee;">Hủy</button>
+                    <button type="submit" class="btn btn-add" style="background:#28a745; color:white;">Gửi đánh giá</button>
+                </div>`;
 
-        if (!rating) { alert("Vui lòng chọn sao!"); return; }
-
-        try {
-            // Gửi đến /review/ID_SO/
-            const response = await fetch(`/review/${numericId}/`, {
-                method: "POST",
-                headers: {
-                    "X-CSRFToken": getCSRFToken(),
-                    "Content-Type": "application/x-www-form-urlencoded",
-                },
-                body: new URLSearchParams({ rating, comment })
-            });
-
-            if (response.ok) {
-                alert("Đánh giá thành công!");
-                closeReviewModal();
-            } else {
-                const err = await response.json();
-                alert("Lỗi: " + (err.error || "Không thể lưu"));
-            }
-        } catch (error) {
-            alert("Lỗi kết nối server!");
+            form.onsubmit = (e) => handleReviewSubmit(e, placeId);
         }
-        
-        closeReviewModal();
-    };
+    } catch (error) {
+        form.innerHTML = "<p style='color:red; text-align:center;'>Không thể kết nối máy chủ. Vui lòng thử lại sau.</p>";
+    }
 }
+// Thêm hàm này vào file JS của bạn
+async function handleReviewSubmit(e, numericId) {
+    e.preventDefault();
+    
+    const form = e.target;
+    const rating = form.querySelector('input[name="overall"]:checked')?.value;
+    const comment = form.querySelector('#commentText')?.value;
 
+    if (!rating) { alert("Vui lòng chọn sao!"); return; }
+
+    try {
+        const response = await fetch(`/review/${numericId}/`, {
+            method: "POST",
+            headers: {
+                // ĐÂY LÀ PHẦN QUAN TRỌNG ĐỂ HẾT LỖI 403
+                "X-CSRFToken": getCookie('csrftoken'), 
+                "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: new URLSearchParams({
+                'rating': rating,
+                'comment': comment
+            })
+        });
+
+        if (response.ok) {
+            alert("Đánh giá thành công!");
+            closeReviewModal();
+            // Load lại danh sách hoặc trang
+            location.reload(); 
+        } else if (response.status === 403) {
+            alert("Lỗi 403: Phiên làm việc hết hạn hoặc thiếu mã bảo mật CSRF. Hãy thử F5 lại trang.");
+        } else {
+            const err = await response.json();
+            alert("Lỗi: " + (err.error || "Không thể lưu"));
+        }
+    } catch (error) {
+        alert("Lỗi kết nối server!");
+    }
+}
+async function deleteReview(reviewId) {
+    if (!confirm("Bạn có chắc chắn muốn xóa đánh giá này?")) return;
+
+    try {
+        const res = await fetch(`/api/delete-review/${reviewId}/`, {
+            method: "DELETE",
+            headers: { "X-CSRFToken": getCSRFToken() }
+        });
+        if (res.ok) {
+            alert("Đã xóa đánh giá.");
+            // Đóng modal hoặc load lại trang
+            location.reload(); 
+        }
+    } catch (e) {
+        alert("Lỗi khi xóa!");
+    }
+}
 function renderStarRating(name) {
     return `
         <div class="star-rating">
@@ -991,5 +1000,48 @@ function handleSavedItemClick(encodedData) {
     
     if (window.map) {
         window.map.flyTo([p.latitude, p.longitude], 15);
+    }
+}
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+async function loadReviewsToPanel(placeId) {
+    const listContainer = document.getElementById("direct-reviews-list");
+    if (!listContainer) return;
+
+    try {
+        const response = await fetch(`/api/reviews/${placeId}/`);
+        if (!response.ok) throw new Error("Không thể tải đánh giá");
+        
+        const data = await response.json();
+
+        if (data.reviews && data.reviews.length > 0) {
+            listContainer.innerHTML = data.reviews.map(rev => `
+                <div class="direct-review-item" style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #eee;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <strong style="font-size: 14px; color: #333;">${rev.user_name}</strong>
+                        <span style="color: #f1c40f; font-size: 12px;">${'★'.repeat(rev.rating)}${'☆'.repeat(5-rev.rating)}</span>
+                    </div>
+                    <p style="margin: 5px 0; font-size: 13px; color: #555;">${rev.comment}</p>
+                    <small style="color: #999; font-size: 11px;">${rev.created_at}</small>
+                </div>
+            `).join('');
+        } else {
+            listContainer.innerHTML = "<p style='color:#999; font-size: 13px;'>Địa điểm này chưa có đánh giá nào. Hãy là người đầu tiên!</p>";
+        }
+    } catch (error) {
+        console.error(error);
+        listContainer.innerHTML = "<p style='color:red; font-size: 13px;'>Lỗi khi tải đánh giá.</p>";
     }
 }
