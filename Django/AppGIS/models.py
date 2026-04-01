@@ -77,3 +77,31 @@ class ImageGallery(models.Model):
 
     def __str__(self):
         return f"Image for {self.tourismpoint.name}"
+
+class Tour(models.Model):
+    title = models.CharField(max_length=200)
+    description = models.TextField(blank=True)
+    price = models.DecimalField(max_digits=12, decimal_places=0)
+    duration = models.CharField(max_length=100, blank=True)
+    tag = models.CharField(max_length=100, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title
+
+
+class TourBooking(models.Model):
+    tour = models.ForeignKey(Tour, on_delete=models.CASCADE, related_name="bookings")
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    guests = models.PositiveIntegerField(default=1)
+    start_date = models.DateField(null=True, blank=True)
+    total_price = models.DecimalField(max_digits=12, decimal_places=0, null=True, blank=True)
+    booked_at = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(
+        max_length=20,
+        choices=[("pending", "Chờ xác nhận"), ("confirmed", "Đã xác nhận"), ("cancelled", "Đã hủy")],
+        default="pending"
+    )
+
+    def __str__(self):
+        return f"{self.user.username} - {self.tour.title} ({self.status})"

@@ -1,0 +1,112 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin - Quản lý Đặt Tour</title>
+    <link rel="stylesheet" href="{% static 'css/admin.css' %}">
+</head>
+<body>
+<div class="container">
+    <header><h1>Quản lý Đặt Tour</h1></header>
+
+    <div class="back-action">
+        <a href="{% url 'admin_dashboard' %}" class="btn-back">⬅ Quay lại Dashboard</a>
+    </div>
+
+    <!-- Danh sách booking -->
+    <section class="table-section">
+        <h2>📋 Danh sách đặt tour</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Tour</th>
+                    <th>Khách hàng</th>
+                    <th>Trạng thái</th>
+                    <th>Ngày đặt</th>
+                    <th>Hành động</th>
+                </tr>
+            </thead>
+            <tbody id="bookingTable">
+                {% for b in bookings %}
+                <tr data-id="{{ b.id }}">
+                    <td>{{ b.tour.title }}</td>
+                    <td>{{ b.user.username }}</td>
+                    <td class="status">{{ b.get_status_display }}</td>
+                    <td>{{ b.booked_at|date:"d/m/Y H:i" }}</td>
+                    <td>
+                        <button onclick="updateStatus({{ b.id }}, 'confirmed')" class="btn-confirm">✔ Xác nhận</button>
+                        <button onclick="updateStatus({{ b.id }}, 'cancelled')" class="btn-cancel">✖ Hủy</button>
+                        <button onclick="deleteBooking({{ b.id }})" class="btn-delete">🗑 Xóa</button>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5">Chưa có booking nào</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+</div>
+
+<script>
+function updateStatus(bookingId, newStatus) {
+    fetch(`/api/bookings/${bookingId}/`, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": getCookie("csrftoken")
+        },
+        body: JSON.stringify({status: newStatus})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.message) {
+            const row = document.querySelector(`tr[data-id='${bookingId}'] .status`);
+            if (row) {
+                // Hiển thị trạng thái bằng tiếng Việt
+                row.textContent = newStatus === "confirmed" ? "Đã xác nhận" : "Đã hủy";
+            }
+            alert("Cập nhật thành công!");
+        } else {
+            alert("Có lỗi xảy ra: " + (data.error || "Không rõ nguyên nhân"));
+        }
+    });
+}
+
+function deleteBooking(bookingId) {
+    if (confirm("Bạn có chắc muốn xóa booking này?")) {
+        fetch(`/api/bookings/${bookingId}/`, {
+            method: "DELETE",
+            headers: {
+                "X-CSRFToken": getCookie("csrftoken")
+            }
+        })
+        .then(response => {
+            if (response.status === 204) {
+                alert("Xóa thành công!");
+                document.querySelector(`tr[data-id='${bookingId}']`).remove();
+            } else {
+                response.json().then(data => alert("Có lỗi xảy ra: " + (data.error || "Không rõ nguyên nhân")));
+            }
+        });
+    }
+}
+
+// Hàm lấy CSRF token từ cookie
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== "") {
+        const cookies = document.cookie.split(";");
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + "=")) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+</body>
+</html>

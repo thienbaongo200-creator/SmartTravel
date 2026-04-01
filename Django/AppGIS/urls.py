@@ -19,11 +19,13 @@ urlpatterns = [
     # Dịch vụ chi tiết
     path("hotels/", views.hotels_list, name="hotels"),
     path("restaurants/", views.restaurants_list, name="restaurants"),
-    path("tours/", views.tour_list, name="tours"),
-    path("tours/<int:tour_id>/book/", views.book_tour, name="book_tour"),
-    path("booking_success/", views.booking_success, name="booking_success"),
     path("transport/", views.transport_list, name="transport"),
 
+    # Tour du lịch
+    path("tours/", views.tours_list, name="tours_list"),
+    path("tours/<int:tour_id>/book/", views.book_tour, name="book_tour"),
+    path("booking_success/", views.booking_success, name="booking_success"),
+    
     # Liên hệ
     path("contact/", views.contact, name="contact"),
     path("contact_success/", views.contact_success, name="contact_success"),
@@ -39,7 +41,8 @@ urlpatterns = [
     path("admin/", views.admin_dashboard, name="admin_dashboard"),
     path("admin_places/", views.admin_places, name="admin_places"),
     path("admin_user/", views.admin_user, name="admin_user"),
-
+    path("admin/tour-booking/", views.admin_tour_booking, name="admin_tour_booking"),
+    
     # API cho địa điểm
     path("api/places/", views.get_places_by_category, name="api_places"),
     path("api/admin/places/", views.api_places, name="api_admin_places"),
@@ -49,6 +52,10 @@ urlpatterns = [
     path("api/admin/users/", views.api_users, name="api_admin_users"),
     path("api/admin/users/<int:pk>/", views.api_user_detail, name="api_admin_user_detail"),
     path('api/reviews/<int:place_id>/', views.get_reviews, name='get_reviews'),
+
+    # API cho booking
+    path("api/bookings/<int:pk>/", views.api_booking_detail, name="api_booking_detail"),
+
 ]
 
 # Chỉ thêm static khi DEBUG = True
