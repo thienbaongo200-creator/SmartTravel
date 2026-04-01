@@ -77,3 +77,11 @@ class ImageGallery(models.Model):
 
     def __str__(self):
         return f"Image for {self.tourismpoint.name}"
+class ContactMessage(models.Model):
+    name = models.CharField(max_length=255, verbose_name="Tên người gửi")
+    email = models.EmailField(verbose_name="Email")
+    message = models.TextField(verbose_name="Nội dung tin nhắn")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Ngày gửi")
+
+    def __clstr__(self):
+        return f"{self.name} - {self.email}"

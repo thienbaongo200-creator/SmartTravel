@@ -39,7 +39,8 @@ urlpatterns = [
     path("admin/", views.admin_dashboard, name="admin_dashboard"),
     path("admin_places/", views.admin_places, name="admin_places"),
     path("admin_user/", views.admin_user, name="admin_user"),
-
+    path('admin-panel/contacts/', views.admin_contacts, name='admin_contacts'),
+    
     # API cho địa điểm
     path("api/places/", views.get_places_by_category, name="api_places"),
     path("api/admin/places/", views.api_places, name="api_admin_places"),

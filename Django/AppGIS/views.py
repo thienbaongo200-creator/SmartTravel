@@ -14,7 +14,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.views.decorators.csrf import csrf_exempt
 from geopy.distance import geodesic
 from django.contrib.auth.decorators import login_required
-from .models import TourismPoint, Category, Review, ImageGallery
+from .models import TourismPoint, Category, Review, ImageGallery, ContactMessage
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from django.core.paginator import Paginator
@@ -42,7 +42,8 @@ def contact(request):
         name = request.POST.get("name") 
         email = request.POST.get("email") 
         message = request.POST.get("message") 
-        print(f"Liên hệ từ {name} - {email}: {message}") 
+        ContactMessage.objects.create(name=name, email=email, message=message)
+        
         return redirect("contact_success") 
     return render(request, "contact.html")
 
@@ -286,6 +287,11 @@ def admin_dashboard(request):
 # ==============================
 # Admin & Quản lý địa điểm
 # ==============================
+@staff_member_required(login_url='login')
+def admin_contacts(request):
+    messages = ContactMessage.objects.all().order_by('-created_at')
+    return render(request, 'admin/admin_contacts.html', {"messages": messages})
+
 @staff_member_required(login_url='login')
 def admin_places(request):
     return render(request, 'admin/admin_places.html')
