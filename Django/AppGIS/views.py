@@ -205,6 +205,9 @@ def hotels_list(request):
 
 def restaurants_list(request):
     restaurants = TourismPoint.objects.filter(category__name="Nhà hàng")
+    paginator = Paginator(restaurants, 5) 
+    page_number = request.GET.get('page')
+    restaurants = paginator.get_page(page_number)
     return render(request, "restaurants.html", {"restaurants": restaurants})
 
 def tour_list(request):
