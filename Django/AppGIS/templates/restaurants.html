@@ -7,7 +7,6 @@
 <style>
     .restaurants-section { background-color: #f8f9fa; padding: 60px 0; }
     
-    /* CARD TỔNG THỂ (Dạng ngang đồng bộ Hotel) */
     .restaurant-card {
         display: flex;
         flex-direction: row;
@@ -23,7 +22,6 @@
     }
     .restaurant-card:hover { transform: translateY(-5px); }
 
-    /* KHỐI ẢNH */
     .restaurant-img-container {
         flex: 0 0 40%;
         position: relative;
@@ -39,14 +37,13 @@
         padding: 4px 12px;
         border-radius: 20px;
         font-weight: bold;
-        color: #e67e22; /* Cam ẩm thực */
+        color: #e67e22;
         z-index: 2;
     }
 
-    /* KHỐI NỘI DUNG */
     .restaurant-content-body {
         flex: 1;
-        padding: 30px 180px 30px 40px; /* Chừa khoảng trống bên phải cho nút/giá */
+        padding: 30px 180px 30px 40px;
         display: flex;
         flex-direction: column;
         position: relative;
@@ -76,15 +73,22 @@
         -webkit-box-orient: vertical; overflow: hidden;
     }
 
-    /* TRẠNG THÁI (Góc trên phải) */
     .status-wrapper {
         position: absolute;
         top: 30px; right: 30px;
         text-align: right;
     }
-    .status-open { color: #27ae60; font-weight: 700; font-size: 0.9rem; }
+    .status-open {
+        color: #27ae60;
+        font-weight: 700;
+        font-size: 0.9rem;
+    }
+    .status-closed {
+        color: #e74c3c;
+        font-weight: 700;
+        font-size: 0.9rem;
+    }
 
-    /* NÚT BẤM (Góc dưới phải - Style khung vàng nhưng đổi màu cam) */
     .restaurant-btn-container {
         position: absolute;
         right: 30px; bottom: 30px;
@@ -101,7 +105,6 @@
         position: relative; z-index: 2;
         transition: 0.3s;
     }
-    /* Khung trang trí màu cam */
     .restaurant-btn-container::after {
         content: ""; position: absolute; width: 50px; height: 25px;
         border-right: 3px solid #e67e22; border-bottom: 3px solid #e67e22;
@@ -109,7 +112,6 @@
     }
     .btn-view-map:hover { border-color: #e67e22; color: #e67e22; background: #fffaf5; }
 
-    /* Responsive */
     @media (max-width: 992px) {
         .restaurant-card { flex-direction: column; height: auto; }
         .restaurant-content-body { padding: 25px; }
@@ -144,7 +146,11 @@
                         <h5 class="restaurant-title">{{ restaurant.name }}</h5>
                         
                         <div class="status-wrapper">
-                            <span class="status-open"><i class="fas fa-check-circle me-1"></i> Đang mở cửa</span>
+                            {% if restaurant.is_open_now %}
+                                <span class="status-open"><i class="fas fa-check-circle me-1"></i> Đang mở cửa</span>
+                            {% else %}
+                                <span class="status-closed"><i class="fas fa-times-circle me-1"></i> Đã đóng cửa</span>
+                            {% endif %}
                         </div>
 
                         <ul class="info-list">
@@ -154,7 +160,7 @@
                             </li>
                             <li>
                                 <i class="fas fa-clock"></i> 
-                                <span>{{ restaurant.open_hours|default:"09:00 - 22:00" }}</span>
+                                <span>{{ restaurant.open_time|default:"09:00" }} - {{ restaurant.close_time|default:"22:00" }}</span>
                             </li>
                             <li>
                                 <i class="fas fa-utensils"></i> 
