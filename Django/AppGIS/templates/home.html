@@ -196,56 +196,45 @@
      * CHỨC NĂNG 1: Lọc và hiển thị địa điểm theo danh mục (Sử dụng API mới)
      */
     async function filterCategory(categorySlug) {
-        console.log("Đang lấy dữ liệu cho danh mục (slug):", categorySlug);
-        const loading = document.getElementById('loading');
-        
-        if (loading) loading.style.display = 'block';
+    console.log("Đang lấy dữ liệu cho danh mục (slug):", categorySlug);
+    const loading = document.getElementById('loading');
+    if (loading) loading.style.display = 'block';
 
-        // Xóa các marker cũ của danh mục trước đó
-        if (typeof map !== 'undefined') {
-            categoryLayerGroup.clearLayers();
-            // Nếu có marker tìm kiếm lẻ, cũng nên xóa để tránh rối mắt
-            if (window.searchMarker) map.removeLayer(window.searchMarker);
-        } else {
-            alert("Lỗi: Bản đồ chưa được tải xong.");
-            if (loading) loading.style.display = 'none';
+    if (typeof map !== 'undefined') {
+        categoryLayerGroup.clearLayers();
+        if (window.searchMarker) map.removeLayer(window.searchMarker);
+    } else {
+        alert("Lỗi: Bản đồ chưa được tải xong.");
+        if (loading) loading.style.display = 'none';
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/places/?category=${categorySlug}`);
+        if (!response.ok) throw new Error("Lỗi kết nối server");
+        
+        const data = await response.json();
+
+        if (data.length === 0) {
+            alert("Không tìm thấy địa điểm nào thuộc danh mục này.");
             return;
         }
 
-        try {
-            // Gửi request đến API get_places_by_category đã sửa ở views.py
-            // URL: /api/places/?category=hotel
-            const response = await fetch(`/api/places/?category=${categorySlug}`);
-            if (!response.ok) throw new Error("Lỗi kết nối server");
-            
-            const data = await response.json();
-
-            if (data.length === 0) {
-                alert("Không tìm thấy địa điểm nào thuộc danh mục này.");
-                if (loading) loading.style.display = 'none';
-                return;
-            }
-
-            data.forEach(place => {
+        data.forEach(place => {
             const lat = parseFloat(place.latitude);
             const lng = parseFloat(place.longitude);
 
             if (!isNaN(lat) && !isNaN(lng)) {
                 const marker = L.marker([lat, lng]);
-            marker.bindTooltip(`<b>${place.name}</b>`, {
-                        permanent: false,  
-                        direction: 'top',   
-                        sticky: true,       
-                        opacity: 0.9
-                    });
-                // Gán ID vào marker để dễ quản lý
+                marker.bindTooltip(`<b>${place.name}</b>`, { direction: 'top', opacity: 0.9 });
                 marker.placeId = place.id; 
 
                 marker.on('click', () => {
                     map.flyTo([lat, lng], 16);
                     
+                    // TRUYỀN DỮ LIỆU VÀO DISPLAYINFO
                     displayInfo({
-                        id: place.id, // ĐẢM BẢO CÓ ID Ở ĐÂY
+                        id: place.id, 
                         name: place.name,
                         img: place.img || place.image || "",
                         latitude: lat,
@@ -254,7 +243,8 @@
                         description: place.description || "Không có mô tả.",
                         rating: place.rating || "5.0",
                         price: place.price,
-                        category: place.category || "",
+                        // Đảm bảo category được truyền để check điều kiện hiện "/đêm"
+                        category: place.category_name || place.category || categorySlug, 
                         menu_imgs: place.menu_imgs || []
                     });
                 });
@@ -262,64 +252,64 @@
             }
         });
 
-            // Thêm group marker vào bản đồ
-            categoryLayerGroup.addTo(map);
+        categoryLayerGroup.addTo(map);
 
-            // Tự động căn chỉnh bản đồ để nhìn thấy tất cả các marker vừa tìm được
-            if (data.length > 0) {
-                const group = new L.featureGroup(categoryLayerGroup.getLayers());
-                map.fitBounds(group.getBounds().pad(0.2));
-            }
-
-        } catch (error) {
-            console.error("Lỗi Fetch Category:", error);
-            alert("Không thể tải dữ liệu danh mục.");
-        } finally {
-            if (loading) loading.style.display = 'none';
+        if (data.length > 0) {
+            const group = new L.featureGroup(categoryLayerGroup.getLayers());
+            map.fitBounds(group.getBounds().pad(0.2));
         }
+
+    } catch (error) {
+        console.error("Lỗi:", error);
+        alert("Không thể tải dữ liệu danh mục.");
+    } finally {
+        if (loading) loading.style.display = 'none';
     }
+}
 
     /**
      * CHỨC NĂNG 2: Xử lý khi được chuyển hướng từ trang khác (ví dụ: Hotel List)
      */
     function focusPlaceFromURL() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const lat = urlParams.get('lat');
-        const lng = urlParams.get('lng');
-        
-        if (!lat || !lng) return;
+    const urlParams = new URLSearchParams(window.location.search);
+    const lat = urlParams.get('lat');
+    const lng = urlParams.get('lng');
+    
+    if (!lat || !lng) return;
 
-        let retryCount = 0;
-        const checkMapReady = setInterval(() => {
-            if (typeof map !== 'undefined' && typeof displayInfo === 'function') {
-                clearInterval(checkMapReady);
+    let retryCount = 0;
+    const checkMapReady = setInterval(() => {
+        if (typeof map !== 'undefined' && typeof displayInfo === 'function') {
+            clearInterval(checkMapReady);
 
-                const targetLatLng = [parseFloat(lat), parseFloat(lng)];
-                const decodedName = decodeURIComponent(urlParams.get('name') || "Địa điểm");
+            const targetLatLng = [parseFloat(lat), parseFloat(lng)];
+            const decodedName = decodeURIComponent(urlParams.get('name') || "Địa điểm");
 
-                map.flyTo(targetLatLng, 17);
+            map.flyTo(targetLatLng, 17);
 
-                if (window.searchMarker) map.removeLayer(window.searchMarker);
-                window.searchMarker = L.marker(targetLatLng).addTo(map)
-                    .bindPopup(`<b>${decodedName}</b>`)
-                    .openPopup();
+            if (window.searchMarker) map.removeLayer(window.searchMarker);
+            window.searchMarker = L.marker(targetLatLng).addTo(map)
+                .bindPopup(`<b>${decodedName}</b>`)
+                .openPopup();
 
-                displayInfo({
-                    name: decodedName,
-                    img: urlParams.get('img') ? decodeURIComponent(urlParams.get('img')) : "",
-                    latitude: lat,
-                    longitude: lng,
-                    address: urlParams.get('address') ? decodeURIComponent(urlParams.get('address')) : "Đang cập nhật",
-                    description: urlParams.get('desc') ? decodeURIComponent(urlParams.get('desc')) : "Không có mô tả.",
-                    rating: urlParams.get('rating') || "5.0",
-                    price: urlParams.get('price') || "0",
-                    category: urlParams.get('category') || "",
-                    menu_imgs: urlParams.get('menu') ? JSON.parse(decodeURIComponent(urlParams.get('menu'))) : []
-                });
-            }
-            if (++retryCount > 50) clearInterval(checkMapReady);
-        }, 100);
-    }
+            displayInfo({
+                id: urlParams.get('id'),
+                name: decodedName,
+                img: urlParams.get('img') ? decodeURIComponent(urlParams.get('img')) : "",
+                latitude: lat,
+                longitude: lng,
+                address: urlParams.get('address') ? decodeURIComponent(urlParams.get('address')) : "Đang cập nhật",
+                description: urlParams.get('desc') ? decodeURIComponent(urlParams.get('desc')) : "Không có mô tả.",
+                rating: urlParams.get('rating') || "5.0",
+                price: urlParams.get('price') || "0",
+                // Lấy category từ URL để hiển thị "/đêm" chính xác
+                category: urlParams.get('category') || 'Khách sạn', 
+                menu_imgs: urlParams.get('menu') ? JSON.parse(decodeURIComponent(urlParams.get('menu'))) : []
+            });
+        }
+        if (++retryCount > 50) clearInterval(checkMapReady);
+    }, 100);
+}
     
 
     window.addEventListener('load', focusPlaceFromURL);
