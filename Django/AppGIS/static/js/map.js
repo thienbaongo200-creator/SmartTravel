@@ -221,25 +221,21 @@ async function filterCategory(category) {
  * 3. CHỈ ĐƯỜNG (ORS & POLYLINE)
  * ==========================================
  */
-async function showRouteORS(destLat, destLng, startLat = null, startLng = null, modeOverride = null) {
-    if (!startLat || !startLng) {
-        if (!userMarker) {
-            alert("Vui lòng bật định vị hoặc nhập tọa độ xuất phát!");
-            return null;
-        }
-        let userLatLng = userMarker.getLatLng();
-        startLat = userLatLng.lat;
-        startLng = userLatLng.lng;
+
+/**
+ * Hàm gọi API OpenRouteService để tìm đường và vẽ lên bản đồ
+ */
+async function showRouteORS(destLat, destLng, startLat, startLng, modeOverride = null) {
+    // Không dùng logic tự lấy userMarker ở đây nữa, vì calculateRoute đã lo việc đó
+    if (!startLat || !startLng || !destLat || !destLng) {
+        alert("Dữ liệu tọa độ không hợp lệ!");
+        return;
     }
 
-    const mode = modeOverride || (document.getElementById("transportMode") ? document.getElementById("transportMode").value : "DRIVING-CAR");
-    
-    // Bản đồ mapping profile cho ORS
+    const mode = modeOverride || (document.getElementById("transportMode")?.value || "DRIVING-CAR");
     const profiles = { 
-        "DRIVING-CAR": "driving-car", 
-        "DRIVING-MOTO": "driving-car", // ORS free thường dùng chung car cho moto
-        "WALKING": "foot-walking", 
-        "BICYCLING": "cycling-regular" 
+        "DRIVING-CAR": "driving-car", "DRIVING-MOTO": "driving-car", 
+        "WALKING": "foot-walking", "BICYCLING": "cycling-regular" 
     };
     const orsProfile = profiles[mode] || "driving-car";
 
@@ -256,107 +252,96 @@ async function showRouteORS(destLat, destLng, startLat = null, startLng = null, 
         });
 
         const data = await response.json();
-        if (!data.routes || data.routes.length === 0) throw new Error("Không tìm thấy đường đi");
+        
+        if (typeof routeLine !== 'undefined' && routeLine) {
+            map.removeLayer(routeLine);
+        }
 
-        const route = data.routes[0];
-
-        // 1. Vẽ đường đi lên bản đồ
-        if (route.geometry) {
+        if (data.routes && data.routes.length > 0) {
+            const route = data.routes[0];
             const decodedCoords = polyline.decode(route.geometry);
-            if (routeLine) map.removeLayer(routeLine);
-            routeLine = L.polyline(decodedCoords, { color: '#1a73e8', weight: 5, opacity: 0.8 }).addTo(map);
+            
+            routeLine = L.polyline(decodedCoords, { 
+                color: '#1a73e8', weight: 6, opacity: 0.8, lineCap: 'round' 
+            }).addTo(map);
+            
             map.fitBounds(routeLine.getBounds(), { padding: [50, 50] });
+            updateRouteUI(route.summary);
+        } else {
+            alert("Không tìm thấy đường đi giữa 2 địa điểm này.");
         }
-
-        // 2. HIỂN THỊ KẾT QUẢ VÀO MODAL (Phần quan trọng nhất)
-        const distanceKm = (route.summary.distance / 1000).toFixed(2);
-        const durationMin = (route.summary.duration / 60).toFixed(0);
-        
-        // Cập nhật vào ID đúng trong HTML của bạn
-        const summaryDiv = document.getElementById("route-modal-summary");
-        const resultArea = document.getElementById("route-modal-result");
-
-        if (summaryDiv) {
-            summaryDiv.innerHTML = `
-                <div style="background: #f0f7ff; padding: 15px; border-radius: 8px; border-left: 5px solid #1a73e8; margin-top: 10px;">
-                    <p style="margin: 0; color: #333;"><i class="fa-solid fa-road"></i> <b>Khoảng cách:</b> ${distanceKm} km</p>
-                    <p style="margin: 5px 0 0 0; color: #333;"><i class="fa-solid fa-clock"></i> <b>Thời gian:</b> ${durationMin} phút</p>
-                </div>
-            `;
-        }
-        
-        if (resultArea) {
-            resultArea.style.display = "block"; // Hiện vùng kết quả và nút lưu
-        }
-        const panelSummary = document.getElementById("route-summary");
-        if (panelSummary) {
-            panelSummary.innerHTML = `
-                <div style="margin-top:10px; padding:10px; border-top:1px solid #ddd; color:#1a73e8; font-weight:bold;">
-                    ${distanceKm} km | ${durationMin} phút
-                </div>
-            `;
-        }
-        return { distance: distanceKm, duration: durationMin };
-
     } catch (err) {
-        console.error("ORS error:", err);
-        alert("Lỗi: " + err.message);
-        return null;
+        alert("Lỗi kết nối API.");
+    }
+}
+
+/**
+ * Hàm hỗ trợ cập nhật kết quả lên Modal
+ */
+function updateRouteUI(summary) {
+    const distanceKm = (summary.distance / 1000).toFixed(2);
+    const durationMin = (summary.duration / 60).toFixed(0);
+    
+    // Cập nhật vào modal tóm tắt
+    const summaryDiv = document.getElementById("route-modal-summary");
+    if (summaryDiv) {
+        summaryDiv.innerHTML = `
+            <div style="background: #e8f0fe; padding: 15px; border-radius: 8px; border-left: 5px solid #1a73e8; margin-top: 10px;">
+                <p style="margin: 0; color: #1a73e8; font-weight: bold;">
+                    <i class="fa-solid fa-route"></i> Đã tìm thấy tuyến đường tốt nhất
+                </p>
+                <div style="display: flex; gap: 20px; margin-top: 8px; color: #333;">
+                    <span><i class="fa-solid fa-road"></i> ${distanceKm} km</span>
+                    <span><i class="fa-solid fa-clock"></i> ~${durationMin} phút</span>
+                </div>
+            </div>
+        `;
+    }
+
+    // Hiển thị vùng chứa nút "Lưu"
+    const resultArea = document.getElementById("route-modal-result");
+    if (resultArea) {
+        resultArea.style.display = "block";
     }
 }
 
 async function showRouteFromSearch(destLat = null, destLng = null) {
-    const panel = document.getElementById("info-panel");
     const modal = document.getElementById("route-modal");
     const startInput = document.getElementById("startPoint");
     const endInput = document.getElementById("endPoint");
-    const loading = document.getElementById("loading");
 
-    if (panel) panel.style.display = "none";
-    if (modal) modal.style.display = "block";
-
+    modal.style.display = "block";
+    
+    // Nếu có đích đến từ Marker/Info Panel
     if (destLat && destLng) {
         endInput.value = `${destLat},${destLng}`;
+        endInput.dataset.lat = destLat;
+        endInput.dataset.lng = destLng;
+    } else {
+        endInput.value = "";
+        delete endInput.dataset.lat;
     }
 
+    // Xử lý điểm xuất phát: Ưu tiên GPS
     if (window.userMarker) {
-        let pos = window.userMarker.getLatLng();
-        startInput.value = `${pos.lat},${pos.lng}`;
+        const pos = window.userMarker.getLatLng();
+        startInput.value = "Vị trí của bạn"; // Hiển thị text cho thân thiện
+        startInput.dataset.lat = pos.lat;
+        startInput.dataset.lng = pos.lng;
     } else {
-        startInput.placeholder = "Đang xác định vị trí chính xác...";
-        if (loading) loading.style.display = "block";
-
+        startInput.value = "";
+        startInput.placeholder = "Nhập địa chỉ hoặc tọa độ...";
+        
+        // Thử lấy GPS nếu chưa có
         if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                function (pos) {
-                    const lat = pos.coords.latitude;
-                    const lng = pos.coords.longitude;
-
-                    updateUserMarker(lat, lng);
-
-                    map.flyTo([lat, lng], 15);
-
-                    startInput.value = `${lat},${lng}`;
-
-                    if (loading) loading.style.display = "none";
-                },
-                function (err) {
-                    let msg = "Không thể lấy vị trí.";
-                    if (err.code === 1) msg = "Vui lòng cho phép truy cập vị trí.";
-                    startInput.placeholder = msg;
-                    console.error("Lỗi định vị:", err.message);
-
-                    if (loading) loading.style.display = "none";
-                },
-                { 
-                    enableHighAccuracy: true, 
-                    timeout: 10000,        
-                    maximumAge: 0           
-                }
-            );
-        } else {
-            alert("Trình duyệt của bạn không hỗ trợ định vị.");
-            if (loading) loading.style.display = "none";
+            navigator.geolocation.getCurrentPosition((pos) => {
+                const lat = pos.coords.latitude;
+                const lng = pos.coords.longitude;
+                updateUserMarker(lat, lng);
+                startInput.value = "Vị trí của bạn";
+                startInput.dataset.lat = lat;
+                startInput.dataset.lng = lng;
+            });
         }
     }
 }
@@ -375,19 +360,68 @@ function updateUserMarker(lat, lng) {
 }
 
 async function calculateRoute() {
-    let start = document.getElementById("startPoint").value;
-    let end = document.getElementById("endPoint").value;
-    let mode = document.getElementById("transportMode") ? document.getElementById("transportMode").value : "DRIVING";
+    const startInput = document.getElementById("startPoint");
+    const endInput = document.getElementById("endPoint");
+    const loading = document.getElementById("loading");
 
-    if (!start || !end) {
-        alert("Vui lòng nhập đủ vị trí xuất phát và điểm đến!");
+    const startVal = startInput.value.trim();
+    const endVal = endInput.value.trim();
+
+    if (!startVal || !endVal) {
+        alert("Vui lòng nhập đầy đủ điểm xuất phát và điểm đến!");
         return;
     }
 
-    let [startLat, startLng] = start.split(",").map(Number);
-    let [endLat, endLng] = end.split(",").map(Number);
+    if (loading) loading.style.display = "block";
 
-    await showRouteORS(endLat, endLng, startLat, startLng, mode);
+    try {
+        // Chuyển đổi tên địa điểm thành tọa độ
+        const startCoords = await getCoordinate(startVal, startInput);
+        const endCoords = await getCoordinate(endVal, endInput);
+
+        if (!startCoords) {
+            alert("Không tìm thấy vị trí xuất phát: " + startVal);
+            return;
+        }
+        if (!endCoords) {
+            alert("Không tìm thấy điểm đến: " + endVal);
+            return;
+        }
+
+        // Gọi hàm vẽ đường (Chú ý thứ tự: destLat, destLng, startLat, startLng)
+        await showRouteORS(endCoords[0], endCoords[1], startCoords[0], startCoords[1]);
+
+    } catch (error) {
+        console.error(error);
+        alert("Có lỗi xảy ra trong quá trình tính toán tuyến đường.");
+    } finally {
+        if (loading) loading.style.display = "none";
+    }
+}
+
+/**
+ * Hàm bổ trợ: Chuyển đổi Input (Địa chỉ hoặc Tọa độ) thành Array [lat, lng]
+ */
+async function getCoordsFromInput(val, inputElement) {
+    // 1. Kiểm tra nếu là tọa độ lat,lng (đã có từ click bản đồ hoặc GPS)
+    const regExp = /^-?\d+\.?\d*,\s*-?\d+\.?\d*$/;
+    if (regExp.test(val)) {
+        return val.split(',').map(Number);
+    }
+    
+    // 2. Nếu đã lưu tọa độ trong dataset (do click bản đồ trước đó)
+    if (inputElement.dataset.lat && inputElement.dataset.lng) {
+        return [parseFloat(inputElement.dataset.lat), parseFloat(inputElement.dataset.lng)];
+    }
+
+    // 3. Nếu là địa chỉ chữ (ví dụ: "Hồ Gươm"), dùng OpenStreetMap Nominatim để tìm tọa độ
+    const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(val)}&limit=1`);
+    const data = await response.json();
+    if (data && data.length > 0) {
+        return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+    }
+    
+    throw new Error("Không tìm thấy địa điểm");
 }
 
 function showSavedRoutes() {
@@ -1043,5 +1077,81 @@ async function loadReviewsToPanel(placeId) {
     } catch (error) {
         console.error(error);
         listContainer.innerHTML = "<p style='color:red; font-size: 13px;'>Lỗi khi tải đánh giá.</p>";
+    }
+}
+async function getCoordinate(inputElement) {
+    let val = inputElement.value.trim();
+    
+    // 1. Nếu là "Vị trí của bạn" -> Ưu tiên lấy từ dataset (GPS)
+    if (val === "Vị trí của bạn" && inputElement.dataset.lat) {
+        return [parseFloat(inputElement.dataset.lat), parseFloat(inputElement.dataset.lng)];
+    }
+
+    // 2. Nếu người dùng nhập tọa độ dạng số "21.02, 105.83"
+    const regExp = /^-?\d+\.?\d*,\s*-?\d+\.?\d*$/;
+    if (regExp.test(val)) {
+        return val.split(',').map(Number);
+    }
+
+    // 3. Nếu là địa chỉ (Tên đường, Tên tỉnh...) -> Bắt buộc Search mới
+    console.log("Đang tìm tọa độ cho:", val);
+    try {
+        const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(val + ", Vietnam")}&limit=1`);
+        const data = await response.json();
+        if (data && data.length > 0) {
+            return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+        }
+    } catch (err) {
+        console.error("Lỗi tìm kiếm tọa độ:", err);
+    }
+    return null;
+}
+
+async function calculateRoute() {
+    const startInput = document.getElementById("startPoint");
+    const endInput = document.getElementById("endPoint");
+    const loading = document.getElementById("loading");
+
+    if (loading) loading.style.display = "block";
+
+    try {
+        // Lấy tọa độ thực tế từ ô nhập
+        const startCoords = await getCoordinate(startInput);
+        const endCoords = await getCoordinate(endInput);
+
+        if (!startCoords) {
+            alert("Không xác định được điểm đi: " + startInput.value);
+            if (loading) loading.style.display = "none";
+            return;
+        }
+        if (!endCoords) {
+            alert("Không xác định được điểm đến: " + endInput.value);
+            if (loading) loading.style.display = "none";
+            return;
+        }
+
+        // GỌI HÀM VẼ ĐƯỜNG VỚI TỌA ĐỘ ĐÃ TÌM ĐƯỢC
+        // Truyền thẳng 4 tham số vào để hàm showRouteORS không lấy nhầm vị trí GPS nữa
+        await showRouteORS(endCoords[0], endCoords[1], startCoords[0], startCoords[1]);
+
+    } catch (error) {
+        console.error(error);
+        alert("Lỗi tính toán đường đi.");
+    } finally {
+        if (loading) loading.style.display = "none";
+    }
+}
+function useMyLocation(inputId) {
+    const input = document.getElementById(inputId);
+    if (window.userMarker) {
+        const pos = window.userMarker.getLatLng();
+        input.value = "Vị trí của bạn";
+        input.dataset.lat = pos.lat;
+        input.dataset.lng = pos.lng;
+        
+        // Di chuyển bản đồ về vị trí của bạn
+        map.flyTo([pos.lat, pos.lng], 15);
+    } else {
+        alert("Chưa xác định được vị trí GPS của bạn. Vui lòng bật định vị!");
     }
 }
