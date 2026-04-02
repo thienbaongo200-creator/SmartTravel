@@ -97,6 +97,7 @@ class TourBooking(models.Model):
     guests = models.PositiveIntegerField(default=1)
     start_date = models.DateField(null=True, blank=True)
     total_price = models.DecimalField(max_digits=12, decimal_places=0, null=True, blank=True)
+    phone = models.CharField(max_length=15, null=True, blank=True)
     booked_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(
         max_length=20,
