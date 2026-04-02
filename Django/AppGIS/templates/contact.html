@@ -6,11 +6,20 @@
 {% block content %}
 <section class="contact_section">
     <h2>Liên hệ với chúng tôi</h2>
-    <form method="post">
+    <form method="post" id="contactForm">
         {% csrf_token %}
-        <input type="text" name="name" placeholder="Tên của bạn" required>
-        <input type="email" name="email" placeholder="Email" required>
-        <textarea name="message" placeholder="Tin nhắn" rows="5" required></textarea>
+        
+        <input type="text" name="name" placeholder="Tên của bạn" required
+            oninvalid="this.setCustomValidity('Vui lòng điền tên của bạn vào trường này.')"
+            oninput="this.setCustomValidity('')">
+            
+        <input type="email" name="email" placeholder="Email" required
+            oninvalid="if(this.validity.valueMissing){this.setCustomValidity('Vui lòng nhập địa chỉ email.')} else if(this.validity.typeMismatch){this.setCustomValidity('Định dạng email không hợp lệ (Ví dụ: ten@gmail.com).')}"
+            oninput="this.setCustomValidity('')">
+            
+        <textarea name="message" placeholder="Tin nhắn" rows="5" required
+            oninvalid="this.setCustomValidity('Vui lòng nhập nội dung tin nhắn.')"
+            oninput="this.setCustomValidity('')"></textarea>
         
         <button type="submit" class="btn" 
                 style="background: linear-gradient(45deg, #0d6efd, #6610f2); 

@@ -1,3 +1,4 @@
+from django.contrib import messages
 import re
 import os
 import json
@@ -217,23 +218,72 @@ def tours_list(request):
 @login_required
 def book_tour(request, tour_id):
     tour = get_object_or_404(Tour, pk=tour_id)
+    
+    # 1. Chặn nếu người dùng đang có một tour ở trạng thái 'pending'
+    if TourBooking.objects.filter(user=request.user, status="pending").exists():
+        messages.warning(request, "Bạn có một yêu cầu đang chờ xử lý!")
+        return redirect("tours_list")
+
     if request.method == "POST":
-        guests = int(request.POST.get("guests", 1))
-        start_date = request.POST.get("start_date")
+        try:
+            # 2. Lấy dữ liệu từ Form trong Modal của tour.html
+            guests = int(request.POST.get("guests", 1))
+            start_date = request.POST.get("start_date")
+            phone = request.POST.get("phone")
+            
+            # 3. Tính toán tổng tiền
+            total_price = tour.price * guests
 
-        # Tính tổng giá
-        total_price = tour.price * guests
+            # 4. Lưu vào Database (TourBooking)
+            TourBooking.objects.create(
+                tour=tour,
+                user=request.user,
+                guests=guests,
+                start_date=start_date,
+                phone=phone,
+                total_price=total_price,
+                status="pending"
+            )
+            messages.success(request, "Đặt tour thành công! Chúng tôi sẽ liên hệ sớm.")
+            return redirect("tours_list")
+            
+        except Exception as e:
+            messages.error(request, f"Có lỗi xảy ra: {e}")
+            return redirect("tours_list")
+    
+    return redirect("tours_list")
 
-        # Tạo booking mới
-        TourBooking.objects.create(
-            tour=tour,
-            user=request.user,
-            status="pending",
-            guests=guests,
-            start_date=start_date,
-            total_price=total_price
-        )
-        return redirect("tours_list") 
+@login_required
+def cancel_booking(request, booking_id):
+    # Tìm booking của đúng user đó
+    booking = get_object_or_404(TourBooking, id=booking_id, user=request.user)
+    
+    if request.method == "POST":
+        # Nếu tour chưa được xác nhận thì mới cho phép chuyển sang 'cancelled' hoặc xóa
+        if booking.status == 'pending':
+            booking.status = 'cancelled'
+            booking.save()
+            messages.info(request, "Đã hủy yêu cầu đặt tour thành công.")
+        else:
+            messages.error(request, "Không thể hủy tour đã được xác nhận.")
+            
+    return redirect("tours_list")
+@login_required
+def cancel_booking(request, booking_id):
+    # Chỉ cho phép người dùng hủy chính tour của mình và tour đó phải đang ở trạng thái 'pending'
+    booking = get_object_or_404(TourBooking, id=booking_id, user=request.user)
+    
+    if request.method == "POST":
+        # Cách 1: Xóa hẳn khỏi DB
+        # booking.delete()
+        
+        # Cách 2 (Khuyên dùng): Chuyển trạng thái thành 'cancelled' thay vì xóa
+        booking.status = 'cancelled'
+        booking.save()
+        
+        return redirect("tours_list")
+    
+    return redirect("tours_list")
         
 def booking_success(request):
     return render(request, "booking_success.html")
@@ -638,3 +688,17 @@ def get_reviews(request, place_id):
         return JsonResponse(data)
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
+def tours_list(request):
+    tours = Tour.objects.all()
+    booked_tours = []
+    has_booked_tour = False
+
+    if request.user.is_authenticated:
+        booked_tours = TourBooking.objects.filter(user=request.user).select_related('tour').order_by('-booked_at')
+        has_booked_tour = TourBooking.objects.filter(user=request.user, status="pending").exists()
+    
+    return render(request, 'tours.html', {
+        'tours': tours,
+        'booked_tours': booked_tours,
+        'has_booked_tour': has_booked_tour
+    })

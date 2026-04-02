@@ -56,6 +56,8 @@ urlpatterns = [
 
     # API cho booking
     path("api/bookings/<int:pk>/", views.api_booking_detail, name="api_booking_detail"),
+    path('tours/cancel/<int:booking_id>/', views.cancel_booking, name='cancel_booking'),
+    path('book-tour/<int:tour_id>/', views.book_tour, name='book_tour'),
 ]
 
 # Chỉ thêm static khi DEBUG = True
