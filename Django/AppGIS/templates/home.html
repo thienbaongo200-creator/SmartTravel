@@ -305,8 +305,48 @@
         if (++retryCount > 50) clearInterval(checkMapReady);
     }, 100);
 }
-    
+// Thêm vào trong phần <script> của bạn
+document.addEventListener('DOMContentLoaded', function() {
+    const checkMap = setInterval(() => {
+        if (typeof map !== 'undefined' && map !== null) {
+            clearInterval(checkMap);
+
+            // Gắn sự kiện click
+            map.on('click', function(e) {
+                const lat = e.latlng.lat;
+                const lng = e.latlng.lng;
+
+                // 1. Xử lý Marker cũ (Quan trọng để tránh tràn bộ nhớ/lỗi script)
+                if (window.searchMarker) {
+                    map.removeLayer(window.searchMarker);
+                }
+
+                // 2. Hiện loading
+                const loading = document.getElementById('loading');
+                if (loading) loading.style.display = 'block';
+
+                // 3. Gọi API lấy địa chỉ
+                fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}&accept-language=vi`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const address = data.display_name || "Địa chỉ không xác định";
+                        const name = data.name || "Vị trí đã chọn";
+
+                        // 4. Tạo marker mới và gán lại vào biến global
+                        window.searchMarker = L.marker([lat, lng]).addTo(map);
+                        window.searchMarker.bindPopup(`<b>${name}</b><br>${address}`).openPopup();
+
+                    })
+                    .catch(err => console.error("Lỗi lấy địa chỉ:", err))
+                    .finally(() => {
+                        if (loading) loading.style.display = 'none';
+                    });
+            });
+        }
+    }, 100);
+});
 
     window.addEventListener('load', focusPlaceFromURL);
+
 </script>
 {% endblock %}
