@@ -47,8 +47,8 @@ urlpatterns = [
     # API cho địa điểm
     path("api/places/", views.get_places_by_category, name="api_places"),
     path("api/admin/places/", views.api_places, name="api_admin_places"),
-    path("api/admin/places/<int:pk>/", views.api_place_detail, name="api_admin_place_detail"),
-
+    path("api/admin/places/<int:pk>/", views.api_place_detail, name="api_place_detail"),
+    
     # API cho user
     path("api/admin/users/", views.api_users, name="api_admin_users"),
     path("api/admin/users/<int:pk>/", views.api_user_detail, name="api_admin_user_detail"),
