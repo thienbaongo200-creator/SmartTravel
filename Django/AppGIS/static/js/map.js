@@ -490,13 +490,31 @@ async function displayInfo(p) {
     return `${formatted} VNĐ`;
 };
 
-    const getCorrectPath = (path) => {
-        if (!path) return "";
+    const getCorrectPath = (path, category) => {
+        if (!path) return "/static/images/default.jpg";
         if (path.startsWith('/media/') || path.startsWith('http')) return path;
-        const category = p.category ? p.category.toLowerCase() : "";
-        if (category.includes("nhà hàng") || category.includes("restaurant")) {
+
+        const cat = category ? category.toLowerCase() : "";
+
+        if (cat.includes("nhà hàng") || cat.includes("restaurant")) {
             return "/static/images/restaurants/" + path.replace('restaurants/', '');
         }
+        if (cat.includes("khách sạn") || cat.includes("hotel")) {
+            return "/static/images/hotels/" + path.replace('hotels/', '');
+        }
+        if (cat.includes("công viên") || cat.includes("khu vui chơi")) {
+            return "/static/images/parks/" + path.replace('parks/', '');
+        }
+        if (cat.includes("chùa") || cat.includes("nhà thờ") || cat.includes("bảo tàng") || cat.includes("di tích")) {
+            return "/static/images/monuments/" + path.replace('monuments/', '');
+        }
+        if (cat.includes("atm")) {
+            return "/static/images/atm/" + path.replace('atm/', '');
+        }
+        if (cat.includes("nhà thuốc") || cat.includes("pharmacy")) {
+            return "/static/images/pharmacy/" + path.replace('pharmacy/', '');
+        }
+
         return "/static/images/" + path;
     };
 
