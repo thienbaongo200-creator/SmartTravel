@@ -70,15 +70,6 @@ class Review(models.Model):
         return f"{self.user.username} - {self.tourismpoint.name}"
 
 
-class ImageGallery(models.Model):
-    tourismpoint = models.ForeignKey(TourismPoint, on_delete=models.CASCADE, related_name="images")
-    image = models.ImageField(upload_to="tourism_images/")
-    caption = models.CharField(max_length=200, blank=True)
-
-    def __str__(self):
-        return f"Image for {self.tourismpoint.name}"
-
-
 class Tour(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True)
