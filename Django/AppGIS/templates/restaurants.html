@@ -162,7 +162,7 @@
                         <p class="restaurant-desc">{{ restaurant.description|default:"Trải nghiệm hương vị ẩm thực đặc sắc." }}</p>
                         
                         <div class="restaurant-btn-container">
-                            <a href="{% url 'home' %}?lat={{ restaurant.latitude }}&lng={{ restaurant.longitude }}&name={{ restaurant.name|urlencode }}&img={{ restaurant.img|urlencode }}&address={{ restaurant.address|urlencode }}&desc={{ restaurant.description|urlencode }}&rating={{ restaurant.rating }}&price={{ restaurant.price|default:0 }}&category=Nhà hàng" class="btn-view-map">
+                            <a href="{% url 'home' %}?id={{ restaurant.id }}&lat={{ restaurant.latitude }}&lng={{ restaurant.longitude }}&name={{ restaurant.name|urlencode }}&img={{ restaurant.img|urlencode }}&address={{ restaurant.address|urlencode }}&desc={{ restaurant.description|urlencode }}&rating={{ restaurant.rating }}&price={{ restaurant.price|default:0 }}&category=Nhà hàng" class="btn-view-map">
                                 <i class="fas fa-map-marked-alt"></i> CHỈ ĐƯỜNG NGAY
                             </a>
                         </div>
