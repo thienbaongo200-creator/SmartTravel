@@ -313,6 +313,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Gắn sự kiện click
             map.on('click', function(e) {
+                if (e.originalEvent.target.id !== 'map' && !e.originalEvent.target.classList.contains('leaflet-container')) {
+                    return;
+                }
                 const lat = e.latlng.lat;
                 const lng = e.latlng.lng;
 
