@@ -5,6 +5,7 @@
 
 {% block content %}
 <style>
+    /* 1. Layout tổng thể */
     .restaurants-section { background-color: #f8f9fa; padding: 60px 0; }
     
     .restaurant-card {
@@ -15,21 +16,54 @@
         overflow: hidden;
         background: #fff;
         margin-bottom: 30px;
-        height: 280px; 
+        height: 300px; 
         box-shadow: 0 4px 15px rgba(0,0,0,0.08);
         position: relative;
         transition: transform 0.3s ease;
     }
     .restaurant-card:hover { transform: translateY(-5px); }
 
+    /* 2. Slider ảnh */
     .restaurant-img-container {
         flex: 0 0 40%;
         position: relative;
+        background: #000;
         overflow: hidden;
     }
-    .restaurant-img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
-    .restaurant-card:hover .restaurant-img { transform: scale(1.1); }
-    
+
+    .image-slider {
+        display: flex;
+        transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        height: 100%;
+        width: 100%;
+    }
+
+    .slider-item {
+        min-width: 100%;
+        height: 100%;
+    }
+
+    .restaurant-img { 
+        width: 100%; 
+        height: 100%; 
+        object-fit: cover; 
+        cursor: zoom-in;
+    }
+
+    .slider-nav {
+        position: absolute;
+        top: 50%; transform: translateY(-50%);
+        background: rgba(255,255,255,0.8);
+        border: none; border-radius: 50%;
+        width: 35px; height: 35px;
+        display: flex; align-items: center; justify-content: center;
+        z-index: 10; cursor: pointer; transition: 0.3s;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    .slider-nav:hover { background: #e67e22; color: #fff; }
+    .nav-prev { left: 10px; }
+    .nav-next { right: 10px; }
+
     .rating-badge {
         position: absolute;
         top: 15px; left: 15px;
@@ -38,84 +72,77 @@
         border-radius: 20px;
         font-weight: bold;
         color: #e67e22;
-        z-index: 2;
+        z-index: 11;
     }
 
+    /* 3. Nội dung */
     .restaurant-content-body {
         flex: 1;
-        padding: 30px 180px 30px 40px;
+        padding: 25px 30px;
         display: flex;
         flex-direction: column;
         position: relative;
     }
 
     .restaurant-title {
-        font-size: 1.4rem;
+        font-size: 1.3rem;
         font-weight: 700;
         color: #2c3e50;
-        margin-bottom: 15px;
-        display: flex;
-        align-items: center;
+        margin-bottom: 12px;
         text-transform: uppercase;
-    }
-    .restaurant-title::before {
-        content: ""; width: 30px; height: 3px;
-        background: #e67e22; margin-right: 12px;
+        padding-right: 100px;
     }
 
-    .info-list { list-style: none; padding: 0; margin-bottom: 12px; }
-    .info-list li { margin-bottom: 8px; color: #555; font-size: 0.95rem; display: flex; align-items: center; }
-    .info-list i { color: #e67e22; margin-right: 10px; width: 18px; text-align: center; }
+    .info-list { list-style: none; padding: 0; margin-bottom: 15px; }
+    .info-list li { margin-bottom: 6px; color: #555; font-size: 0.9rem; display: flex; align-items: center; }
+    .info-list i { color: #e67e22; margin-right: 10px; width: 15px; }
 
     .restaurant-desc {
-        color: #777; font-size: 0.9rem; line-height: 1.6;
-        display: -webkit-box; -webkit-line-clamp: 2;
+        color: #777; font-size: 0.85rem; line-height: 1.5;
+        display: -webkit-box; -webkit-line-clamp: 3;
         -webkit-box-orient: vertical; overflow: hidden;
     }
 
-    .status-wrapper {
-        position: absolute;
-        top: 30px; right: 30px;
-        text-align: right;
-    }
-    .status-open {
-        color: #27ae60;
-        font-weight: 700;
-        font-size: 0.9rem;
-    }
-    .status-closed {
-        color: #e74c3c;
-        font-weight: 700;
-        font-size: 0.9rem;
-    }
+    .status-wrapper { position: absolute; top: 25px; right: 25px; }
+    .status-open { color: #27ae60; font-weight: 700; font-size: 0.85rem; }
+    .status-closed { color: #e74c3c; font-weight: 700; font-size: 0.85rem; }
 
-    .restaurant-btn-container {
-        position: absolute;
-        right: 30px; bottom: 30px;
-    }
+    .restaurant-btn-container { margin-top: auto; padding-top: 15px; }
     .btn-view-map {
-        padding: 10px 22px;
-        font-weight: 600;
-        background: #fff;
-        color: #333;
-        border: 1px solid #ddd;
-        text-decoration: none !important;
-        display: flex; align-items: center; gap: 8px;
-        font-size: 0.85rem;
-        position: relative; z-index: 2;
-        transition: 0.3s;
+        display: inline-flex; align-items: center; gap: 8px;
+        padding: 8px 20px; background: #e67e22; color: #fff;
+        border-radius: 5px; text-decoration: none !important;
+        font-weight: 600; font-size: 0.85rem; transition: 0.3s;
     }
-    .restaurant-btn-container::after {
-        content: ""; position: absolute; width: 50px; height: 25px;
-        border-right: 3px solid #e67e22; border-bottom: 3px solid #e67e22;
-        right: -6px; bottom: -6px; z-index: 1;
+    .btn-view-map:hover { background: #d35400; transform: scale(1.05); }
+
+    /* 4. Pagination */
+    .pagination-container { margin-top: 40px; display: flex; justify-content: center; }
+    .pagination { display: flex; list-style: none; padding: 0; gap: 5px; }
+    .page-link-custom {
+        padding: 8px 16px; border: 1px solid #ddd; color: #333;
+        text-decoration: none; border-radius: 5px; transition: 0.3s;
     }
-    .btn-view-map:hover { border-color: #e67e22; color: #e67e22; background: #fffaf5; }
+    .active .page-link-custom { background: #e67e22; color: #fff; border-color: #e67e22; }
+    .page-link-custom:hover:not(.active) { background: #eee; }
+    .page-disabled { padding: 8px 16px; color: #ccc; border: 1px solid #eee; border-radius: 5px; cursor: not-allowed; }
+
+    /* 5. Lightbox Modal */
+    #imageModal {
+        display: none; position: fixed; z-index: 10000;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.95); overflow: hidden;
+        justify-content: center; align-items: center;
+    }
+    #modalContent { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; cursor: grab; }
+    #modalImg { max-width: 90%; max-height: 90%; transition: transform 0.1s ease-out; user-select: none; }
+    .modal-close { position: absolute; top: 20px; right: 30px; color: #fff; font-size: 40px; cursor: pointer; z-index: 10001; }
 
     @media (max-width: 992px) {
         .restaurant-card { flex-direction: column; height: auto; }
-        .restaurant-content-body { padding: 25px; }
-        .status-wrapper, .restaurant-btn-container { position: static; text-align: left; margin-top: 15px; }
+        .restaurant-img-container { height: 250px; }
+        .restaurant-title { padding-right: 0; margin-top: 20px; }
+        .status-wrapper { position: static; margin-bottom: 10px; }
     }
 </style>
 
@@ -124,46 +151,52 @@
         <div class="text-center mb-5">
             <h2 class="fw-bold text-uppercase">Khám phá Ẩm thực</h2>
             <div style="width: 60px; height: 3px; background: #e67e22; margin: 10px auto;"></div>
-            <p class="text-muted small">Những nhà hàng tinh hoa và không gian ẩm thực độc đáo tại địa phương</p>
         </div>
 
         <div class="row">
             {% for restaurant in restaurants %}
             <div class="col-12 mb-4">
                 <div class="restaurant-card shadow-sm">
-                    <div class="restaurant-img-container">
-                        {% if restaurant.img %}
-                            <img src="{% static 'images/' %}{{ restaurant.img }}" class="restaurant-img" alt="{{ restaurant.name }}">
-                        {% else %}
-                            <img src="{% static 'images/default-restaurant.jpg' %}" class="restaurant-img" alt="No image">
-                        {% endif %}
+                    <div class="restaurant-img-container" id="slider-{{ forloop.counter }}">
                         <div class="rating-badge">
                             <i class="fas fa-star"></i> {{ restaurant.rating|default:"4.5" }}
+                        </div>
+
+                        <button class="slider-nav nav-prev" onclick="moveSlider('{{ forloop.counter }}', -1)"><i class="fas fa-chevron-left"></i></button>
+                        <button class="slider-nav nav-next" onclick="moveSlider('{{ forloop.counter }}', 1)"><i class="fas fa-chevron-right"></i></button>
+                        
+                        <div class="image-slider">
+                            <div class="slider-item">
+                                <img src="{% static 'images/' %}{{ restaurant.img|default:'default-restaurant.jpg' }}" class="restaurant-img" onclick="openLightbox(this.src)">
+                            </div>
+                            {% for menu_img in restaurant.menu_imgs %}
+                            <div class="slider-item">
+                                <img src="{% static 'images/' %}{{ menu_img }}" class="restaurant-img" onclick="openLightbox(this.src)">
+                            </div>
+                            {% endfor %}
                         </div>
                     </div>
 
                     <div class="restaurant-content-body">
                         <h5 class="restaurant-title">{{ restaurant.name }}</h5>
-                        
                         <div class="status-wrapper">
                             {% if restaurant.is_open_now %}
-                                <span class="status-open"><i class="fas fa-check-circle me-1"></i> Đang mở cửa</span>
+                                <span class="status-open"><i class="fas fa-check-circle me-1"></i> Mở cửa</span>
                             {% else %}
-                                <span class="status-closed"><i class="fas fa-times-circle me-1"></i> Đã đóng cửa</span>
+                                <span class="status-closed"><i class="fas fa-times-circle me-1"></i> Đóng cửa</span>
                             {% endif %}
                         </div>
 
                         <ul class="info-list">
                             <li><i class="fas fa-map-marker-alt"></i> <span>{{ restaurant.address|default:"Đang cập nhật địa chỉ" }}</span></li>
                             <li><i class="fas fa-clock"></i> <span>{{ restaurant.open_time|default:"09:00" }} - {{ restaurant.close_time|default:"22:00" }}</span></li>
-                            <li><i class="fas fa-utensils"></i> <span>Ẩm thực địa phương & Quốc tế</span></li>
                         </ul>
 
-                        <p class="restaurant-desc">{{ restaurant.description|default:"Trải nghiệm hương vị ẩm thực đặc sắc." }}</p>
+                        <p class="restaurant-desc">{{ restaurant.description|default:"Trải nghiệm ẩm thực đặc sắc." }}</p>
                         
                         <div class="restaurant-btn-container">
                             <a href="{% url 'home' %}?id={{ restaurant.id }}&lat={{ restaurant.latitude }}&lng={{ restaurant.longitude }}&name={{ restaurant.name|urlencode }}&img={{ restaurant.img|urlencode }}&address={{ restaurant.address|urlencode }}&desc={{ restaurant.description|urlencode }}&rating={{ restaurant.rating }}&price={{ restaurant.price|default:0 }}&category=Nhà hàng" class="btn-view-map">
-                                <i class="fas fa-map-marked-alt"></i> CHỈ ĐƯỜNG NGAY
+                                <i class="fas fa-location-arrow"></i> XEM TRÊN BẢN ĐỒ
                             </a>
                         </div>
                     </div>
@@ -171,8 +204,7 @@
             </div>
             {% empty %}
             <div class="col-12 text-center py-5">
-                <i class="fas fa-store-slash fa-3x text-muted mb-3"></i>
-                <p class="text-muted italic">Hiện chưa có dữ liệu nhà hàng nào để hiển thị.</p>
+                <p class="text-muted">Không tìm thấy dữ liệu nhà hàng.</p>
             </div>
             {% endfor %}
 
@@ -180,11 +212,10 @@
             <div class="col-12">
                 <div class="pagination-container">
                     <ul class="pagination">
-                        
                         {% if restaurants.has_previous %}
-                            <li><a href="?page={{ restaurants.previous_page_number }}" class="page-link-custom">&laquo; Trước</a></li>
+                            <li><a href="?page={{ restaurants.previous_page_number }}" class="page-link-custom">&laquo;</a></li>
                         {% else %}
-                            <li class="page-disabled"><span>&laquo; Trước</span></li>
+                            <li class="page-disabled"><span>&laquo;</span></li>
                         {% endif %}
 
                         {% for i in restaurants.paginator.page_range %}
@@ -196,17 +227,63 @@
                         {% endfor %}
 
                         {% if restaurants.has_next %}
-                            <li><a href="?page={{ restaurants.next_page_number }}" class="page-link-custom">Sau &raquo;</a></li>
+                            <li><a href="?page={{ restaurants.next_page_number }}" class="page-link-custom">&raquo;</a></li>
                         {% else %}
-                            <li class="page-disabled"><span>Sau &raquo;</span></li>
+                            <li class="page-disabled"><span>&raquo;</span></li>
                         {% endif %}
-
                     </ul>
                 </div>
             </div>
             {% endif %}
+        </div>
     </div>
 </section>
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<div id="imageModal">
+    <span class="modal-close" onclick="closeLightbox()">&times;</span>
+    <div id="modalContent" onclick="closeLightbox()">
+        <img id="modalImg" src="" onclick="event.stopPropagation()">
+    </div>
+</div>
+
+<script>
+    let sliderPositions = {};
+    function moveSlider(id, direction) {
+        if (typeof sliderPositions[id] === 'undefined') sliderPositions[id] = 0;
+        const container = document.getElementById(`slider-${id}`);
+        const slider = container.querySelector('.image-slider');
+        const items = slider.querySelectorAll('.slider-item');
+        sliderPositions[id] = (sliderPositions[id] + direction + items.length) % items.length;
+        slider.style.transform = `translateX(-${sliderPositions[id] * 100}%)`;
+    }
+
+    let currentScale = 1;
+    const modal = document.getElementById('imageModal');
+    const modalImg = document.getElementById('modalImg');
+
+    function openLightbox(src) {
+        currentScale = 1;
+        modalImg.style.transform = `scale(${currentScale})`;
+        modalImg.src = src;
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox() {
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+
+    modal.addEventListener('wheel', function(e) {
+        e.preventDefault();
+        const delta = e.deltaY > 0 ? -0.2 : 0.2;
+        const newScale = currentScale + delta;
+        if (newScale >= 0.5 && newScale <= 5) {
+            currentScale = newScale;
+            modalImg.style.transform = `scale(${currentScale})`;
+        }
+    }, { passive: false });
+
+    document.addEventListener('keydown', (e) => { if (e.key === "Escape") closeLightbox(); });
+</script>
 {% endblock %}
