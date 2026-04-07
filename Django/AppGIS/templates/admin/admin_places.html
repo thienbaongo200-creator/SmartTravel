@@ -119,22 +119,20 @@
 <script>
 // --- BIẾN TOÀN CỤC ---
 let mainMap, mainMarker, editMap, editMarker;
-let markers = [];      // Chứa các marker trên bản đồ chính
-let allData = [];      // Dữ liệu gốc từ server
-let filteredData = []; // Dữ liệu sau khi lọc (dùng để phân trang)
+let markers = [];      
+let allData = [];      
+let filteredData = []; 
 let currentPage = 1;   
 const itemsPerPage = 10;
 
 // --- 1. KHỞI TẠO & LOAD DỮ LIỆU ---
 
-// Hàm xử lý URL ảnh linh hoạt
 function getImageUrl(url) {
     if (!url) return "{% static 'images/default.jpg' %}"; 
     if (url.startsWith('http') || url.startsWith('/media/') || url.startsWith('/static/')) return url;
-    return '/static/images/' + url; // Mặc định nếu chỉ có tên file
+    return '/static/images/' + url; 
 }
 
-// Khởi tạo bản đồ chính
 function initMainMap() {
     mainMap = L.map('map').setView([10.776, 106.700], 13);
     L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png').addTo(mainMap);
@@ -147,53 +145,17 @@ function initMainMap() {
     });
     mainMarker.on('dragend', () => updateCoords('latitude', 'longitude', mainMarker.getLatLng()));
 }
-async function searchAddress(inputId, latId, lngId, map, markerName) {
-    const address = document.getElementById(inputId).value;
-    if (!address) { alert("Vui lòng nhập địa chỉ"); return; }
-
-// Cập nhật giá trị vào các ô input tọa độ
-async function geocodeAddress(address, latId, lngId, map, markerName) {
-    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`);
-    const data = await res.json();
-
-    if (data.length > 0) {
-        const lat = parseFloat(data[0].lat);
-        const lon = parseFloat(data[0].lon);
-
-        document.getElementById(latId).value = lat.toFixed(6);
-        document.getElementById(lngId).value = lon.toFixed(6);
-
-        map.setView([lat, lon], 15);
-
-        if (!window[markerName]) {
-            window[markerName] = L.marker([lat, lon], {draggable: true}).addTo(map);
-            window[markerName].on('dragend', () => {
-                const pos = window[markerName].getLatLng();
-                document.getElementById(latId).value = pos.lat.toFixed(6);
-                document.getElementById(lngId).value = pos.lng.toFixed(6);
-            });
-        } else {
-            window[markerName].setLatLng([lat, lon]);
-        }
-    } else {
-        alert("Không tìm thấy địa chỉ!");
-    }
-}
 
 function updateCoords(latId, lngId, latlng) {
     document.getElementById(latId).value = latlng.lat.toFixed(6);
     document.getElementById(lngId).value = latlng.lng.toFixed(6);
 }
 
-// Tải dữ liệu từ API
 async function loadPlaces(filter = null) {
     try {
         const res = await fetch("/api/admin/places/");
         allData = await res.json();
-        
-        // Lọc theo category nếu có
         filteredData = filter ? allData.filter(p => p.category === filter) : allData;
-        
         currentPage = 1; 
         renderTable();
     } catch (error) {
@@ -206,20 +168,15 @@ async function loadPlaces(filter = null) {
 function renderTable() {
     const tbody = document.getElementById("placesTable");
     tbody.innerHTML = "";
-    
-    // Dọn dẹp marker cũ
     markers.forEach(m => mainMap.removeLayer(m));
     markers = [];
 
-    // Chia trang
     const start = (currentPage - 1) * itemsPerPage;
     const end = start + itemsPerPage;
     const pageItems = filteredData.slice(start, end);
 
     pageItems.forEach(p => {
         const mainImg = getImageUrl(p.img);
-        
-        // Marker cho địa điểm trong trang hiện tại
         const m = L.marker([p.latitude, p.longitude]).addTo(mainMap)
                    .bindPopup(`<b>${p.name}</b><br><img src="${mainImg}" width="100">`);
         markers.push(m);
@@ -243,19 +200,16 @@ function renderTable() {
                 </td>
             </tr>`;
     });
-
     renderPagination();
 }
 
 function renderPagination() {
     const paginationDiv = document.getElementById("pagination");
     if (!paginationDiv) return;
-    
     paginationDiv.innerHTML = "";
     const totalPages = Math.ceil(filteredData.length / itemsPerPage);
     if (totalPages <= 1) return;
 
-    // Helper tạo nút
     const createBtn = (content, isDisabled, onClickAction, isActive = false) => {
         const btn = document.createElement("button");
         btn.innerHTML = content;
@@ -266,11 +220,9 @@ function renderPagination() {
     };
 
     paginationDiv.appendChild(createBtn("«", currentPage === 1, () => { currentPage--; renderTable(); }));
-
     for (let i = 1; i <= totalPages; i++) {
         paginationDiv.appendChild(createBtn(i, false, () => { currentPage = i; renderTable(); }, i === currentPage));
     }
-
     paginationDiv.appendChild(createBtn("»", currentPage === totalPages, () => { currentPage++; renderTable(); }));
 }
 
@@ -284,15 +236,21 @@ async function searchAddress(addrId, latId, lngId, mapInstance, markerInstanceNa
         const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`);
         const data = await res.json();
         if (data.length > 0) {
-            const { lat, lon } = data[0];
-            const newPos = [parseFloat(lat), parseFloat(lon)];
+            const lat = parseFloat(data[0].lat);
+            const lon = parseFloat(data[0].lon);
+            const newPos = [lat, lon];
 
             mapInstance.setView(newPos, 15);
-            if (markerInstanceName === 'mainMarker') mainMarker.setLatLng(newPos);
-            else if (editMarker) editMarker.setLatLng(newPos);
+            
+            // Xử lý logic marker linh hoạt
+            if (markerInstanceName === 'mainMarker') {
+                mainMarker.setLatLng(newPos);
+            } else if (editMarker) {
+                editMarker.setLatLng(newPos);
+            }
 
-            document.getElementById(latId).value = parseFloat(lat).toFixed(6);
-            document.getElementById(lngId).value = parseFloat(lon).toFixed(6);
+            document.getElementById(latId).value = lat.toFixed(6);
+            document.getElementById(lngId).value = lon.toFixed(6);
         } else alert("Không tìm thấy địa chỉ!");
     } catch (err) { console.error("Lỗi tìm kiếm:", err); }
 }
@@ -301,10 +259,14 @@ function openEditModalById(id) {
     const p = allData.find(item => item.id === id);
     if (!p) return;
 
-    ['editId', 'editName', 'editCategory', 'editLat', 'editLng', 'editPrice'].forEach(field => {
-        document.getElementById(field).value = p[field.replace('edit', '').toLowerCase()] || '';
-    });
+    document.getElementById('editId').value = p.id;
+    document.getElementById('editName').value = p.name;
+    document.getElementById('editCategory').value = p.category;
+    document.getElementById('editLat').value = p.latitude;
+    document.getElementById('editLng').value = p.longitude;
+    document.getElementById('editPrice').value = p.price;
     document.getElementById('editAddress').value = p.address || '';
+    
     document.getElementById('editModal').style.display = 'flex';
     
     const pos = [p.latitude, p.longitude];
@@ -320,7 +282,7 @@ function openEditModalById(id) {
     setTimeout(() => editMap.invalidateSize(), 200);
 }
 
-// Thêm địa điểm
+// Xử lý submit Form
 document.getElementById("addForm").onsubmit = async (e) => {
     e.preventDefault();
     const res = await fetch("/api/admin/places/", {
@@ -331,7 +293,6 @@ document.getElementById("addForm").onsubmit = async (e) => {
     if (res.ok) { alert("Thêm thành công!"); e.target.reset(); loadPlaces(); }
 };
 
-// Cập nhật địa điểm
 document.getElementById("editForm").onsubmit = async (e) => {
     e.preventDefault();
     const id = document.getElementById("editId").value;
@@ -352,12 +313,12 @@ async function deletePlace(id) {
     }
 }
 
-// --- 4. TIỆN ÍCH ---
-
 function closeEditModal() { document.getElementById('editModal').style.display = 'none'; }
 
 function setupPreview(inputId, previewId) {
-    document.getElementById(inputId).onchange = function(e) {
+    const input = document.getElementById(inputId);
+    if(!input) return;
+    input.onchange = function(e) {
         const container = document.getElementById(previewId);
         container.innerHTML = '';
         if (e.target.files.length > 6) { alert("Tối đa 6 ảnh!"); e.target.value = ""; return; }
@@ -368,6 +329,7 @@ function setupPreview(inputId, previewId) {
                 const img = document.createElement('img');
                 img.src = ev.target.result;
                 img.className = 'preview-img';
+                img.style.width = "50px"; // Thêm style nhỏ để preview
                 container.appendChild(img);
             }
             reader.readAsDataURL(file);
@@ -375,7 +337,6 @@ function setupPreview(inputId, previewId) {
     };
 }
 
-// Chạy hệ thống
 setupPreview('image_files', 'image_preview');
 setupPreview('edit_image_files', 'edit_image_preview');
 window.onload = () => { initMainMap(); loadPlaces(); };
