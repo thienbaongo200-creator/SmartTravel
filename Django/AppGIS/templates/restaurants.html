@@ -167,13 +167,36 @@
                         
                         <div class="image-slider">
                             <div class="slider-item">
-                                <img src="{% static 'images/' %}{{ restaurant.img|default:'default-restaurant.jpg' }}" class="restaurant-img" onclick="openLightbox(this.src)">
+                                {% if restaurant.img %}
+                                    {% if restaurant.img.url %}
+                                        {# TH1: Ảnh được upload qua Admin (đối tượng ImageField) #}
+                                        <img src="{{ restaurant.img.url }}" class="restaurant-img" onclick="openLightbox(this.src)" onerror="this.src='{% static 'images/default-restaurant.jpg' %}'">
+                                    {% elif "http" in restaurant.img or "media/" in restaurant.img %}
+                                        {# TH2: Ảnh là chuỗi đường dẫn có sẵn (từ API hoặc database cũ) #}
+                                        <img src="{{ restaurant.img }}" class="restaurant-img" onclick="openLightbox(this.src)" onerror="this.src='{% static 'images/default-restaurant.jpg' %}'">
+                                    {% else %}
+                                        {# TH3: Ảnh nằm trong thư mục static/images/ #}
+                                        <img src="{% static 'images/' %}{{ restaurant.img }}" class="restaurant-img" onclick="openLightbox(this.src)" onerror="this.src='{% static 'images/default-restaurant.jpg' %}'">
+                                    {% endif %}
+                                {% else %}
+                                    {# TH4: Không có dữ liệu ảnh #}
+                                    <img src="{% static 'images/default-restaurant.jpg' %}" class="restaurant-img">
+                                {% endif %}
                             </div>
-                            {% for menu_img in restaurant.menu_imgs %}
-                            <div class="slider-item">
-                                <img src="{% static 'images/' %}{{ menu_img }}" class="restaurant-img" onclick="openLightbox(this.src)">
-                            </div>
-                            {% endfor %}
+
+                            {% if restaurant.menu_imgs %}
+                                {% for menu_img in restaurant.menu_imgs %}
+                                <div class="slider-item">
+                                    {% if menu_img.url %}
+                                        <img src="{{ menu_img.url }}" class="restaurant-img" onclick="openLightbox(this.src)">
+                                    {% elif "http" in menu_img or "/media/" in menu_img %}
+                                        <img src="{{ menu_img }}" class="restaurant-img" onclick="openLightbox(this.src)">
+                                    {% else %}
+                                        <img src="{% static 'images/' %}{{ menu_img }}" class="restaurant-img" onclick="openLightbox(this.src)">
+                                    {% endif %}
+                                </div>
+                                {% endfor %}
+                            {% endif %}
                         </div>
                     </div>
 
