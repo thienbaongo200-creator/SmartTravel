@@ -8,7 +8,7 @@
 <style>
     .hotels-section { background-color: #f8f9fa; padding: 60px 0; }
     
-    /* CARD TỔNG THỂ (Dạng ngang đồng bộ toàn hệ thống) */
+    /* CARD TỔNG THỂ */
     .hotel-card {
         display: flex;
         flex-direction: row;
@@ -17,22 +17,53 @@
         overflow: hidden;
         background: #fff;
         margin-bottom: 30px;
-        height: 280px; 
+        height: 300px; /* Tăng nhẹ để cân đối với slider */
         box-shadow: 0 4px 15px rgba(0,0,0,0.08);
         position: relative;
         transition: transform 0.3s ease;
     }
     .hotel-card:hover { transform: translateY(-5px); }
 
-    /* KHỐI ẢNH */
+    /* KHỐI ẢNH & SLIDER */
     .hotel-img-container {
         flex: 0 0 40%;
         position: relative;
+        background: #000;
         overflow: hidden;
     }
-    .hotel-img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
-    .hotel-card:hover .hotel-img { transform: scale(1.1); }
-    
+
+    .image-slider {
+        display: flex;
+        transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        height: 100%;
+        width: 100%;
+    }
+
+    .slider-item {
+        min-width: 100%;
+        height: 100%;
+    }
+
+    .hotel-img { 
+        width: 100%; height: 100%; 
+        object-fit: cover; 
+        cursor: zoom-in;
+    }
+
+    .slider-nav {
+        position: absolute;
+        top: 50%; transform: translateY(-50%);
+        background: rgba(255,255,255,0.8);
+        border: none; border-radius: 50%;
+        width: 35px; height: 35px;
+        display: flex; align-items: center; justify-content: center;
+        z-index: 10; cursor: pointer; transition: 0.3s;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    .slider-nav:hover { background: #ffc107; color: #fff; }
+    .nav-prev { left: 10px; }
+    .nav-next { right: 10px; }
+
     .rating-badge {
         position: absolute;
         top: 15px; left: 15px;
@@ -40,8 +71,8 @@
         padding: 4px 12px;
         border-radius: 20px;
         font-weight: bold;
-        color: #f1c40f; /* Vàng đặc trưng khách sạn */
-        z-index: 2;
+        color: #f1c40f;
+        z-index: 11;
         box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
 
@@ -52,7 +83,6 @@
         display: flex;
         flex-direction: column;
         position: relative;
-        /* FIX: Hành lang trống 180px bên phải tránh đè giá/nút */
         padding-right: 180px; 
     }
 
@@ -91,20 +121,16 @@
         -webkit-box-orient: vertical; overflow: hidden;
     }
 
-    /* KHỐI GIÁ (Góc trên phải) */
+    /* KHỐI GIÁ */
     .hotel-price-wrapper {
         position: absolute;
         top: 25px; right: 25px;
         text-align: right;
     }
     .hotel-price-label { font-size: 0.75rem; color: #888; display: block; margin-bottom: -2px; }
-    .hotel-price-value { 
-        color: #e74c3c; 
-        font-weight: 800; 
-        font-size: 1.2rem; 
-    }
+    .hotel-price-value { color: #e74c3c; font-weight: 800; font-size: 1.2rem; }
 
-    /* NÚT BẤM (Góc dưới phải - Có khung trang trí) */
+    /* NÚT BẤM */
     .hotel-btn-container {
         position: absolute;
         right: 25px; bottom: 25px;
@@ -128,10 +154,20 @@
     }
     .btn-hotel-action:hover { border-color: #ffc107; color: #ffc107; background: #fffdf5; }
 
-    /* Mobile Responsive */
+    /* Lightbox Modal (Dùng chung style hệ thống) */
+    #imageModal {
+        display: none; position: fixed; z-index: 10000;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.95); overflow: hidden;
+        justify-content: center; align-items: center;
+    }
+    #modalContent { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+    #modalImg { max-width: 90%; max-height: 90%; transition: transform 0.1s ease-out; }
+    .modal-close { position: absolute; top: 20px; right: 30px; color: #fff; font-size: 40px; cursor: pointer; z-index: 10001; }
+
     @media (max-width: 992px) {
         .hotel-card { flex-direction: column; height: auto; }
-        .hotel-img-container { flex: 0 0 220px; }
+        .hotel-img-container { height: 250px; flex: none; }
         .hotel-content-body { padding: 20px; padding-right: 20px; }
         .hotel-price-wrapper, .hotel-btn-container { position: static; text-align: left; margin-top: 15px; }
         .hotel-btn-container::after { display: none; }
@@ -149,19 +185,45 @@
         <div class="row">
             {% for hotel in hotels %}
             <div class="col-12 mb-4">
-                <div class="hotel-card">
-                    <div class="hotel-img-container">
-                        {% if hotel.img %}
-                            {% if "media/" in hotel.img.name or "media/" in hotel.img.url %}
-                                <img src="{{ hotel.img.url }}" class="hotel-img" alt="{{ hotel.name }}">
-                            {% else %}
-                                <img src="{% static 'images/' %}{{ hotel.img }}" class="hotel-img" alt="{{ hotel.name }}">
-                            {% endif %}
-                        {% else %}
-                            <img src="{% static 'images/default-hotel.jpg' %}" class="hotel-img" alt="No image">
-                        {% endif %}
+                <div class="hotel-card shadow-sm">
+                    <div class="hotel-img-container" id="slider-{{ forloop.counter }}">
                         <div class="rating-badge">
                             <i class="fas fa-star"></i> {{ hotel.rating|default:"5.0" }}
+                        </div>
+
+                        <button class="slider-nav nav-prev" onclick="moveSlider('{{ forloop.counter }}', -1)"><i class="fas fa-chevron-left"></i></button>
+                        <button class="slider-nav nav-next" onclick="moveSlider('{{ forloop.counter }}', 1)"><i class="fas fa-chevron-right"></i></button>
+                        
+                        <div class="image-slider">
+                            <div class="slider-item">
+                                {% if hotel.img %}
+                                    {% if "http" in hotel.img or "/" in hotel.img %}
+                                        {# Kiểm tra nếu là đường dẫn media mà thiếu dấu gạch chéo đầu #}
+                                        <img src="{% if 'media/' in hotel.img and not hotel.img|slice:':1' == '/' %}/{{ hotel.img }}{% else %}{{ hotel.img }}{% endif %}" 
+                                            class="hotel-img" onclick="openLightbox(this.src)" 
+                                            onerror="this.src='{% static 'images/default-hotel.jpg' %}'">
+                                    {% else %}
+                                        <img src="{% static 'images/' %}{{ hotel.img }}" 
+                                            class="hotel-img" onclick="openLightbox(this.src)" 
+                                            onerror="this.src='{% static 'images/default-hotel.jpg' %}'">
+                                    {% endif %}
+                                {% else %}
+                                    <img src="{% static 'images/default-hotel.jpg' %}" class="hotel-img">
+                                {% endif %}
+                            </div>
+
+                            {% if hotel.menu_imgs %}
+                                {% for m_img in hotel.menu_imgs %}
+                                <div class="slider-item">
+                                    {% if "http" in m_img or "/" in m_img %}
+                                        <img src="{% if 'media/' in m_img and not m_img|slice:':1' == '/' %}/{{ m_img }}{% else %}{{ m_img }}{% endif %}" 
+                                            class="hotel-img" onclick="openLightbox(this.src)">
+                                    {% else %}
+                                        <img src="{% static 'images/' %}{{ m_img }}" class="hotel-img" onclick="openLightbox(this.src)">
+                                    {% endif %}
+                                </div>
+                                {% endfor %}
+                            {% endif %}
                         </div>
                     </div>
 
@@ -170,24 +232,18 @@
                         
                         <div class="hotel-price-wrapper">
                             <span class="hotel-price-label">Giá phòng từ:</span>
-                                <span class="hotel-price-value">
-                                    {% if hotel.price %}
-                                        {{ hotel.price|intcomma }} VNĐ<small style="font-size: 0.7rem; color: #888; font-weight: normal;">/đêm</small>
-                                    {% else %}
-                                        Liên hệ
-                                    {% endif %}
-                                </span>
+                            <span class="hotel-price-value">
+                                {% if hotel.price %}
+                                    {{ hotel.price|intcomma }} VNĐ<small style="font-size: 0.7rem; color: #888; font-weight: normal;">/đêm</small>
+                                {% else %}
+                                    Liên hệ
+                                {% endif %}
+                            </span>
                         </div>
 
                         <ul class="info-list">
-                            <li>
-                                <i class="fas fa-map-marker-alt"></i> 
-                                <span>{{ hotel.address|default:"Đang cập nhật địa chỉ" }}</span>
-                            </li>
-                            <li>
-                                <i class="fas fa-clock"></i> 
-                                <span>Phục vụ: {{ hotel.open_hours|default:"24/7" }}</span>
-                            </li>
+                            <li><i class="fas fa-map-marker-alt"></i> <span>{{ hotel.address|default:"Đang cập nhật địa chỉ" }}</span></li>
+                            <li><i class="fas fa-clock"></i> <span>Phục vụ: {{ hotel.open_hours|default:"24/7" }}</span></li>
                         </ul>
 
                         <p class="hotel-desc">
@@ -207,15 +263,13 @@
                 <p class="text-muted italic">Hiện chưa có dữ liệu khách sạn.</p>
             </div>
             {% endfor %}
+
             {% if hotels.has_other_pages %}
             <div class="col-12">
-                <div class="pagination-container">
-                    <ul class="pagination">
-                        
+                <div class="pagination-container text-center mt-4">
+                    <ul class="pagination justify-content-center">
                         {% if hotels.has_previous %}
                             <li><a href="?page={{ hotels.previous_page_number }}" class="page-link-custom">&laquo; Trước</a></li>
-                        {% else %}
-                            <li class="page-disabled"><span>&laquo; Trước</span></li>
                         {% endif %}
 
                         {% for i in hotels.paginator.page_range %}
@@ -228,17 +282,63 @@
 
                         {% if hotels.has_next %}
                             <li><a href="?page={{ hotels.next_page_number }}" class="page-link-custom">Sau &raquo;</a></li>
-                        {% else %}
-                            <li class="page-disabled"><span>Sau &raquo;</span></li>
                         {% endif %}
-
                     </ul>
                 </div>
             </div>
             {% endif %}
-
-        </div> </div>
+        </div>
+    </div>
 </section>
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<div id="imageModal">
+    <span class="modal-close" onclick="closeLightbox()">&times;</span>
+    <div id="modalContent" onclick="closeLightbox()">
+        <img id="modalImg" src="" onclick="event.stopPropagation()">
+    </div>
+</div>
+
+<script>
+    let sliderPositions = {};
+    function moveSlider(id, direction) {
+        if (typeof sliderPositions[id] === 'undefined') sliderPositions[id] = 0;
+        const container = document.getElementById(`slider-${id}`);
+        const slider = container.querySelector('.image-slider');
+        const items = slider.querySelectorAll('.slider-item');
+        if (items.length <= 1) return; // Không cần trượt nếu chỉ có 1 ảnh
+
+        sliderPositions[id] = (sliderPositions[id] + direction + items.length) % items.length;
+        slider.style.transform = `translateX(-${sliderPositions[id] * 100}%)`;
+    }
+
+    let currentScale = 1;
+    const modal = document.getElementById('imageModal');
+    const modalImg = document.getElementById('modalImg');
+
+    function openLightbox(src) {
+        currentScale = 1;
+        modalImg.style.transform = `scale(${currentScale})`;
+        modalImg.src = src;
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox() {
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+
+    // Zoom ảnh bằng chuột
+    modal.addEventListener('wheel', function(e) {
+        e.preventDefault();
+        const delta = e.deltaY > 0 ? -0.2 : 0.2;
+        const newScale = currentScale + delta;
+        if (newScale >= 0.5 && newScale <= 5) {
+            currentScale = newScale;
+            modalImg.style.transform = `scale(${currentScale})`;
+        }
+    }, { passive: false });
+
+    document.addEventListener('keydown', (e) => { if (e.key === "Escape") closeLightbox(); });
+</script>
 {% endblock %}
