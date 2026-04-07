@@ -6,17 +6,6 @@
     <title>Admin - Quản lý Địa điểm Du lịch</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>    
     <link rel="stylesheet" href="{% static 'css/admin.css' %}">
-    <style>
-        .thumb-container { display: flex; gap: 5px; flex-wrap: wrap; }
-        .thumb { width: 50px; height: 50px; object-fit: cover; border-radius: 4px; border: 1px solid #ddd; }
-        .preview-img { width: 80px; height: 80px; object-fit: cover; margin: 5px; border-radius: 5px; border: 2px solid #3498db; }
-        .price-tag { color: #e74c3c; font-weight: bold; }
-        .modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; }
-        .modal-content { background: white; padding: 20px; border-radius: 8px; width: 80%; max-width: 800px; max-height: 90vh; overflow-y: auto; }
-        .full-width { width: 100%; margin-bottom: 10px; padding: 8px; box-sizing: border-box; }
-        .flex-row { display: flex; gap: 5px; margin-bottom: 10px; }
-        .flex-row input { flex: 1; padding: 8px; }
-    </style>
 </head>
 <body>
 <div class="container">
@@ -31,6 +20,7 @@
         <button onclick="loadPlaces('Khu vui chơi')">Khu vui chơi</button>
         <button onclick="loadPlaces('Nhà hàng')">Nhà hàng</button>
         <button onclick="loadPlaces('Di tích')">Di tích</button>
+        <button onclick="loadPlaces('Khách sạn')">Khách sạn</button>
     </nav>
 
     <section class="form-card">
@@ -82,7 +72,8 @@
             </thead>
             <tbody id="placesTable"></tbody>
         </table>
-    </section>
+    </section> <div id="pagination" class="pagination-container"></div>
+</div>
 </div>
 
 <div id="editModal" class="modal">
@@ -126,25 +117,28 @@
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
-let mainMap, mainMarker, editMap, editMarker, markers = [];
-let allData = []; // Lưu lại dữ liệu gốc để dùng cho việc sửa
+// --- BIẾN TOÀN CỤC ---
+let mainMap, mainMarker, editMap, editMarker;
+let markers = [];      // Chứa các marker trên bản đồ chính
+let allData = [];      // Dữ liệu gốc từ server
+let filteredData = []; // Dữ liệu sau khi lọc (dùng để phân trang)
+let currentPage = 1;   
+const itemsPerPage = 10;
 
-// Hàm hỗ trợ format URL ảnh để tránh lỗi 404
+// --- 1. KHỞI TẠO & LOAD DỮ LIỆU ---
+
+// Hàm xử lý URL ảnh linh hoạt
 function getImageUrl(url) {
     if (!url) return "{% static 'images/default.jpg' %}"; 
-    
-    if (url.startsWith('http') || 
-        url.startsWith('/media/') || 
-        url.startsWith('/static/')) {
-        return url;
-    }
-    
-    return '/static/images/' + url;
+    if (url.startsWith('http') || url.startsWith('/media/') || url.startsWith('/static/')) return url;
+    return '/static/images/' + url; // Mặc định nếu chỉ có tên file
 }
-// Khởi tạo Map
+
+// Khởi tạo bản đồ chính
 function initMainMap() {
     mainMap = L.map('map').setView([10.776, 106.700], 13);
     L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png').addTo(mainMap);
+    
     mainMarker = L.marker([10.776, 106.700], {draggable: true}).addTo(mainMap);
     
     mainMap.on('click', e => {
@@ -154,69 +148,62 @@ function initMainMap() {
     mainMarker.on('dragend', () => updateCoords('latitude', 'longitude', mainMarker.getLatLng()));
 }
 
+// Cập nhật giá trị vào các ô input tọa độ
 function updateCoords(latId, lngId, latlng) {
     document.getElementById(latId).value = latlng.lat.toFixed(6);
     document.getElementById(lngId).value = latlng.lng.toFixed(6);
 }
 
-// Tìm kiếm địa chỉ
-async function searchAddress(addrId, latId, lngId, mapInstance, markerInstanceName) {
-    const address = document.getElementById(addrId).value;
-    if (!address) return alert("Vui lòng nhập địa chỉ");
-
+// Tải dữ liệu từ API
+async function loadPlaces(filter = null) {
     try {
-        const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`);
-        const data = await response.json();
-        if (data.length > 0) {
-            const lat = parseFloat(data[0].lat);
-            const lon = parseFloat(data[0].lon);
-            const newLatLng = [lat, lon];
-
-            mapInstance.setView(newLatLng, 15);
-            if (markerInstanceName === 'mainMarker') {
-                mainMarker.setLatLng(newLatLng);
-            } else if (editMarker) {
-                editMarker.setLatLng(newLatLng);
-            }
-            document.getElementById(latId).value = lat.toFixed(6);
-            document.getElementById(lngId).value = lon.toFixed(6);
-        } else {
-            alert("Không tìm thấy tọa độ cho địa chỉ này!");
-        }
+        const res = await fetch("/api/admin/places/");
+        allData = await res.json();
+        
+        // Lọc theo category nếu có
+        filteredData = filter ? allData.filter(p => p.category === filter) : allData;
+        
+        currentPage = 1; 
+        renderTable();
     } catch (error) {
-        console.error("Lỗi tìm kiếm:", error);
+        console.error("Lỗi khi tải dữ liệu:", error);
     }
 }
 
-// Load & Render
-async function loadPlaces(filter = null) {
-    const res = await fetch("/api/admin/places/");
-    allData = await res.json();
-    renderData(allData, filter);
-}
+// --- 2. HIỂN THỊ BẢNG & PHÂN TRANG ---
 
-function renderData(data, filter) {
+function renderTable() {
     const tbody = document.getElementById("placesTable");
     tbody.innerHTML = "";
+    
+    // Dọn dẹp marker cũ
     markers.forEach(m => mainMap.removeLayer(m));
     markers = [];
 
-    data.filter(p => !filter || p.category === filter).forEach(p => {
+    // Chia trang
+    const start = (currentPage - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    const pageItems = filteredData.slice(start, end);
+
+    pageItems.forEach(p => {
         const mainImg = getImageUrl(p.img);
         
-        // Vẽ Marker
+        // Marker cho địa điểm trong trang hiện tại
         const m = L.marker([p.latitude, p.longitude]).addTo(mainMap)
                    .bindPopup(`<b>${p.name}</b><br><img src="${mainImg}" width="100">`);
         markers.push(m);
 
-        // Render Table
-        const galleryHtml = (p.gallery || []).map(url => `<img src="${getImageUrl(url)}" class="thumb">`).join('');
+        const galleryHtml = (p.gallery || []).map(url => 
+            `<img src="${getImageUrl(url)}" class="thumb">`
+        ).join('');
+
         tbody.innerHTML += `
             <tr>
                 <td><img src="${mainImg}" class="thumb" style="width:80px; height:60px;"></td>
                 <td><div class="thumb-container">${galleryHtml}</div></td>
                 <td>
-                    <strong>${p.name}</strong><br><small>${p.category}</small><br>
+                    <strong>${p.name}</strong><br>
+                    <small class="badge">${p.category}</small><br>
                     <span class="price-tag">${new Intl.NumberFormat('vi-VN').format(p.price)}đ</span>
                 </td>
                 <td>
@@ -225,64 +212,125 @@ function renderData(data, filter) {
                 </td>
             </tr>`;
     });
+
+    renderPagination();
+}
+
+function renderPagination() {
+    const paginationDiv = document.getElementById("pagination");
+    if (!paginationDiv) return;
+    
+    paginationDiv.innerHTML = "";
+    const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+    if (totalPages <= 1) return;
+
+    // Helper tạo nút
+    const createBtn = (content, isDisabled, onClickAction, isActive = false) => {
+        const btn = document.createElement("button");
+        btn.innerHTML = content;
+        btn.className = `btn-page ${isActive ? 'active' : ''}`;
+        btn.disabled = isDisabled;
+        btn.onclick = onClickAction;
+        return btn;
+    };
+
+    paginationDiv.appendChild(createBtn("«", currentPage === 1, () => { currentPage--; renderTable(); }));
+
+    for (let i = 1; i <= totalPages; i++) {
+        paginationDiv.appendChild(createBtn(i, false, () => { currentPage = i; renderTable(); }, i === currentPage));
+    }
+
+    paginationDiv.appendChild(createBtn("»", currentPage === totalPages, () => { currentPage++; renderTable(); }));
+}
+
+// --- 3. TÌM KIẾM & XỬ LÝ FORM ---
+
+async function searchAddress(addrId, latId, lngId, mapInstance, markerInstanceName) {
+    const address = document.getElementById(addrId).value;
+    if (!address) return alert("Vui lòng nhập địa chỉ");
+
+    try {
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`);
+        const data = await res.json();
+        if (data.length > 0) {
+            const { lat, lon } = data[0];
+            const newPos = [parseFloat(lat), parseFloat(lon)];
+
+            mapInstance.setView(newPos, 15);
+            if (markerInstanceName === 'mainMarker') mainMarker.setLatLng(newPos);
+            else if (editMarker) editMarker.setLatLng(newPos);
+
+            document.getElementById(latId).value = parseFloat(lat).toFixed(6);
+            document.getElementById(lngId).value = parseFloat(lon).toFixed(6);
+        } else alert("Không tìm thấy địa chỉ!");
+    } catch (err) { console.error("Lỗi tìm kiếm:", err); }
 }
 
 function openEditModalById(id) {
     const p = allData.find(item => item.id === id);
     if (!p) return;
 
-    document.getElementById('editId').value = p.id;
-    document.getElementById('editName').value = p.name;
-    document.getElementById('editCategory').value = p.category;
+    ['editId', 'editName', 'editCategory', 'editLat', 'editLng', 'editPrice'].forEach(field => {
+        document.getElementById(field).value = p[field.replace('edit', '').toLowerCase()] || '';
+    });
     document.getElementById('editAddress').value = p.address || '';
-    document.getElementById('editLat').value = p.latitude;
-    document.getElementById('editLng').value = p.longitude;
-    document.getElementById('editPrice').value = p.price;
-
     document.getElementById('editModal').style.display = 'flex';
     
+    const pos = [p.latitude, p.longitude];
     if (!editMap) {
-        editMap = L.map('editMap').setView([p.latitude, p.longitude], 15);
+        editMap = L.map('editMap').setView(pos, 15);
         L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png').addTo(editMap);
-        editMarker = L.marker([p.latitude, p.longitude], {draggable: true}).addTo(editMap);
+        editMarker = L.marker(pos, {draggable: true}).addTo(editMap);
         editMarker.on('dragend', () => updateCoords('editLat', 'editLng', editMarker.getLatLng()));
     } else {
-        editMap.setView([p.latitude, p.longitude], 15);
-        editMarker.setLatLng([p.latitude, p.longitude]);
+        editMap.setView(pos, 15);
+        editMarker.setLatLng(pos);
     }
     setTimeout(() => editMap.invalidateSize(), 200);
 }
 
-// Submit xử lý (Giữ nguyên logic của bạn nhưng thêm header giả lập PUT nếu cần)
-document.getElementById("addForm").addEventListener("submit", async e => {
+// Thêm địa điểm
+document.getElementById("addForm").onsubmit = async (e) => {
     e.preventDefault();
     const res = await fetch("/api/admin/places/", {
         method: "POST",
         body: new FormData(e.target),
         headers: { "X-CSRFToken": "{{ csrf_token }}" }
     });
-    if (res.ok) { alert("Thành công!"); e.target.reset(); loadPlaces(); }
-});
+    if (res.ok) { alert("Thêm thành công!"); e.target.reset(); loadPlaces(); }
+};
 
-document.getElementById("editForm").addEventListener("submit", async e => {
+// Cập nhật địa điểm
+document.getElementById("editForm").onsubmit = async (e) => {
     e.preventDefault();
     const id = document.getElementById("editId").value;
     const res = await fetch(`/api/admin/places/${id}/`, {
-        method: "POST", // Dùng POST kèm Override để an toàn với File upload
+        method: "POST",
         body: new FormData(e.target),
-        headers: { 
-            "X-CSRFToken": "{{ csrf_token }}",
-            "X-HTTP-Method-Override": "PUT" 
-        }
+        headers: { "X-CSRFToken": "{{ csrf_token }}", "X-HTTP-Method-Override": "PUT" }
     });
     if (res.ok) { closeEditModal(); loadPlaces(); alert("Cập nhật thành công!"); }
-});
+};
+
+async function deletePlace(id) {
+    if (confirm("Bạn có chắc muốn xóa địa điểm này?")) {
+        const res = await fetch(`/api/admin/places/${id}/`, { 
+            method: "DELETE", headers: { "X-CSRFToken": "{{ csrf_token }}" } 
+        });
+        if (res.ok) loadPlaces();
+    }
+}
+
+// --- 4. TIỆN ÍCH ---
+
+function closeEditModal() { document.getElementById('editModal').style.display = 'none'; }
 
 function setupPreview(inputId, previewId) {
-    document.getElementById(inputId).addEventListener('change', function(e) {
+    document.getElementById(inputId).onchange = function(e) {
         const container = document.getElementById(previewId);
         container.innerHTML = '';
         if (e.target.files.length > 6) { alert("Tối đa 6 ảnh!"); e.target.value = ""; return; }
+        
         Array.from(e.target.files).forEach(file => {
             const reader = new FileReader();
             reader.onload = (ev) => {
@@ -293,22 +341,11 @@ function setupPreview(inputId, previewId) {
             }
             reader.readAsDataURL(file);
         });
-    });
+    };
 }
 
-async function deletePlace(id) {
-    if (confirm("Xóa địa điểm này?")) {
-        await fetch(`/api/admin/places/${id}/`, { 
-            method: "DELETE", headers: { "X-CSRFToken": "{{ csrf_token }}" } 
-        });
-        loadPlaces();
-    }
-}
-
-function closeEditModal() { document.getElementById('editModal').style.display = 'none'; }
+// Chạy hệ thống
 setupPreview('image_files', 'image_preview');
 setupPreview('edit_image_files', 'edit_image_preview');
 window.onload = () => { initMainMap(); loadPlaces(); };
 </script>
-</body>
-</html>
