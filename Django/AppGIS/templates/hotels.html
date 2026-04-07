@@ -152,7 +152,11 @@
                 <div class="hotel-card">
                     <div class="hotel-img-container">
                         {% if hotel.img %}
-                            <img src="{% static 'images/' %}{{ hotel.img }}" class="hotel-img" alt="{{ hotel.name }}">
+                            {% if "media/" in hotel.img.name or "media/" in hotel.img.url %}
+                                <img src="{{ hotel.img.url }}" class="hotel-img" alt="{{ hotel.name }}">
+                            {% else %}
+                                <img src="{% static 'images/' %}{{ hotel.img }}" class="hotel-img" alt="{{ hotel.name }}">
+                            {% endif %}
                         {% else %}
                             <img src="{% static 'images/default-hotel.jpg' %}" class="hotel-img" alt="No image">
                         {% endif %}
