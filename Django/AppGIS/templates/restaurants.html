@@ -167,7 +167,15 @@
                         
                         <div class="image-slider">
                             <div class="slider-item">
-                                <img src="{% static 'images/' %}{{ restaurant.img|default:'default-restaurant.jpg' }}" class="restaurant-img" onclick="openLightbox(this.src)">
+                                {% if restaurant.img %}
+                                    {% if "media/" in restaurant.img.name or "media/" in restaurant.img.url %}
+                                        <img src="{{ restaurant.img.url }}" class="restaurant-img" onclick="openLightbox(this.src)">
+                                    {% else %}
+                                        <img src="{% static 'images/' %}{{ restaurant.img }}" class="restaurant-img" onclick="openLightbox(this.src)">
+                                    {% endif %}
+                                {% else %}
+                                    <img src="{% static 'images/default-restaurant.jpg' %}" class="restaurant-img">
+                                {% endif %}
                             </div>
                             {% for menu_img in restaurant.menu_imgs %}
                             <div class="slider-item">
