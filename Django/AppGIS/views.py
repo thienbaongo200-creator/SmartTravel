@@ -423,33 +423,48 @@ def api_place_detail(request, pk):
         place.delete()
         return JsonResponse({"message": "Xóa thành công"}, status=204)
 
-    elif request.method == "PUT":
+    # Chấp nhận cả PUT và POST (để xử lý form-data dễ dàng hơn)
+    elif request.method in ["PUT", "POST"]:
         try:
-            # Cập nhật thông tin text
+            # 1. Cập nhật các trường thông tin cơ bản
             place.name = request.POST.get('name', place.name)
             place.address = request.POST.get('address', place.address)
             place.price = request.POST.get('price', place.price)
-            place.latitude = float(request.POST.get('latitude', place.latitude))
-            place.longitude = float(request.POST.get('longitude', place.longitude))
             
-            # Cập nhật Ảnh Chính nếu có upload mới
+            # Xử lý tọa độ (đảm bảo không bị lỗi nếu gửi chuỗi trống)
+            lat = request.POST.get('latitude')
+            lng = request.POST.get('longitude')
+            if lat: place.latitude = float(lat)
+            if lng: place.longitude = float(lng)
+            
+            # Xử lý Category
+            cat_name = request.POST.get('category')
+            if cat_name:
+                cat_obj, _ = Category.objects.get_or_create(name=cat_name)
+                place.category = cat_obj
+
+            # 2. Cập nhật Ảnh Chính (Trường img)
             main_img = request.FILES.get('main_image')
             if main_img:
+                # Xóa ảnh cũ nếu cần (tùy chọn) hoặc ghi đè
                 path = default_storage.save(f'tourism/main/{main_img.name}', main_img)
                 place.img = settings.MEDIA_URL + path
 
-            # Cập nhật/Bổ sung Ảnh Phụ
+            # 3. Cập nhật Ảnh Phụ (Gallery)
             new_files = request.FILES.getlist("images")
             if new_files:
+                # Lấy danh sách ảnh hiện tại (nếu có)
                 current_gallery = place.menu_imgs if isinstance(place.menu_imgs, list) else []
                 for f in new_files:
                     path = default_storage.save(f'tourism/gallery/{f.name}', f)
                     current_gallery.append(settings.MEDIA_URL + path)
-                # Giới hạn gallery không quá 10-12 ảnh để tránh nặng database
-                place.menu_imgs = current_gallery[:12]
+                
+                # Giới hạn số lượng ảnh trong gallery (ví dụ tối đa 10 ảnh)
+                place.menu_imgs = current_gallery[:10]
             
             place.save()
             return JsonResponse({"message": "Cập nhật địa điểm thành công"})
+            
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=400)
                                                 
