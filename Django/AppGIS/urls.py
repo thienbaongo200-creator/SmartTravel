@@ -66,7 +66,8 @@ urlpatterns = [
     path('admin-panel/tours/', views.admin_tours, name='admin_tours'),
     path('api/admin/tours/', views.api_tours, name='api_tours'),
     path('api/admin/tours/<int:tour_id>/', views.api_tours, name='api_tours_detail'),
-
+    path('api/admin/contacts/<int:pk>/delete/', views.delete_contact, name='api_delete_contact'),
+    path('api/admin/contacts/<int:pk>/reply/', views.reply_contact, name='api_reply_contact'),
     path("", views.index, name="home"),
     re_path(r'^.*$', custom_404_test_view),
 ]

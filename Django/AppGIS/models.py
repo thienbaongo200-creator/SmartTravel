@@ -105,6 +105,7 @@ class ContactMessage(models.Model):
     email = models.EmailField(verbose_name="Email")
     message = models.TextField(verbose_name="Nội dung tin nhắn")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Ngày gửi")
-
+    class Meta:
+        ordering = ['-created_at']
     def __str__(self):
         return f"{self.name} - {self.email}"
