@@ -3,7 +3,7 @@ import math
 import os
 import re
 import unicodedata
-
+from django.contrib.auth import login as auth_login
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
@@ -22,6 +22,8 @@ from django.http import Http404
 from geopy.distance import geodesic
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from .forms import UserLoginForm
+from .forms import UserRegisterForm
 from .models import (
     Category, ContactMessage, Review, 
     Tour, TourBooking, TourismPoint, ContactMessage
@@ -670,27 +672,25 @@ def reply_contact(request, pk):
 # Đăng Nhập & Đăng Ký & Đăng Xuất
 # ==============================
 def register_view(request):
-    if request.method == "POST":
-        form = UserCreationForm(request.POST)
+    if request.method == 'POST':
+        form = UserRegisterForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            login(request, user)
-            return redirect("home")
+            form.save()
+            return redirect('login')
     else:
-        form = UserCreationForm()
-    return render(request, "account/register.html", {"form": form})
+        form = UserRegisterForm()
+    return render(request, 'account/register.html', {'form': form})
 
 def login_view(request):
-    form = AuthenticationForm(request, data=request.POST or None)
-    if request.method == "POST" and form.is_valid():
-        user = form.get_user()
-        login(request, user)
-        # 👉 Nếu là admin (staff hoặc superuser) thì vào dashboard
-        if user.is_staff or user.is_superuser:
-            return redirect("admin_dashboard")
-        # 👉 Nếu là user thường thì về trang home
-        return redirect("home")
-    return render(request, "account/login.html", {"form": form})
+    if request.method == 'POST':
+        form = UserLoginForm(data=request.POST)
+        if form.is_valid():
+            user = form.get_user()
+            auth_login(request, user)
+            return redirect('home') # Chuyển về trang chủ
+    else:
+        form = UserLoginForm()
+    return render(request, 'account/login.html', {'form': form})
 
 def logout_view(request):
     logout(request)
