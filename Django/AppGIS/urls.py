@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.conf.urls.static import static
-from django.urls import path
+from django.urls import path, re_path
 from . import views
 
 urlpatterns = [
@@ -58,6 +58,14 @@ urlpatterns = [
     path("api/bookings/<int:pk>/", views.api_booking_detail, name="api_booking_detail"),
     path('tours/cancel/<int:booking_id>/', views.cancel_booking, name='cancel_booking'),
     path('book-tour/<int:tour_id>/', views.book_tour, name='book_tour'),
+
+    path('admin-panel/tours/', views.admin_tours, name='admin_tours'),
+    path('api/admin/tours/', views.api_tours, name='api_tours'),
+    path('api/admin/tours/<int:tour_id>/', views.api_tours, name='api_tours_detail'),
+
+    path("", views.index, name="home"),
+    re_path(r'^.*$', custom_404_test_view),
+
 ]
 
 # Chỉ thêm static khi DEBUG = True
