@@ -36,15 +36,44 @@
 <body>
 
 <div class="sidebar">
-    <div class="sidebar-brand"><i class="fas fa-map-marked-alt"></i><span>Smart Travel</span></div>
-    <nav>
-        <a href="{% url 'admin_dashboard' %}" class="sidebar-link"><i class="fas fa-th-large"></i> Dashboard</a>
-        <a href="{% url 'admin_user' %}" class="sidebar-link"><i class="fas fa-user-friends"></i> Người dùng</a>
-        <a href="#" class="sidebar-link active"><i class="fas fa-envelope"></i> Quản lý Liên hệ</a>
-        <hr style="border-top: 1px solid rgba(255,255,255,0.1);">
-        <a href="/" class="sidebar-link"><i class="fas fa-external-link-alt"></i> Xem Website</a>
-    </nav>
-</div>
+        <div class="sidebar-brand">
+            <i class="fas fa-map-marked-alt"></i>
+            <span>Smart Travel</span>
+        </div>
+        <nav>
+            <a href="{% url 'admin_dashboard' %}" class="sidebar-link">
+                <i class="fas fa-th-large"></i> Dashboard
+            </a>
+            <a href="{% url 'admin_places' %}" class="sidebar-link">
+                <i class="fas fa-layer-group"></i> Quản lý Địa điểm
+            </a>
+            <a href="{% url 'admin_user' %}" class="sidebar-link">
+                <i class="fas fa-user-friends"></i> Người dùng
+            </a>
+
+            <a href="{% url 'admin_tours' %}" class="sidebar-link">
+                <i class="fas fa-route"></i> Quản lý Tour
+            </a>
+
+            <a href="{% url 'admin_tour_booking' %}" class="sidebar-link">
+                <i class="fas fa-calendar-check"></i> Quản lý Đặt Tour
+            </a>
+
+            <a href="#" class="sidebar-link active">
+                <i class="fas fa-envelope"></i> Quản lý Liên hệ
+            </a>
+
+            <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 20px 0;">
+
+            <a href="/" class="sidebar-link">
+                <i class="fas fa-external-link-alt"></i> Xem Website
+            </a>
+
+            <a href="{% url 'logout' %}" class="sidebar-link" style="color: #ff7675;">
+                <i class="fas fa-sign-out-alt"></i> Đăng xuất
+            </a>
+        </nav>
+    </div>
 
 <div class="main-content">
     <div class="header-section mb-5">
