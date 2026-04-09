@@ -21,7 +21,6 @@ from django.views.decorators.csrf import csrf_exempt
 from geopy.distance import geodesic
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-
 from .models import (
     Category, ContactMessage, Review, 
     Tour, TourBooking, TourismPoint
@@ -539,6 +538,40 @@ def api_user_detail(request, pk):
 # ==============================
 # Admin & Quản lý đặt tour
 # ==============================
+def admin_tours(request):
+    return render(request, 'admin/admin_tours.html')
+@csrf_exempt
+def api_tours(request, tour_id=None):
+    if request.method == "GET":
+        tours = list(Tour.objects.all().values().order_by('-created_at'))
+        return JsonResponse(tours, safe=False)
+
+    if request.method == "POST":
+        # Thêm hoặc Cập nhật (Sử dụng Method Override hoặc check tour_id)
+        title = request.POST.get('title')
+        description = request.POST.get('description')
+        price = request.POST.get('price')
+        duration = request.POST.get('duration')
+        tag = request.POST.get('tag')
+
+        if tour_id: # Cập nhật
+            tour = Tour.objects.get(id=tour_id)
+            tour.title = title
+            tour.description = description
+            tour.price = price
+            tour.duration = duration
+            tour.tag = tag
+            tour.save()
+        else: # Thêm mới
+            Tour.objects.create(
+                title=title, description=description, 
+                price=price, duration=duration, tag=tag
+            )
+        return JsonResponse({"message": "Thành công"})
+
+    if request.method == "DELETE":
+        Tour.objects.get(id=tour_id).delete()
+        return JsonResponse({"message": "Đã xóa"})
 def admin_tour_booking(request):
     bookings = TourBooking.objects.select_related("tour", "user").all()
     return render(request, "admin/admin_tour_booking.html", {"bookings": bookings})
