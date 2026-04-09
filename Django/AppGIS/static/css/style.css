@@ -2170,3 +2170,72 @@ destinations-section {
     background: #f9f9f9;
     border-radius: 5px;
 }
+/* Thống nhất Bố cục và Sidebar */
+.dashboard-container {
+    display: flex;
+    min-height: 100vh;
+    background-color: #f4f7f6;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.sidebar {
+    width: 260px;
+    background: #2c3e50;
+    color: white;
+    padding-top: 20px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    transition: all 0.3s;
+    flex-shrink: 0; /* Giữ sidebar không bị co lại */
+}
+
+.sidebar-header {
+    padding: 20px;
+    text-align: center;
+    border-bottom: 1px solid #34495e;
+    margin-bottom: 20px;
+}
+
+.sidebar-header h2 {
+    font-size: 1.2rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #3498db;
+    margin: 0;
+}
+
+.admin-nav {
+    display: flex;
+    flex-direction: column;
+}
+
+.nav-link {
+    padding: 15px 25px;
+    color: #bdc3c7 !important;
+    text-decoration: none !important;
+    transition: 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.nav-link:hover, .nav-link.active {
+    background: #34495e;
+    color: white !important;
+    border-left: 4px solid #3498db;
+}
+
+.main-content {
+    flex: 1;
+    padding: 30px;
+    overflow-x: hidden;
+}
+
+/* Glass Card cho nội dung */
+.glass-card {
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
