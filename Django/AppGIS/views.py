@@ -17,7 +17,8 @@ from django.db.models import Q
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.csrf import csrf_exempt
-
+from django.core.exceptions import PermissionDenied
+from django.http import Http404
 from geopy.distance import geodesic
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -332,8 +333,18 @@ def submit_review(request, point_id):
 # ==============================
 # Admin Dashboard
 # ==============================
-@staff_member_required(login_url='login')
+def is_admin_user(user):
+    return user.is_authenticated and user.is_staff
+
+def error_404_view(request, exception):
+    return render(request, '404.html', status=404)
+
+def error_403_view(request, exception):
+    return render(request, '403.html', status=403)
+
 def admin_dashboard(request):
+    if not is_admin_user(request.user):
+        raise PermissionDenied
     places_count = TourismPoint.objects.count()
     users_count = User.objects.count()
     bookings_count = TourBooking.objects.count()  
@@ -346,12 +357,15 @@ def admin_dashboard(request):
 # ==============================
 # Admin & Quản lý địa điểm
 # ==============================
-@staff_member_required(login_url='login')
 def admin_places(request):
+    if not is_admin_user(request.user):
+        raise PermissionDenied
     return render(request, 'admin/admin_places.html')
 
 @csrf_exempt
 def api_places(request):
+    if not is_admin_user(request.user):
+        raise PermissionDenied
     if request.method == "GET":
         places = TourismPoint.objects.all().order_by('-id')
         data = []
@@ -471,8 +485,9 @@ def api_place_detail(request, pk):
 # ==============================
 # Admin & Quản lý User
 # ==============================
-@staff_member_required(login_url='login')
 def admin_user(request):
+    if not is_admin_user(request.user):
+        raise PermissionDenied
     return render(request, 'admin/admin_user.html')
 
 @csrf_exempt
@@ -540,6 +555,8 @@ def api_user_detail(request, pk):
 # Admin & Quản lý đặt tour
 # ==============================
 def admin_tour_booking(request):
+    if not is_admin_user(request.user):
+        raise PermissionDenied
     bookings = TourBooking.objects.select_related("tour", "user").all()
     return render(request, "admin/admin_tour_booking.html", {"bookings": bookings})
 
@@ -576,8 +593,9 @@ def api_booking_detail(request, pk):
 # ==============================
 # Admin & Liên Hệ
 # ==============================
-@staff_member_required(login_url='login')
 def admin_contacts(request):
+    if not is_admin_user(request.user):
+        raise PermissionDenied
     messages = ContactMessage.objects.all().order_by('-created_at')
     return render(request, 'admin/admin_contacts.html', {"messages": messages})
 

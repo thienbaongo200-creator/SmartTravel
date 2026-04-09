@@ -58,9 +58,15 @@ urlpatterns = [
     path("api/bookings/<int:pk>/", views.api_booking_detail, name="api_booking_detail"),
     path('tours/cancel/<int:booking_id>/', views.cancel_booking, name='cancel_booking'),
     path('book-tour/<int:tour_id>/', views.book_tour, name='book_tour'),
+    path("", views.index, name="home"),
 ]
-
+handler404 = 'AppGIS.views.error_404_view'
+handler403 = 'AppGIS.views.error_403_view'
 # Chỉ thêm static khi DEBUG = True
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += [
+        path('test-404/', views.error_404_view, {'exception': Exception("Test 404")}),
+        path('test-403/', views.error_403_view, {'exception': Exception("Test 403")}),
+    ]
