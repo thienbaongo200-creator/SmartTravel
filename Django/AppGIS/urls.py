@@ -2,7 +2,11 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import path
 from . import views
-
+from django.views.defaults import page_not_found
+from django.urls import re_path
+from django.shortcuts import render
+def custom_404_test_view(request, exception=None):
+    return render(request, '404.html', status=404)
 urlpatterns = [
     # Trang chính
     path("", views.index, name="home"),
@@ -59,8 +63,8 @@ urlpatterns = [
     path('tours/cancel/<int:booking_id>/', views.cancel_booking, name='cancel_booking'),
     path('book-tour/<int:tour_id>/', views.book_tour, name='book_tour'),
     path("", views.index, name="home"),
+    re_path(r'^.*$', custom_404_test_view),
 ]
-handler404 = 'AppGIS.views.error_404_view'
 handler403 = 'AppGIS.views.error_403_view'
 # Chỉ thêm static khi DEBUG = True
 if settings.DEBUG:
