@@ -1,0 +1,219 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<script src="https://cdn.ckeditor.com/ckeditor5/36.0.1/classic/ckeditor.js"></script>
+
+<style>
+    .admin-container { padding: 30px; background-color: #f8f9fa; min-height: 100vh; }
+    .glass-card { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); margin-bottom: 30px; }
+    .ck-editor__editable { min-height: 200px; }
+    
+    /* Cấu hình hiển thị Modal */
+    .modal { 
+        display: none; 
+        position: fixed; 
+        z-index: 1050; 
+        left: 0; top: 0; 
+        width: 100%; height: 100%; 
+        background: rgba(0,0,0,0.5); 
+        overflow-y: auto;
+    }
+    .modal-content-custom { 
+        background: white; 
+        margin: 50px auto; 
+        max-width: 800px; 
+        border-radius: 15px; 
+        padding: 30px; 
+    }
+
+    .custom-table { width: 100%; border-collapse: separate; border-spacing: 0 10px; }
+    .custom-table tr { background: white; }
+    .custom-table td { padding: 15px; border-top: 1px solid #eee; border-bottom: 1px solid #eee; vertical-align: middle; }
+    .price-text { color: #2ecc71; font-weight: 700; }
+    .tour-tag { background: #e1f5fe; color: #039be5; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; }
+    .btn-action { width: 35px; height: 35px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; margin: 0 2px; border: 1px solid; transition: 0.3s; background: none; }
+</style>
+
+<div class="admin-container">
+    <div class="header-section d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800"><i class="fas fa-route me-2"></i>Quản lý Gói Tour</h1>
+        </div>
+        <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-secondary btn-sm rounded-pill">Quay lại Dashboard</a>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-4">
+            <div class="glass-card">
+                <h5 class="mb-4"><i class="fas fa-plus-circle text-primary me-2"></i>Thêm Tour mới</h5>
+                <form id="tourForm">
+                    <div class="mb-3"><label class="form-label small fw-bold">Tên Tour</label><input type="text" name="title" class="form-control" required></div>
+                    <div class="row mb-3">
+                        <div class="col-6"><label class="form-label small fw-bold">Giá (VNĐ)</label><input type="number" name="price" class="form-control" required></div>
+                        <div class="col-6"><label class="form-label small fw-bold">Thời gian</label><input type="text" name="duration" class="form-control"></div>
+                    </div>
+                    <div class="mb-3"><label class="form-label small fw-bold">Nhãn (Tag)</label><input type="text" name="tag" class="form-control"></div>
+                    <div class="mb-3"><label class="form-label small fw-bold">Mô tả chi tiết</label><div id="editor-add"></div></div>
+                    <button type="submit" class="btn btn-primary w-100 rounded-pill mt-2">Lưu Tour mới</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="table-responsive">
+                <table class="custom-table">
+                    <thead>
+                        <tr>
+                            <th>THÔNG TIN TOUR</th>
+                            <th>GIÁ</th>
+                            <th>THỜI LƯỢNG</th>
+                            <th>HÀNH ĐỘNG</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tourTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="editTourModal" class="modal">
+    <div class="modal-content-custom">
+        <h4><i class="fas fa-edit text-warning me-2"></i>Cập nhật Tour</h4>
+        <hr>
+        <form id="editTourForm">
+            <input type="hidden" id="editTourId">
+            <div class="row mb-3">
+                <div class="col-md-8"><label class="fw-bold small">Tên Tour</label><input type="text" id="editTitle" name="title" class="form-control" required></div>
+                <div class="col-md-4"><label class="fw-bold small">Nhãn</label><input type="text" id="editTag" name="tag" class="form-control"></div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-6"><label class="fw-bold small">Giá tiền</label><input type="number" id="editPrice" name="price" class="form-control" required></div>
+                <div class="col-md-6"><label class="fw-bold small">Thời gian</label><input type="text" id="editDuration" name="duration" class="form-control"></div>
+            </div>
+            <div class="mb-3"><label class="fw-bold small">Mô tả chi tiết</label><div id="editor-edit"></div></div>
+            <div class="text-end">
+                <button type="button" class="btn btn-light rounded-pill me-2" onclick="closeModal()">Đóng</button>
+                <button type="submit" class="btn btn-warning rounded-pill px-4">Lưu thay đổi</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    let toursData = [];
+    let addEditor, editEditor;
+
+    // 1. Khởi tạo Editor đồng bộ hơn
+    async function initEditors() {
+        addEditor = await ClassicEditor.create(document.querySelector('#editor-add'));
+        editEditor = await ClassicEditor.create(document.querySelector('#editor-edit'));
+    }
+
+    // 2. Tải danh sách tour
+    function stripHTML(html) {
+    let doc = new DOMParser().parseFromString(html, 'text/html');
+    return doc.body.textContent || "";
+}
+
+async function loadTours() {
+    const res = await fetch("/api/admin/tours/");
+    toursData = await res.json();
+    const tbody = document.getElementById("tourTableBody");
+    
+    tbody.innerHTML = toursData.map(t => {
+        // Lọc nội dung mô tả để hiển thị bản xem trước không có thẻ <p>
+        const cleanDescription = stripHTML(t.description || '').substring(0, 50) + '...';
+        
+        return `
+            <tr>
+                <td>
+                    <div class="fw-bold text-dark">${t.title}</div>
+                    <div class="text-muted small">${cleanDescription}</div> <span class="tour-tag">${t.tag || 'Phổ thông'}</span>
+                </td>
+                <td><span class="price-text">${new Intl.NumberFormat('vi-VN').format(t.price)}đ</span></td>
+                <td><i class="far fa-clock me-1 text-muted"></i> ${t.duration || 'N/A'}</td>
+                <td>
+                    <button class="btn-action btn-outline-warning" onclick="openEdit(${t.id})"><i class="fas fa-pen-alt"></i></button>
+                    <button class="btn-action btn-outline-danger" onclick="deleteTour(${t.id})"><i class="fas fa-trash"></i></button>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+    // 3. FIX CHÍNH: Hàm mở form sửa
+    function openEdit(id) {
+        // Sử dụng == thay vì === để tránh lỗi lệch kiểu dữ liệu (string vs number)
+        const t = toursData.find(x => x.id == id);
+        if (!t) return;
+
+        document.getElementById("editTourId").value = t.id;
+        document.getElementById("editTitle").value = t.title;
+        document.getElementById("editPrice").value = t.price;
+        document.getElementById("editDuration").value = t.duration;
+        document.getElementById("editTag").value = t.tag;
+        
+        // Đổ dữ liệu vào Editor (kiểm tra editor đã sẵn sàng chưa)
+        if (editEditor) {
+            editEditor.setData(t.description || '');
+        }
+        
+        document.getElementById("editTourModal").style.display = 'block';
+    }
+
+    // 4. Xử lý gửi Form Thêm
+    document.getElementById("tourForm").onsubmit = async (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        formData.append('description', addEditor.getData());
+
+        const res = await fetch("/api/admin/tours/", {
+            method: "POST",
+            body: formData,
+            headers: { "X-CSRFToken": "{{ csrf_token }}" }
+        });
+        if(res.ok) { 
+            e.target.reset(); addEditor.setData(''); 
+            loadTours(); 
+            alert("Lưu thành công!"); 
+        }
+    };
+
+    // 5. Xử lý gửi Form Sửa
+    document.getElementById("editTourForm").onsubmit = async (e) => {
+        e.preventDefault();
+        const id = document.getElementById("editTourId").value;
+        const formData = new FormData(e.target);
+        formData.append('description', editEditor.getData());
+
+        const res = await fetch(`/api/admin/tours/${id}/`, {
+            method: "POST",
+            body: formData,
+            headers: { 
+                "X-CSRFToken": "{{ csrf_token }}", 
+                "X-HTTP-Method-Override": "PUT" 
+            }
+        });
+        if(res.ok) { closeModal(); loadTours(); alert("Đã cập nhật!"); }
+    };
+
+    async function deleteTour(id) {
+        if(confirm("Xóa tour này?")) {
+            await fetch(`/api/admin/tours/${id}/`, {
+                method: "DELETE",
+                headers: { "X-CSRFToken": "{{ csrf_token }}" }
+            });
+            loadTours();
+        }
+    }
+
+    function closeModal() { document.getElementById("editTourModal").style.display = 'none'; }
+    
+    window.onload = async () => {
+        await initEditors();
+        await loadTours();
+    };
+</script>
+{% endblock %}
