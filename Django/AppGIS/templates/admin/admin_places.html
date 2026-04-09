@@ -40,7 +40,8 @@
                 
                 <div class="image-upload-section">
                     <label>📷 Ảnh chính (đại diện):</label>
-                    <input type="file" name="main_image" accept="image/*" required>
+                    <input type="file" id="main_image" name="main_image" accept="image/*" required>
+                    <div id="main_image_preview" class="thumb-container"></div> 
                 </div>
 
                 <div class="image-upload-section">
@@ -96,7 +97,8 @@
               <input type="number" id="editPrice" name="price" placeholder="Giá tiền (VNĐ)" class="full-width">
               
               <label>Thay ảnh chính:</label>
-              <input type="file" name="main_image" accept="image/*">
+            <input type="file" id="edit_main_image" name="main_image" accept="image/*">
+            <div id="edit_main_image_preview" class="thumb-container"></div>
               
               <label>Thêm ảnh phụ mới:</label>
               <input type="file" id="edit_image_files" name="images" accept="image/*" multiple>
@@ -339,5 +341,7 @@ function setupPreview(inputId, previewId) {
 
 setupPreview('image_files', 'image_preview');
 setupPreview('edit_image_files', 'edit_image_preview');
+setupPreview('main_image', 'main_image_preview');
+setupPreview('edit_main_image', 'edit_main_image_preview');
 window.onload = () => { initMainMap(); loadPlaces(); };
 </script>
