@@ -24,7 +24,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .models import (
     Category, ContactMessage, Review, 
-    Tour, TourBooking, TourismPoint
+    Tour, TourBooking, TourismPoint, ContactMessage
 )
 # ==============================
 # Các trang tĩnh
@@ -631,7 +631,41 @@ def admin_contacts(request):
         raise PermissionDenied
     messages = ContactMessage.objects.all().order_by('-created_at')
     return render(request, 'admin/admin_contacts.html', {"messages": messages})
+@staff_member_required
+def delete_contact(request, pk):
+    if request.method == 'DELETE':
+        contact = get_object_or_404(ContactMessage, pk=pk)
+        contact.delete()
+        return JsonResponse({'status': 'success', 'message': 'Đã xóa liên hệ.'})
+    return JsonResponse({'status': 'error'}, status=400)
 
+# API Phản hồi qua Email
+@staff_member_required
+def reply_contact(request, pk):
+    if request.method == 'POST':
+        try:
+            # 1. Tìm tin nhắn trong DB
+            contact = get_object_or_404(ContactMessage, pk=pk)
+            
+            # 2. Đọc dữ liệu JSON từ request
+            data = json.loads(request.body)
+            reply_content = data.get('message')
+
+            # 3. Gửi mail (Nếu dùng console backend thì nó sẽ in ra Terminal)
+            send_mail(
+                subject="Phản hồi từ Smart Travel",
+                message=f"Chào {contact.name},\n\n{reply_content}",
+                from_email=None, 
+                recipient_list=[contact.email],
+                fail_silently=False,
+            )
+            return JsonResponse({'status': 'success'})
+        except Exception as e:
+            # In lỗi ra console để bạn quan sát
+            print(f"Lỗi gửi mail: {e}")
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+    
+    return JsonResponse({'status': 'failed'}, status=400)
 # ==============================
 # Đăng Nhập & Đăng Ký & Đăng Xuất
 # ==============================
