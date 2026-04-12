@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.conf.urls.static import static
-from django.urls import path
+from django.urls import path, re_path
 from . import views
 from django.views.defaults import page_not_found
 from django.urls import re_path
@@ -69,7 +69,7 @@ urlpatterns = [
     path('api/admin/contacts/<int:pk>/delete/', views.delete_contact, name='api_delete_contact'),
     path('api/admin/contacts/<int:pk>/reply/', views.reply_contact, name='api_reply_contact'),
     path("", views.index, name="home"),
-    re_path(r'^.*$', custom_404_test_view),
+
 ]
 handler403 = 'AppGIS.views.error_403_view'
 # Chỉ thêm static khi DEBUG = True
