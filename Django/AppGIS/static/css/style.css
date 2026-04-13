@@ -2300,3 +2300,17 @@ destinations-section {
     font-weight: bold;
     color: #28a745;
 }
+#modal-image-container {
+    overflow: hidden; /* Giấu phần ảnh thừa khi phóng to */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: grab;
+}
+
+#image-modal-src {
+    transition: transform 0.2s ease; /* Hiệu ứng zoom mượt */
+    max-width: 90%;
+    max-height: 90vh;
+    user-select: none;
+}
