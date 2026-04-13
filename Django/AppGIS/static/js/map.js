@@ -805,56 +805,75 @@ function showNearbyPlaces() {
         const lng = position.coords.longitude;
 
         try {
-            // Gọi API backend (đúng route trong urls.py)
             const res = await fetch(`/nearby_places/?lat=${lat}&lng=${lng}&radius=20`);
             const data = await res.json();
-
-            // Lấy mảng địa điểm từ key "nearby"
             const places = data.nearby || [];
 
-            // Xóa layer cũ nếu có
+            // 1. Hiển thị Sidebar
+            const sidebar = document.getElementById("nearby-sidebar");
+            const listContainer = document.getElementById("nearby-list");
+            sidebar.style.display = "flex";
+            listContainer.innerHTML = ""; // Xóa danh sách cũ
+
+            // 2. Xóa Layer cũ trên bản đồ
             if (window.nearbyLayer) {
                 map.removeLayer(window.nearbyLayer);
             }
-
-            // Tạo layer mới
             window.nearbyLayer = L.layerGroup().addTo(map);
 
-            // Vẽ vòng tròn bán kính 20km quanh vị trí người dùng
+            // 3. Vẽ vị trí người dùng
             L.circle([lat, lng], {
-                radius: data.radius_km * 1000, // km → mét
+                radius: data.radius_km * 1000,
                 color: "#007bff",
-                fillColor: "#007bff",
                 fillOpacity: 0.1
             }).addTo(window.nearbyLayer);
-
-            // Thêm marker vị trí người dùng
+            
             L.marker([lat, lng]).bindPopup("📍 Vị trí của bạn").addTo(window.nearbyLayer);
 
-            // Thêm các địa điểm xung quanh
+            // 4. Duyệt qua từng địa điểm
+            if (places.length === 0) {
+                listContainer.innerHTML = "<p style='padding:15px;'>Không tìm thấy địa điểm nào quanh đây.</p>";
+            }
+
             places.forEach(p => {
-                // p.id chính là cột bigint từ PostgreSQL của bạn
+                // Thêm Marker lên bản đồ
                 const marker = L.marker([p.latitude, p.longitude])
-                    .bindPopup(`
-                        <strong>${p.name}</strong><br>
-                        ${p.address || ''}<br>
-                        ${p.distance_km ? p.distance_km + ' km' : ''}<br>
-                        <hr>
-                    `);
+                    .bindPopup(`<strong>${p.name}</strong><br>${p.address || ''}`);
                 window.nearbyLayer.addLayer(marker);
+
+                // Thêm Item vào danh sách Sidebar
+                const item = document.createElement("div");
+                item.className = "nearby-item";
+                item.innerHTML = `
+                    <h4>${p.name}</h4>
+                    <p>${p.address || 'Không có địa chỉ'}</p>
+                    <p class="distance">📍 Cách đây: ${p.distance_km.toFixed(2)} km</p>
+                `;
+                
+                // Click vào item trong danh sách thì di chuyển bản đồ tới marker đó
+                item.onclick = () => {
+                    map.setView([p.latitude, p.longitude], 16);
+                    marker.openPopup();
+                };
+                
+                listContainer.appendChild(item);
             });
 
-            // Zoom bản đồ vào vị trí người dùng
-            map.setView([lat, lng], 12);
+            map.setView([lat, lng], 13);
 
         } catch (err) {
-            console.error("Lỗi khi tải dữ liệu:", err);
-            alert("Không thể tải danh sách địa điểm quanh bạn.");
+            console.error("Lỗi:", err);
+            alert("Không thể tải danh sách địa điểm.");
         }
-
-    }, () => {
-        alert("Không thể lấy vị trí hiện tại.");
     });
+}
+
+// Hàm đóng sidebar
+function closeNearbySidebar() {
+    document.getElementById("nearby-sidebar").style.display = "none";
+    if (window.nearbyLayer) {
+        map.removeLayer(window.nearbyLayer);
+    }
 }
 
 function getCSRFToken() {
