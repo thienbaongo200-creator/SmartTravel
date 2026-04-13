@@ -330,3 +330,29 @@ td {
 .btn-page i {
     font-size: 12px;
 }
+/* Đảm bảo khung soạn thảo có độ cao dễ nhìn */
+.ck-editor__editable {
+    min-height: 200px !important;
+    max-height: 400px !important;
+}
+
+/* Fix lỗi editor trong Modal bị lấp bởi các thành phần khác */
+.ck-body-wrapper {
+    z-index: 10001 !important;
+}
+.btn-upload {
+    display: inline-block;
+    padding: 8px 15px;
+    background: #3498db;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-bottom: 5px;
+}
+.btn-upload:hover { background: #2980b9; }
+.file-name {
+    font-size: 13px;
+    color: #7f8c8d;
+    margin-left: 10px;
+}

@@ -6,6 +6,7 @@
     <title>Admin - Quản lý Địa điểm Du lịch</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>    
     <link rel="stylesheet" href="{% static 'css/admin.css' %}">
+    <script src="https://cdn.ckeditor.com/ckeditor5/35.4.0/classic/ckeditor.js"></script>
 </head>
 <body>
 <div class="container">
@@ -40,19 +41,28 @@
                     <input type="number" step="any" id="longitude" name="longitude" placeholder="Kinh độ" required>
                 </div>
 
-                <textarea name="description" placeholder="Mô tả ngắn gọn về địa điểm..." rows="4" class="full-width"></textarea>
+                <label class="small fw-bold text-muted mb-2">Mô tả chi tiết</label>
+                <div id="editor-add-place"></div>
                 
                 <div class="image-upload-section">
-                    <label>📷 Ảnh chính (đại diện):</label>
-                    <input type="file" id="main_image" name="main_image" accept="image/*" required>
-                    <div id="main_image_preview" class="thumb-container"></div> 
+                <label>Ảnh chính (đại diện):</label>
+                <div class="custom-file-input">
+                    <label for="main_image" class="btn-upload">Chọn ảnh đại diện</label>
+                    <input type="file" id="main_image" name="main_image" accept="image/*" required style="display:none;">
+                    <span id="add_main_file_name" class="file-name">Chưa chọn ảnh nào</span>
                 </div>
+                <div id="main_image_preview" class="thumb-container"></div> 
+            </div>
 
-                <div class="image-upload-section">
-                    <label>🖼️ Ảnh phụ (Gallery - Tối đa 6):</label>
-                    <input type="file" id="image_files" name="images" accept="image/*" multiple>
-                    <div id="image_preview" class="thumb-container"></div>
+            <div class="image-upload-section">
+                <label>Ảnh phụ (Gallery - Tối đa 6):</label>
+                <div class="custom-file-input">
+                    <label for="image_files" class="btn-upload">Chọn nhiều ảnh</label>
+                    <input type="file" id="image_files" name="images" accept="image/*" multiple style="display:none;">
+                    <span id="add_gallery_file_name" class="file-name">Chưa chọn ảnh nào</span>
                 </div>
+                <div id="image_preview" class="thumb-container"></div>
+            </div>
 
                 <input type="number" name="price" placeholder="Giá tiền (VNĐ)" class="full-width">
                 <button type="submit" class="btn btn-add">Thêm mới</button>
@@ -102,17 +112,25 @@
               </div>
 
               <label>Mô tả:</label>
-              <textarea id="editDescription" name="description" placeholder="Nhập mô tả chi tiết..." rows="4" class="full-width"></textarea>
-
+              <label class="small fw-bold text-muted mb-2">Mô tả chi tiết</label>
+                <div id="editor-edit-place"></div>
               <input type="number" id="editPrice" name="price" placeholder="Giá tiền (VNĐ)" class="full-width">
               
               <label>Thay ảnh chính:</label>
-              <input type="file" id="edit_main_image" name="main_image" accept="image/*">
-              <div id="edit_main_image_preview" class="thumb-container"></div>
-              
-              <label>Thêm ảnh phụ mới:</label>
-              <input type="file" id="edit_image_files" name="images" accept="image/*" multiple>
-              <div id="edit_image_preview" class="thumb-container"></div>
+            <div class="custom-file-input">
+                <label for="edit_main_image" class="btn-upload">Chọn ảnh đại diện</label>
+                <input type="file" id="edit_main_image" name="main_image" accept="image/*" style="display:none;">
+                <span id="main_file_name" class="file-name">Chưa chọn ảnh nào</span>
+            </div>
+            <div id="edit_main_image_preview" class="thumb-container"></div>
+
+            <label>Thêm ảnh phụ mới:</label>
+            <div class="custom-file-input">
+                <label for="edit_image_files" class="btn-upload">Chọn nhiều ảnh</label>
+                <input type="file" id="edit_image_files" name="images" accept="image/*" multiple style="display:none;">
+                <span id="gallery_file_name" class="file-name">Chưa chọn ảnh nào</span>
+            </div>
+            <div id="edit_image_preview" class="thumb-container"></div>
           </div>
           <div class="map-side">
               <div id="editMap" style="height:300px; margin-bottom:10px; border: 1px solid #ccc;"></div>
@@ -299,7 +317,33 @@ async function searchAddress(addrId, latId, lngId, mapInstance, markerInstanceNa
         } else alert("Không tìm thấy địa chỉ!");
     } catch (err) { console.error("Lỗi tìm kiếm:", err); }
 }
+// --- BIẾN TOÀN CỤC CHO EDITOR ---
+let addPlaceEditor, editPlaceEditor;
 
+// Khởi tạo Editor
+async function initPlaceEditors() {
+    try {
+        // Kiểm tra phần tử tồn tại trước khi khởi tạo
+        const addEl = document.querySelector('#editor-add-place');
+        const editEl = document.querySelector('#editor-edit-place');
+
+        if (addEl) {
+            addPlaceEditor = await ClassicEditor.create(addEl, {
+                placeholder: 'Nhập mô tả chi tiết tại đây...'
+            });
+        }
+        if (editEl) {
+            editPlaceEditor = await ClassicEditor.create(editEl, {
+                placeholder: 'Cập nhật mô tả chi tiết...'
+            });
+        }
+        console.log("CKEditor đã sẵn sàng");
+    } catch (error) {
+        console.error("Lỗi khởi tạo CKEditor:", error);
+    }
+}
+
+// Cập nhật hàm mở Modal Sửa
 function openEditModalById(id) {
     const p = allData.find(item => item.id === id);
     if (!p) return;
@@ -312,11 +356,14 @@ function openEditModalById(id) {
     document.getElementById('editPrice').value = p.price;
     document.getElementById('editAddress').value = p.address || '';
     
-    // THÊM DÒNG NÀY: Gán giá trị mô tả vào textarea
-    document.getElementById('editDescription').value = p.description || '';
+    // ĐỔ DỮ LIỆU VÀO CKEDITOR
+    if (editPlaceEditor) {
+        editPlaceEditor.setData(p.description || '');
+    }
     
     document.getElementById('editModal').style.display = 'flex';
     
+    // ... (Giữ nguyên phần logic Map bên dưới) ...
     const pos = [p.latitude, p.longitude];
     if (!editMap) {
         editMap = L.map('editMap').setView(pos, 15);
@@ -330,23 +377,45 @@ function openEditModalById(id) {
     setTimeout(() => editMap.invalidateSize(), 200);
 }
 
-// Xử lý submit Form
+// Xử lý submit Form Thêm mới
 document.getElementById("addForm").onsubmit = async (e) => {
     e.preventDefault();
+    const formData = new FormData(e.target);
+    
+    // LẤY DỮ LIỆU TỪ CKEDITOR GÁN VÀO FORMDATA
+    if (addPlaceEditor) {
+        formData.append('description', addPlaceEditor.getData());
+    }
+
     const res = await fetch("/api/admin/places/", {
         method: "POST",
-        body: new FormData(e.target),
+        body: formData,
         headers: { "X-CSRFToken": "{{ csrf_token }}" }
     });
-    if (res.ok) { alert("Thêm thành công!"); e.target.reset(); loadPlaces(); }
+    if (res.ok) { 
+        alert("Thêm thành công!"); 
+        e.target.reset(); 
+        addPlaceEditor.setData(''); 
+        document.getElementById('add_main_file_name').innerText = "Chưa chọn ảnh nào";
+        document.getElementById('add_gallery_file_name').innerText = "Chưa chọn ảnh nào";
+        loadPlaces(); 
+    }
 };
 
+// Xử lý submit Form Sửa
 document.getElementById("editForm").onsubmit = async (e) => {
     e.preventDefault();
     const id = document.getElementById("editId").value;
+    const formData = new FormData(e.target);
+    
+    // LẤY DỮ LIỆU TỪ CKEDITOR GÁN VÀO FORMDATA
+    if (editPlaceEditor) {
+        formData.append('description', editPlaceEditor.getData());
+    }
+
     const res = await fetch(`/api/admin/places/${id}/`, {
         method: "POST",
-        body: new FormData(e.target),
+        body: formData,
         headers: { "X-CSRFToken": "{{ csrf_token }}", "X-HTTP-Method-Override": "PUT" }
     });
     if (res.ok) { closeEditModal(); loadPlaces(); alert("Cập nhật thành công!"); }
@@ -384,10 +453,32 @@ function setupPreview(inputId, previewId) {
         });
     };
 }
-
+function handleFileNameDisplay(inputId, spanId) {
+    const input = document.getElementById(inputId);
+    const span = document.getElementById(spanId);
+    if (input && span) {
+        input.addEventListener('change', function() {
+            if (this.files && this.files.length > 1) {
+                span.innerText = this.files.length + " ảnh đã được chọn";
+            } else if (this.files && this.files.length === 1) {
+                span.innerText = this.files[0].name;
+            } else {
+                span.innerText = "Chưa chọn ảnh nào";
+            }
+        });
+    }
+}
 setupPreview('image_files', 'image_preview');
 setupPreview('edit_image_files', 'edit_image_preview');
 setupPreview('main_image', 'main_image_preview');
 setupPreview('edit_main_image', 'edit_main_image_preview');
-window.onload = () => { initMainMap(); loadPlaces(); };
+window.onload = async () => { 
+    initMainMap(); 
+    await initPlaceEditors(); 
+    handleFileNameDisplay('edit_main_image', 'main_file_name');
+    handleFileNameDisplay('edit_image_files', 'gallery_file_name');
+    handleFileNameDisplay('main_image', 'add_main_file_name');
+    handleFileNameDisplay('image_files', 'add_gallery_file_name');
+    loadPlaces(); 
+};
 </script>
