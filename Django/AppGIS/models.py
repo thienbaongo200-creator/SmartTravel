@@ -13,7 +13,7 @@ class Category(models.Model):
 
 class TourismPoint(models.Model):
     name = models.CharField(max_length=200)
-    description = models.TextField(blank=True)
+    description = models.TextField(blank=True, null=True)
     latitude = models.FloatField()
     longitude = models.FloatField()
     category = models.ForeignKey(Category, on_delete=models.CASCADE, null=True, blank=True)

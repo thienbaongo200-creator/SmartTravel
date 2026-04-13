@@ -3,7 +3,7 @@ from .models import TourismPoint, Tour, TourBooking
 
 @admin.register(TourismPoint)
 class TourismPointAdmin(admin.ModelAdmin):
-    list_display = ('name', 'category', 'latitude', 'longitude', 'rating', 'address')
+    list_display = ('name', 'category', 'description' ,'latitude', 'longitude', 'rating', 'address')
     
     search_fields = ('name', 'address', 'category__name')
     
