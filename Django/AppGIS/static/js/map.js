@@ -312,7 +312,7 @@ function updateRouteUI(summary) {
     }
 }
 
-async function showRouteFromSearch(destLat = null, destLng = null) {
+async function showRouteFromSearch(destLat = null, destLng = null, destName = null) {
     const modal = document.getElementById("route-modal");
     const startInput = document.getElementById("startPoint");
     const endInput = document.getElementById("endPoint");
@@ -321,7 +321,7 @@ async function showRouteFromSearch(destLat = null, destLng = null) {
     
     // Nếu có đích đến từ Marker/Info Panel
     if (destLat && destLng) {
-        endInput.value = `${destLat},${destLng}`;
+        endInput.value = destName ? destName : `${destLat}, ${destLng}`;
         endInput.dataset.lat = destLat;
         endInput.dataset.lng = destLng;
     } else {
@@ -550,7 +550,7 @@ async function displayInfo(p) {
             <p><strong>Mô tả:</strong> ${p.description || 'Không có mô tả.'}</p>
             
             <div class="button-group">
-                <button class="btn-direction" onclick="showRouteFromSearch(${p.latitude}, ${p.longitude})">
+                <button class="btn-direction" onclick="showRouteFromSearch(${p.latitude}, ${p.longitude}, '${p.name.replace(/'/g, "\\'")}')">
                     <i class="fa-solid fa-route"></i> HƯỚNG ĐI
                 </button>
                 <button id="btn-save-main" class="btn-save" onclick="savePlace('${encodedData}', event)">
