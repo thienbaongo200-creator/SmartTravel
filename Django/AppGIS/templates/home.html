@@ -15,6 +15,14 @@
 <div class="main-layout">
 
     <main class="map-wrapper" style="position: relative; height: 70vh;">
+        <div id="nearby-sidebar" class="nearby-sidebar" style="display: none;">
+            <div class="sidebar-header">
+                <h3><i class="fa-solid fa-location-dot"></i> Địa điểm gần bạn</h3>
+                <span class="close-sidebar" onclick="closeNearbySidebar()">×</span>
+            </div>
+            <div id="nearby-list" class="nearby-list">
+                </div>
+        </div>
         <div id="search-bar-overlay">
             <input type="text" id="searchBox" 
                 placeholder="Tìm địa điểm, khách sạn hoặc địa chỉ..." 
@@ -307,6 +315,16 @@
 }
 // Thêm vào trong phần <script> của bạn
 document.addEventListener('DOMContentLoaded', function() {
+    ['startPoint', 'endPoint'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('input', function() {
+                delete this.dataset.lat;
+                delete this.dataset.lng;
+                console.log(`Đã xóa tọa độ ẩn của ${id} do người dùng thay đổi nội dung.`);
+            });
+        }
+    });
     const checkMap = setInterval(() => {
         if (typeof map !== 'undefined' && map !== null) {
             clearInterval(checkMap);
@@ -349,7 +367,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 100);
 });
 
-    window.addEventListener('load', focusPlaceFromURL);
+window.addEventListener('load', focusPlaceFromURL);
 
 </script>
 {% endblock %}

@@ -312,7 +312,7 @@ function updateRouteUI(summary) {
     }
 }
 
-async function showRouteFromSearch(destLat = null, destLng = null) {
+async function showRouteFromSearch(destLat = null, destLng = null, destName = null) {
     const modal = document.getElementById("route-modal");
     const startInput = document.getElementById("startPoint");
     const endInput = document.getElementById("endPoint");
@@ -321,12 +321,13 @@ async function showRouteFromSearch(destLat = null, destLng = null) {
     
     // Nếu có đích đến từ Marker/Info Panel
     if (destLat && destLng) {
-        endInput.value = `${destLat},${destLng}`;
+        endInput.value = destName ? destName : `${destLat}, ${destLng}`;
         endInput.dataset.lat = destLat;
         endInput.dataset.lng = destLng;
     } else {
         endInput.value = "";
         delete endInput.dataset.lat;
+        delete endInput.dataset.lng
     }
 
     // Xử lý điểm xuất phát: Ưu tiên GPS
@@ -550,7 +551,7 @@ async function displayInfo(p) {
             <p><strong>Mô tả:</strong> ${p.description || 'Không có mô tả.'}</p>
             
             <div class="button-group">
-                <button class="btn-direction" onclick="showRouteFromSearch(${p.latitude}, ${p.longitude})">
+                <button class="btn-direction" onclick="showRouteFromSearch(${p.latitude}, ${p.longitude}, '${p.name.replace(/'/g, "\\'")}')">
                     <i class="fa-solid fa-route"></i> HƯỚNG ĐI
                 </button>
                 <button id="btn-save-main" class="btn-save" onclick="savePlace('${encodedData}', event)">
@@ -805,56 +806,75 @@ function showNearbyPlaces() {
         const lng = position.coords.longitude;
 
         try {
-            // Gọi API backend (đúng route trong urls.py)
             const res = await fetch(`/nearby_places/?lat=${lat}&lng=${lng}&radius=20`);
             const data = await res.json();
-
-            // Lấy mảng địa điểm từ key "nearby"
             const places = data.nearby || [];
 
-            // Xóa layer cũ nếu có
+            // 1. Hiển thị Sidebar
+            const sidebar = document.getElementById("nearby-sidebar");
+            const listContainer = document.getElementById("nearby-list");
+            sidebar.style.display = "flex";
+            listContainer.innerHTML = ""; // Xóa danh sách cũ
+
+            // 2. Xóa Layer cũ trên bản đồ
             if (window.nearbyLayer) {
                 map.removeLayer(window.nearbyLayer);
             }
-
-            // Tạo layer mới
             window.nearbyLayer = L.layerGroup().addTo(map);
 
-            // Vẽ vòng tròn bán kính 20km quanh vị trí người dùng
+            // 3. Vẽ vị trí người dùng
             L.circle([lat, lng], {
-                radius: data.radius_km * 1000, // km → mét
+                radius: data.radius_km * 1000,
                 color: "#007bff",
-                fillColor: "#007bff",
                 fillOpacity: 0.1
             }).addTo(window.nearbyLayer);
-
-            // Thêm marker vị trí người dùng
+            
             L.marker([lat, lng]).bindPopup("📍 Vị trí của bạn").addTo(window.nearbyLayer);
 
-            // Thêm các địa điểm xung quanh
+            // 4. Duyệt qua từng địa điểm
+            if (places.length === 0) {
+                listContainer.innerHTML = "<p style='padding:15px;'>Không tìm thấy địa điểm nào quanh đây.</p>";
+            }
+
             places.forEach(p => {
-                // p.id chính là cột bigint từ PostgreSQL của bạn
+                // Thêm Marker lên bản đồ
                 const marker = L.marker([p.latitude, p.longitude])
-                    .bindPopup(`
-                        <strong>${p.name}</strong><br>
-                        ${p.address || ''}<br>
-                        ${p.distance_km ? p.distance_km + ' km' : ''}<br>
-                        <hr>
-                    `);
+                    .bindPopup(`<strong>${p.name}</strong><br>${p.address || ''}`);
                 window.nearbyLayer.addLayer(marker);
+
+                // Thêm Item vào danh sách Sidebar
+                const item = document.createElement("div");
+                item.className = "nearby-item";
+                item.innerHTML = `
+                    <h4>${p.name}</h4>
+                    <p>${p.address || 'Không có địa chỉ'}</p>
+                    <p class="distance">📍 Cách đây: ${p.distance_km.toFixed(2)} km</p>
+                `;
+                
+                // Click vào item trong danh sách thì di chuyển bản đồ tới marker đó
+                item.onclick = () => {
+                    map.setView([p.latitude, p.longitude], 16);
+                    marker.openPopup();
+                };
+                
+                listContainer.appendChild(item);
             });
 
-            // Zoom bản đồ vào vị trí người dùng
-            map.setView([lat, lng], 12);
+            map.setView([lat, lng], 13);
 
         } catch (err) {
-            console.error("Lỗi khi tải dữ liệu:", err);
-            alert("Không thể tải danh sách địa điểm quanh bạn.");
+            console.error("Lỗi:", err);
+            alert("Không thể tải danh sách địa điểm.");
         }
-
-    }, () => {
-        alert("Không thể lấy vị trí hiện tại.");
     });
+}
+
+// Hàm đóng sidebar
+function closeNearbySidebar() {
+    document.getElementById("nearby-sidebar").style.display = "none";
+    if (window.nearbyLayer) {
+        map.removeLayer(window.nearbyLayer);
+    }
 }
 
 function getCSRFToken() {
@@ -1152,23 +1172,21 @@ async function loadReviewsToPanel(placeId) {
         listContainer.innerHTML = "<p style='color:red; font-size: 13px;'>Lỗi khi tải đánh giá.</p>";
     }
 }
-async function getCoordinate(inputElement) {
-    let val = inputElement.value.trim();
+async function getCoordinate(query) {
+    if (!query || typeof query !== 'string') return null;
     
-    // 1. Nếu là "Vị trí của bạn" -> Ưu tiên lấy từ dataset (GPS)
-    if (val === "Vị trí của bạn" && inputElement.dataset.lat) {
-        return [parseFloat(inputElement.dataset.lat), parseFloat(inputElement.dataset.lng)];
-    }
+    let val = query.trim();
 
-    // 2. Nếu người dùng nhập tọa độ dạng số "21.02, 105.83"
+    // 1. Nếu người dùng nhập trực tiếp tọa độ dạng số "21.02, 105.83"
     const regExp = /^-?\d+\.?\d*,\s*-?\d+\.?\d*$/;
     if (regExp.test(val)) {
         return val.split(',').map(Number);
     }
 
-    // 3. Nếu là địa chỉ (Tên đường, Tên tỉnh...) -> Bắt buộc Search mới
-    console.log("Đang tìm tọa độ cho:", val);
+    // 2. Nếu là địa chỉ (Tên đường, Tên tỉnh...) -> Search qua Nominatim
+    console.log("Đang tìm tọa độ qua API cho:", val);
     try {
+        // Thêm ", Vietnam" để kết quả chính xác hơn
         const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(val + ", Vietnam")}&limit=1`);
         const data = await response.json();
         if (data && data.length > 0) {
@@ -1185,31 +1203,67 @@ async function calculateRoute() {
     const endInput = document.getElementById("endPoint");
     const loading = document.getElementById("loading");
 
+    // 1. Kiểm tra sự tồn tại của các ô nhập liệu
+    if (!startInput || !endInput) {
+        console.error("Không tìm thấy startPoint hoặc endPoint");
+        return;
+    }
+
     if (loading) loading.style.display = "block";
 
     try {
-        // Lấy tọa độ thực tế từ ô nhập
-        const startCoords = await getCoordinate(startInput);
-        const endCoords = await getCoordinate(endInput);
+        let startLat, startLng, endLat, endLng;
 
-        if (!startCoords) {
+        // --- XỬ LÝ ĐIỂM ĐI ---
+        // Ưu tiên lấy từ dataset (đã lưu khi bấm "Vị trí của bạn" hoặc chọn từ bản đồ)
+        if (startInput.dataset.lat && startInput.dataset.lng) {
+            startLat = startInput.dataset.lat;
+            startLng = startInput.dataset.lng;
+        } else {
+            // Nếu không có dataset (người dùng gõ địa điểm mới), gọi getCoordinate
+            const val = startInput.value ? startInput.value.trim() : "";
+            if (val) {
+                const coords = await getCoordinate(val); // Truyền String, không truyền Input
+                if (coords) {
+                    startLat = coords[0];
+                    startLng = coords[1];
+                }
+            }
+        }
+
+        // --- XỬ LÝ ĐIỂM ĐẾN ---
+        // Ưu tiên lấy từ dataset (Lưu tọa độ thực của Du Miên Garden Cafe vào đây)
+        if (endInput.dataset.lat && endInput.dataset.lng) {
+            endLat = endInput.dataset.lat;
+            endLng = endInput.dataset.lng;
+        } else {
+            const val = endInput.value ? endInput.value.trim() : "";
+            if (val) {
+                const coords = await getCoordinate(val); 
+                if (coords) {
+                    endLat = coords[0];
+                    endLng = coords[1];
+                }
+            }
+        }
+
+        // 2. Kiểm tra kết quả
+        if (!startLat || !startLng) {
             alert("Không xác định được điểm đi: " + startInput.value);
-            if (loading) loading.style.display = "none";
             return;
         }
-        if (!endCoords) {
+        if (!endLat || !endLng) {
             alert("Không xác định được điểm đến: " + endInput.value);
-            if (loading) loading.style.display = "none";
             return;
         }
 
-        // GỌI HÀM VẼ ĐƯỜNG VỚI TỌA ĐỘ ĐÃ TÌM ĐƯỢC
-        // Truyền thẳng 4 tham số vào để hàm showRouteORS không lấy nhầm vị trí GPS nữa
-        await showRouteORS(endCoords[0], endCoords[1], startCoords[0], startCoords[1]);
+        // 3. GỌI HÀM VẼ ĐƯỜNG
+        console.log(`Bắt đầu chỉ đường từ [${startLat}, ${startLng}] đến [${endLat}, ${endLng}]`);
+        await showRouteORS(endLat, endLng, startLat, startLng);
 
     } catch (error) {
-        console.error(error);
-        alert("Lỗi tính toán đường đi.");
+        console.error("Lỗi calculateRoute:", error);
+        alert("Có lỗi xảy ra khi tính toán đường đi.");
     } finally {
         if (loading) loading.style.display = "none";
     }

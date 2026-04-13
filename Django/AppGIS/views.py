@@ -338,7 +338,7 @@ def submit_review(request, point_id):
 def is_admin_user(user):
     return user.is_authenticated and user.is_staff
 
-def error_404_view(request, exception):
+def error_404_view(request, exception=None, **kwargs):
     return render(request, '404.html', status=404)
 
 def error_403_view(request, exception):
@@ -497,8 +497,9 @@ def admin_user(request):
     return render(request, 'admin/admin_user.html')
 
 @csrf_exempt
-@staff_member_required(login_url='login')
 def api_users(request):
+    if not is_admin_user(request.user):
+        raise PermissionDenied
     if request.method == "GET":
         users = User.objects.all().order_by('-id')
         data = []
@@ -536,8 +537,9 @@ def api_users(request):
             return JsonResponse({"error": str(e)}, status=400)
 
 @csrf_exempt
-@staff_member_required(login_url='login')
 def api_user_detail(request, pk):
+    if not is_admin_user(request.user):
+        raise PermissionDenied
     user = get_object_or_404(User, pk=pk)
     if request.method == "DELETE":
         user.delete()
