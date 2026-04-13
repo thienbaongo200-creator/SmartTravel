@@ -315,6 +315,16 @@
 }
 // Thêm vào trong phần <script> của bạn
 document.addEventListener('DOMContentLoaded', function() {
+    ['startPoint', 'endPoint'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('input', function() {
+                delete this.dataset.lat;
+                delete this.dataset.lng;
+                console.log(`Đã xóa tọa độ ẩn của ${id} do người dùng thay đổi nội dung.`);
+            });
+        }
+    });
     const checkMap = setInterval(() => {
         if (typeof map !== 'undefined' && map !== null) {
             clearInterval(checkMap);
@@ -357,7 +367,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 100);
 });
 
-    window.addEventListener('load', focusPlaceFromURL);
+window.addEventListener('load', focusPlaceFromURL);
 
 </script>
 {% endblock %}
