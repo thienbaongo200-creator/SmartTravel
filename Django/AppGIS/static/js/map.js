@@ -327,6 +327,7 @@ async function showRouteFromSearch(destLat = null, destLng = null, destName = nu
     } else {
         endInput.value = "";
         delete endInput.dataset.lat;
+        delete endInput.dataset.lng
     }
 
     // Xử lý điểm xuất phát: Ưu tiên GPS
@@ -1171,23 +1172,21 @@ async function loadReviewsToPanel(placeId) {
         listContainer.innerHTML = "<p style='color:red; font-size: 13px;'>Lỗi khi tải đánh giá.</p>";
     }
 }
-async function getCoordinate(inputElement) {
-    let val = inputElement.value.trim();
+async function getCoordinate(query) {
+    if (!query || typeof query !== 'string') return null;
     
-    // 1. Nếu là "Vị trí của bạn" -> Ưu tiên lấy từ dataset (GPS)
-    if (val === "Vị trí của bạn" && inputElement.dataset.lat) {
-        return [parseFloat(inputElement.dataset.lat), parseFloat(inputElement.dataset.lng)];
-    }
+    let val = query.trim();
 
-    // 2. Nếu người dùng nhập tọa độ dạng số "21.02, 105.83"
+    // 1. Nếu người dùng nhập trực tiếp tọa độ dạng số "21.02, 105.83"
     const regExp = /^-?\d+\.?\d*,\s*-?\d+\.?\d*$/;
     if (regExp.test(val)) {
         return val.split(',').map(Number);
     }
 
-    // 3. Nếu là địa chỉ (Tên đường, Tên tỉnh...) -> Bắt buộc Search mới
-    console.log("Đang tìm tọa độ cho:", val);
+    // 2. Nếu là địa chỉ (Tên đường, Tên tỉnh...) -> Search qua Nominatim
+    console.log("Đang tìm tọa độ qua API cho:", val);
     try {
+        // Thêm ", Vietnam" để kết quả chính xác hơn
         const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(val + ", Vietnam")}&limit=1`);
         const data = await response.json();
         if (data && data.length > 0) {
@@ -1204,31 +1203,67 @@ async function calculateRoute() {
     const endInput = document.getElementById("endPoint");
     const loading = document.getElementById("loading");
 
+    // 1. Kiểm tra sự tồn tại của các ô nhập liệu
+    if (!startInput || !endInput) {
+        console.error("Không tìm thấy startPoint hoặc endPoint");
+        return;
+    }
+
     if (loading) loading.style.display = "block";
 
     try {
-        // Lấy tọa độ thực tế từ ô nhập
-        const startCoords = await getCoordinate(startInput);
-        const endCoords = await getCoordinate(endInput);
+        let startLat, startLng, endLat, endLng;
 
-        if (!startCoords) {
+        // --- XỬ LÝ ĐIỂM ĐI ---
+        // Ưu tiên lấy từ dataset (đã lưu khi bấm "Vị trí của bạn" hoặc chọn từ bản đồ)
+        if (startInput.dataset.lat && startInput.dataset.lng) {
+            startLat = startInput.dataset.lat;
+            startLng = startInput.dataset.lng;
+        } else {
+            // Nếu không có dataset (người dùng gõ địa điểm mới), gọi getCoordinate
+            const val = startInput.value ? startInput.value.trim() : "";
+            if (val) {
+                const coords = await getCoordinate(val); // Truyền String, không truyền Input
+                if (coords) {
+                    startLat = coords[0];
+                    startLng = coords[1];
+                }
+            }
+        }
+
+        // --- XỬ LÝ ĐIỂM ĐẾN ---
+        // Ưu tiên lấy từ dataset (Lưu tọa độ thực của Du Miên Garden Cafe vào đây)
+        if (endInput.dataset.lat && endInput.dataset.lng) {
+            endLat = endInput.dataset.lat;
+            endLng = endInput.dataset.lng;
+        } else {
+            const val = endInput.value ? endInput.value.trim() : "";
+            if (val) {
+                const coords = await getCoordinate(val); 
+                if (coords) {
+                    endLat = coords[0];
+                    endLng = coords[1];
+                }
+            }
+        }
+
+        // 2. Kiểm tra kết quả
+        if (!startLat || !startLng) {
             alert("Không xác định được điểm đi: " + startInput.value);
-            if (loading) loading.style.display = "none";
             return;
         }
-        if (!endCoords) {
+        if (!endLat || !endLng) {
             alert("Không xác định được điểm đến: " + endInput.value);
-            if (loading) loading.style.display = "none";
             return;
         }
 
-        // GỌI HÀM VẼ ĐƯỜNG VỚI TỌA ĐỘ ĐÃ TÌM ĐƯỢC
-        // Truyền thẳng 4 tham số vào để hàm showRouteORS không lấy nhầm vị trí GPS nữa
-        await showRouteORS(endCoords[0], endCoords[1], startCoords[0], startCoords[1]);
+        // 3. GỌI HÀM VẼ ĐƯỜNG
+        console.log(`Bắt đầu chỉ đường từ [${startLat}, ${startLng}] đến [${endLat}, ${endLng}]`);
+        await showRouteORS(endLat, endLng, startLat, startLng);
 
     } catch (error) {
-        console.error(error);
-        alert("Lỗi tính toán đường đi.");
+        console.error("Lỗi calculateRoute:", error);
+        alert("Có lỗi xảy ra khi tính toán đường đi.");
     } finally {
         if (loading) loading.style.display = "none";
     }
