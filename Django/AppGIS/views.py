@@ -22,6 +22,7 @@ from django.http import Http404
 from geopy.distance import geodesic
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from .serializers import TourismPointSerializer
 from .forms import UserLoginForm
 from .forms import UserRegisterForm
 from .models import (
@@ -377,6 +378,7 @@ def admin_places(request):
 def api_places(request):
     if not is_admin_user(request.user):
         raise PermissionDenied
+        
     if request.method == "GET":
         places = TourismPoint.objects.all().order_by('-id')
         data = []
@@ -388,6 +390,7 @@ def api_places(request):
             data.append({
                 "id": p.id,
                 "name": p.name,
+                "description": p.description or "",  # <-- Đã thêm mô tả vào đây
                 "latitude": float(p.latitude) if p.latitude else 0,
                 "longitude": float(p.longitude) if p.longitude else 0,
                 "category": p.category.name if p.category else "Khác",
@@ -405,6 +408,9 @@ def api_places(request):
             name = request.POST.get('name')
             if not name:
                 return JsonResponse({"error": "Thiếu tên địa điểm"}, status=400)
+            
+            # Lấy mô tả từ form gửi lên
+            description = request.POST.get('description', '')
 
             cat_name = request.POST.get('category')
             cat_obj, _ = Category.objects.get_or_create(name=cat_name if cat_name else "Khác")
@@ -426,14 +432,15 @@ def api_places(request):
             # 4. Lưu vào Database
             place = TourismPoint.objects.create(
                 name=name,
+                description=description, # <-- Đã thêm lưu mô tả
                 latitude=float(request.POST.get('latitude', 0.0)),
                 longitude=float(request.POST.get('longitude', 0.0)),
                 category=cat_obj,
                 address=request.POST.get('address', ''),
                 price=request.POST.get('price', 0),
                 rating=request.POST.get('rating', 5.0),
-                img=main_url,             # Lưu URL ảnh chính
-                menu_imgs=saved_gallery_urls # Lưu list URL ảnh phụ
+                img=main_url, 
+                menu_imgs=saved_gallery_urls
             )
 
             return JsonResponse({"message": "Thêm địa điểm thành công"}, status=201)
@@ -448,15 +455,17 @@ def api_place_detail(request, pk):
         place.delete()
         return JsonResponse({"message": "Xóa thành công"}, status=204)
 
-    # Chấp nhận cả PUT và POST (để xử lý form-data dễ dàng hơn)
+    # Chấp nhận cả PUT và POST
     elif request.method in ["PUT", "POST"]:
         try:
             # 1. Cập nhật các trường thông tin cơ bản
             place.name = request.POST.get('name', place.name)
             place.address = request.POST.get('address', place.address)
             place.price = request.POST.get('price', place.price)
+            # Cập nhật mô tả khi sửa
+            place.description = request.POST.get('description', place.description) 
             
-            # Xử lý tọa độ (đảm bảo không bị lỗi nếu gửi chuỗi trống)
+            # Xử lý tọa độ
             lat = request.POST.get('latitude')
             lng = request.POST.get('longitude')
             if lat: place.latitude = float(lat)
@@ -468,23 +477,19 @@ def api_place_detail(request, pk):
                 cat_obj, _ = Category.objects.get_or_create(name=cat_name)
                 place.category = cat_obj
 
-            # 2. Cập nhật Ảnh Chính (Trường img)
+            # 2. Cập nhật Ảnh Chính
             main_img = request.FILES.get('main_image')
             if main_img:
-                # Xóa ảnh cũ nếu cần (tùy chọn) hoặc ghi đè
                 path = default_storage.save(f'tourism/main/{main_img.name}', main_img)
                 place.img = settings.MEDIA_URL + path
 
             # 3. Cập nhật Ảnh Phụ (Gallery)
             new_files = request.FILES.getlist("images")
             if new_files:
-                # Lấy danh sách ảnh hiện tại (nếu có)
                 current_gallery = place.menu_imgs if isinstance(place.menu_imgs, list) else []
                 for f in new_files:
                     path = default_storage.save(f'tourism/gallery/{f.name}', f)
                     current_gallery.append(settings.MEDIA_URL + path)
-                
-                # Giới hạn số lượng ảnh trong gallery (ví dụ tối đa 10 ảnh)
                 place.menu_imgs = current_gallery[:10]
             
             place.save()
@@ -492,7 +497,7 @@ def api_place_detail(request, pk):
             
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=400)
-                                                
+        
 # ==============================
 # Admin & Quản lý User
 # ==============================
