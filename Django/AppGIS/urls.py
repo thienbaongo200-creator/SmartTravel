@@ -80,3 +80,6 @@ if settings.DEBUG:
         path('test-404/', views.error_404_view, {'exception': Exception("Test 404")}),
         path('test-403/', views.error_403_view, {'exception': Exception("Test 403")}),
     ]
+    urlpatterns += [
+        re_path(r'^(?!(media|static)/).*$', views.error_404_view),
+    ]
