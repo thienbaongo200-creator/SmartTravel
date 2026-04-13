@@ -88,7 +88,7 @@ def search(request):
             "rating": p.rating, 
             "price": int(p.price) if p.price is not None else None, 
             "img": p.img, 
-            "menu_imgs": [img for img in (p.menu_imgs or [])]
+            'menu_imgs': p.menu_imgs if isinstance(p.menu_imgs, list) else []
         })
     return JsonResponse(data, safe=False)
 
@@ -110,14 +110,24 @@ def get_places_by_category(request):
     # Sửa lại: dùng category__name thay vì type
     places = TourismPoint.objects.filter(
         Q(category__name__icontains=target_type_vn)
-    ).values(
-        'id', 'name', 'latitude', 'longitude', 'address', 'description', 'rating', 'img', 'price'
     )
 
-    data = list(places)
-    for item in data:
-        item['image'] = item.get('img', '')
-        item['price'] = int(item['price']) if item['price'] is not None else None
+    data = []
+    for p in places:
+        data.append({
+            'id': p.id,
+            'name': p.name,
+            'latitude': p.latitude,
+            'longitude': p.longitude,
+            'address': p.address,
+            'description': p.description,
+            'rating': p.rating,
+            'img': p.img,
+            'price': int(p.price) if p.price is not None else None,
+            'category_name': p.category.name if p.category else target_type_vn,
+            'menu_imgs': [img for img in (p.menu_imgs or [])] 
+        })
+    
     return JsonResponse(data, safe=False)
 
 def distance(request):

@@ -520,25 +520,42 @@ async function displayInfo(p) {
     };
 
     // --- XỬ LÝ DANH SÁCH ẢNH ---
-    let finalGallery = [];
-    if (p.gallery && Array.isArray(p.gallery) && p.gallery.length > 0) {
-        finalGallery = p.gallery.map(item => getCorrectPath(item));
-    } else if (p.menu_imgs) {
+    const mainImgPath = getCorrectPath(p.img, p.category);
+    
+    // 2. Lấy danh sách ảnh phụ từ menu_imgs
+    let extraImages = [];
+    if (p.menu_imgs) {
         let rawMenu = p.menu_imgs;
+        // Nếu là string (do parse từ Django cũ) thì convert, nếu là array thì dùng luôn
         if (typeof rawMenu === 'string') {
-            try { rawMenu = JSON.parse(rawMenu.replace(/'/g, '"')); } catch (e) { rawMenu = []; }
+            try { 
+                rawMenu = JSON.parse(rawMenu.replace(/'/g, '"')); 
+            } catch (e) { 
+                console.error("Lỗi parse menu_imgs:", e);
+                rawMenu = []; 
+            }
         }
-        finalGallery = Array.isArray(rawMenu) ? rawMenu.map(item => getCorrectPath(item)) : [];
+        extraImages = Array.isArray(rawMenu) ? rawMenu : [];
     }
 
-    let imgPath = finalGallery.length > 0 ? finalGallery[0] : (p.img ? getCorrectPath(p.img) : "");
+    // 3. Gộp lại: Ảnh chính luôn đứng đầu, sau đó đến các ảnh phụ
+    let finalGallery = [];
+    if (p.img) finalGallery.push(mainImgPath);
+    
+    extraImages.forEach(path => {
+        const fullPath = getCorrectPath(path, p.category);
+        if (fullPath !== mainImgPath) { // Tránh trùng lặp nếu p.img cũng nằm trong menu_imgs
+            finalGallery.push(fullPath);
+        }
+    });
+
     currentMenuImgs = finalGallery;
     currentMenuIndex = 0;
 
     // --- KHỞI TẠO HTML CƠ BẢN ---
     let html = `
         <div class="info-header" style="position: relative;">
-            ${imgPath ? `<img src="${imgPath}" alt="${p.name}" class="main-info-img">` : ""}
+            ${mainImgPath ? `<img src="${mainImgPath}" alt="${p.name}" class="main-info-img">` : ""}
             <div style="position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.7); color: #fff; padding: 5px 10px; border-radius: 4px; font-weight: bold; font-size: 0.9rem; z-index: 2;">
                 <i class="fa-solid fa-tags" style="color: #ffc107;"></i> ${formatPrice(p.price)}
             </div>
@@ -635,11 +652,38 @@ function nextMenu() {
 
 function openImageModal(src) {
     const modal = document.getElementById("image-modal");
-    const modalImg = document.getElementById("modal-img");
-    if (modal && modalImg) {
-        modalImg.src = src;
-        modal.style.display = "flex";
-    }
+    const modalImg = document.getElementById("image-modal-src");
+    if (!modal || !modalImg) return;
+
+    modalImg.src = src;
+    modal.style.display = "flex";
+
+    // Khởi tạo biến scale riêng biệt đính kèm trực tiếp vào đối tượng ảnh
+    // để không đụng chạm đến bất kỳ biến toàn cục nào khác
+    modalImg.dataset.scale = 1;
+    modalImg.style.transform = "scale(1)";
+
+    // Gán sự kiện cuộn chuột trực tiếp cho ảnh
+    modalImg.onwheel = function(e) {
+        // Ngăn sự kiện cuộn ảnh hưởng đến bản đồ phía dưới
+        e.stopPropagation(); 
+        e.preventDefault();
+
+        let scale = parseFloat(this.dataset.scale) || 1;
+        const delta = e.deltaY;
+        
+        if (delta < 0) {
+            scale += 0.1; // Phóng to
+        } else {
+            scale -= 0.1; // Thu nhỏ
+        }
+
+        // Giới hạn tỉ lệ zoom
+        scale = Math.min(Math.max(0.5, scale), 3);
+        
+        this.dataset.scale = scale;
+        this.style.transform = `scale(${scale})`;
+    };
 }
 
 function closeImageModal() {
