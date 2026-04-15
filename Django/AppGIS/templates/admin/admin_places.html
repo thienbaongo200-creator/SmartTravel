@@ -3,26 +3,63 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - Quản lý Địa điểm Du lịch</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
     <link rel="stylesheet" href="{% static 'css/admin.css' %}">
     <script src="https://cdn.ckeditor.com/ckeditor5/35.4.0/classic/ckeditor.js"></script>
 </head>
 <body>
-<div class="container">
-    <header><h1>Quản lý Địa điểm Du lịch</h1></header>
-
-    <div class="back-action">
-        <a href="{% url 'admin_dashboard' %}" class="btn-back">⬅ Quay lại Dashboard</a>
+    <div class="sidebar">
+        <div class="sidebar-brand">
+            <i class="fas fa-map-marked-alt"></i>
+            <span>Smart Travel</span>
+        </div>
+        <nav>
+            <a href="{% url 'admin_dashboard' %}" class="sidebar-link">
+                <i class="fas fa-th-large"></i> Dashboard
+            </a>
+            <a href="{% url 'admin_places' %}" class="sidebar-link active">
+                <i class="fas fa-layer-group"></i> Quản lý Địa điểm
+            </a>
+            <a href="{% url 'admin_user' %}" class="sidebar-link">
+                <i class="fas fa-user-friends"></i> Người dùng
+            </a>
+            <a href="{% url 'admin_tours' %}" class="sidebar-link">
+                <i class="fas fa-route"></i> Quản lý Tour
+            </a>
+            <a href="{% url 'admin_tour_booking' %}" class="sidebar-link">
+                <i class="fas fa-calendar-check"></i> Quản lý Đặt Tour
+            </a>
+            <a href="{% url 'admin_contacts' %}" class="sidebar-link">
+                <i class="fas fa-envelope"></i> Quản lý Liên hệ
+            </a>
+            <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 20px 0;">
+            <a href="/" class="sidebar-link">
+                <i class="fas fa-external-link-alt"></i> Xem Website
+            </a>
+            <a href="{% url 'logout' %}" class="sidebar-link" style="color: #ff7675;">
+                <i class="fas fa-sign-out-alt"></i> Đăng xuất
+            </a>
+        </nav>
     </div>
-    
-    <nav class="tabs">
-        <button onclick="loadPlaces()">Tất cả</button>
-        <button onclick="loadPlaces('Khu vui chơi')">Khu vui chơi</button>
-        <button onclick="loadPlaces('Nhà hàng')">Nhà hàng</button>
-        <button onclick="loadPlaces('Di tích')">Di tích</button>
-        <button onclick="loadPlaces('Khách sạn')">Khách sạn</button>
-    </nav>
+    <div class="main-content">
+        <div class="container">
+            <header><h1>Quản lý Địa điểm Du lịch</h1></header>
+
+            <div class="back-action">
+                <a href="{% url 'admin_dashboard' %}" class="btn-back">⬅ Quay lại Dashboard</a>
+            </div>
+            
+            <nav class="tabs">
+                <button onclick="loadPlaces()">Tất cả</button>
+                <button onclick="loadPlaces('Khu vui chơi')">Khu vui chơi</button>
+                <button onclick="loadPlaces('Nhà hàng')">Nhà hàng</button>
+                <button onclick="loadPlaces('Di tích')">Di tích</button>
+                <button onclick="loadPlaces('Khách sạn')">Khách sạn</button>
+            </nav>
 
     <section class="form-card">
         <h2>➕ Thêm địa điểm mới</h2>
@@ -89,10 +126,11 @@
         </table>
     </section> 
     <div id="pagination" class="pagination-container"></div>
+    </div>
 </div>
 
-<div id="editModal" class="modal">
-  <div class="modal-content">
+<div id="editModal" class="modal-overlay">
+  <div class="modal-box">
     <h3>Sửa địa điểm</h3>
     <form id="editForm" enctype="multipart/form-data">
       <input type="hidden" id="editId">
@@ -482,3 +520,5 @@ window.onload = async () => {
     loadPlaces(); 
 };
 </script>
+</body>
+</html>
