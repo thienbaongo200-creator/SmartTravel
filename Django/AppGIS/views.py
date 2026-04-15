@@ -24,11 +24,23 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .serializers import TourismPointSerializer
 from .forms import UserLoginForm
-from .forms import UserRegisterForm
 from .models import (
     Category, ContactMessage, Review, 
     Tour, TourBooking, TourismPoint, ContactMessage
 )
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
+from django.contrib.sites.shortcuts import get_current_site
+from django.utils.encoding import force_bytes, force_str
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.template.loader import render_to_string
+from django.contrib.auth.tokens import default_token_generator
+from django.core.mail import EmailMessage
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from .forms import UserRegisterForm
+from django.contrib.auth.models import User
 # ==============================
 # Các trang tĩnh
 # ==============================
@@ -814,3 +826,46 @@ def tours_list(request):
         'booked_tours': booked_tours,
         'has_booked_tour': has_booked_tour
     })
+def register(request):
+    if request.method == 'POST':
+        form = UserRegisterForm(request.POST)
+        if form.is_valid():
+            # Lưu user nhưng để trạng thái is_active = False
+            user = form.save(commit=False)
+            user.is_active = False 
+            user.save()
+            print(f"--- DANG GUI MAIL TOI: {user.email} ---")
+            current_site = get_current_site(request)
+            subject = 'Kích hoạt tài khoản Smart Travel của bạn'
+            message = render_to_string('registration/activation_email.html', {
+                'user': user,
+                'domain': current_site.domain,
+                'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+                'token': default_token_generator.make_token(user),
+            })
+            
+            to_email = form.cleaned_data.get('email')
+            email = EmailMessage(subject, message, to=[to_email])
+            email.content_subtype = 'html' # Gửi mail định dạng HTML
+            email.send()
+            print("--- DA GUI MAIL THANH CONG ---")
+            return render(request, 'registration/activation_sent.html')
+    else:
+        form = UserRegisterForm()
+    return render(request, 'account/register.html', {'form': form})
+
+# View xử lý khi người dùng click vào link trong email
+def activate(request, uidb64, token):
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+
+    if user is not None and default_token_generator.check_token(user, token):
+        user.is_active = True
+        user.save()
+        messages.success(request, 'Tài khoản của bạn đã được kích hoạt thành công! Giờ bạn có thể đăng nhập.')
+        return redirect('login')
+    else:
+        return render(request, 'registration/activation_invalid.html')
