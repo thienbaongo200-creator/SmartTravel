@@ -888,11 +888,11 @@ function showNearbyPlaces() {
 
                 // Thêm Item vào danh sách Sidebar
                 const item = document.createElement("div");
-                item.className = "nearby-item";
+                item.className = `nearby-item category-${p.category || 'attraction'}`;
                 item.innerHTML = `
                     <h4>${p.name}</h4>
                     <p>${p.address || 'Không có địa chỉ'}</p>
-                    <p class="distance">📍 Cách đây: ${p.distance_km.toFixed(2)} km</p>
+                    <span class="distance-badge">📍 ${p.distance_km.toFixed(2)} km</span>
                 `;
                 
                 // Click vào item trong danh sách thì di chuyển bản đồ tới marker đó

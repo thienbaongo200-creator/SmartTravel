@@ -6,69 +6,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hệ thống Quản lý Đặt Tour</title>
+    <link rel="stylesheet" href="{% static 'css/admin.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     
-    <style>
-        :root {
-            --sidebar-width: 260px;
-            --primary-bg: #f4f7fe;
-            --accent-color: #4361ee;
-            --text-dark: #2b3674;
-        }
-
-        body { background-color: var(--primary-bg); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow-x: hidden; }
-
-        /* Sidebar cố định */
-        .sidebar {
-            width: var(--sidebar-width);
-            height: 100vh;
-            position: fixed;
-            left: 0;
-            top: 0;
-            background: linear-gradient(180deg, #4361ee 0%, #3046bc 100%);
-            color: white;
-            padding: 20px;
-            z-index: 100;
-        }
-
-        .main-content { margin-left: var(--sidebar-width); padding: 30px; }
-
-        .sidebar-brand { font-size: 1.5rem; font-weight: 800; margin-bottom: 40px; display: flex; align-items: center; gap: 10px; }
-        .sidebar-link { 
-            display: flex; align-items: center; gap: 12px; color: rgba(255,255,255,0.7); 
-            text-decoration: none; padding: 12px 15px; border-radius: 12px; transition: 0.3s; margin-bottom: 5px;
-        }
-        .sidebar-link:hover, .sidebar-link.active { background: rgba(255,255,255,0.1); color: white; }
-
-        /* Card & Table */
-        .glass-card { 
-            background: white; border-radius: 20px; border: none; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.02); padding: 25px; margin-bottom: 25px;
-        }
-
-        .custom-table thead th { 
-            background: transparent; border: none; color: #a3aed0; 
-            font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; padding: 15px;
-        }
-        .custom-table tbody tr { border-bottom: 1px solid #f4f7fe; transition: 0.2s; }
-        .custom-table tbody tr:hover { background-color: #fafbff; }
-        .custom-table td { padding: 18px 15px; vertical-align: middle; color: var(--text-dark); font-weight: 500; }
-
-        /* Status Badges */
-        .badge-status { padding: 6px 14px; border-radius: 10px; font-size: 0.75rem; font-weight: 700; display: inline-block; }
-        .status-pending { background: #fff9db; color: #f08c00; }
-        .status-confirmed { background: #e0f9f1; color: #2ecc71; }
-        .status-cancelled { background: #fff5f5; color: #ff6b6b; }
-
-        /* Action Buttons */
-        .btn-action { 
-            width: 35px; height: 35px; border-radius: 10px; border: 1px solid #f0f3f9;
-            display: inline-flex; align-items: center; justify-content: center;
-            background: white; transition: 0.3s;
-        }
-        .btn-action:hover { transform: translateY(-2px); box-shadow: 0 5px 10px rgba(0,0,0,0.05); }
-    </style>
 </head>
 <body>
 
