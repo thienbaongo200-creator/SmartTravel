@@ -1,0 +1,32 @@
+{% autoescape off %}
+<!DOCTYPE html>
+<html>
+<body style="font-family: sans-serif; line-height: 1.6; color: #333; background-color: #f4f7fe; padding: 20px;">
+    <table width="100%" border="0" cellspacing="0" cellpadding="0">
+        <tr>
+            <td align="center">
+                <table width="600" style="background: #fff; border-radius: 20px; padding: 40px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+                    <tr>
+                        <td>
+                            <h2 style="color: #2b3674; text-align: center;">Chào mừng {{ user.username }}!</h2>
+                            <p>Tài khoản của bạn tại <strong>Smart Travel</strong> đã được khởi tạo thành công.</p>
+                            <p>Bây giờ bạn có thể khám phá các bản đồ du lịch thông minh và quản lý các địa điểm yêu thích của mình.</p>
+                            
+                            <div style="text-align: center; margin: 30px 0;">
+                                <a href="http://127.0.0.1:8000/login/" style="background: #4361ee; color: white; padding: 12px 25px; text-decoration: none; border-radius: 10px; font-weight: bold;">
+                                    Đăng nhập ngay
+                                </a>
+                            </div>
+
+                            <p style="font-size: 12px; color: #a3aed0; border-top: 1px solid #f0f3f9; padding-top: 20px;">
+                                Đây là email tự động, vui lòng không trả lời thư này.
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+{% endautoescape %}

@@ -1,5 +1,5 @@
 from django import forms
-from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.forms import AuthenticationForm, PasswordResetForm
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.contrib.auth import password_validation 
@@ -34,7 +34,11 @@ class UserRegisterForm(forms.ModelForm):
         widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nhập tên tài khoản'}),
         error_messages={'required': 'Vui lòng nhập tên tài khoản.'}
     )
-    
+    email = forms.EmailField(
+        label="Địa chỉ Email",
+        widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'example@gmail.com'}),
+        error_messages={'required': 'Vui lòng nhập địa chỉ email.'}
+    )
     password1 = forms.CharField(
         label="Mật khẩu",
         widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Nhập mật khẩu'}),
@@ -49,7 +53,7 @@ class UserRegisterForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ("username",)
+        fields = ("username", "email")
 
     def clean_username(self):
         username = self.cleaned_data.get('username')
@@ -96,6 +100,29 @@ class UserRegisterForm(forms.ModelForm):
         # Vì không dùng UserCreationForm nên ta phải tự xử lý băm mật khẩu (hashing)
         user = super().save(commit=False)
         user.set_password(self.cleaned_data["password1"])
+        user.email = self.cleaned_data["email"]
         if commit:
             user.save()
         return user
+class ResetPasswordForm(PasswordResetForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.widget.attrs.update({'class': 'form-control', 'placeholder': field.label})
+class ExtendedRegistrationForm(UserCreationForm):
+    email = forms.EmailField(
+        required=True, 
+        widget=forms.EmailInput(attrs={
+            'class': 'form-control', 
+            'placeholder': 'Nhập địa chỉ email của bạn'
+        })
+    )
+
+    class Meta(UserCreationForm.Meta):
+        model = User
+        fields = ("username", "email") 
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.widget.attrs.update({'class': 'form-control'})
