@@ -5,6 +5,7 @@ from . import views
 from django.views.defaults import page_not_found
 from django.urls import re_path
 from django.shortcuts import render
+from django.contrib.auth import views as auth_views
 def custom_404_test_view(request, exception=None):
     return render(request, '404.html', status=404)
 urlpatterns = [
@@ -17,7 +18,6 @@ urlpatterns = [
 
     # Đăng nhập / Đăng ký
     path("login/", views.login_view, name="login"),
-    path("register/", views.register_view, name="register"),
     path("logout/", views.logout_view, name="logout"),
 
     # Dịch vụ chi tiết
@@ -70,6 +70,12 @@ urlpatterns = [
     path('api/admin/contacts/<int:pk>/reply/', views.reply_contact, name='api_reply_contact'),
     path("", views.index, name="home"),
 
+    path('password-reset/', auth_views.PasswordResetView.as_view(template_name='registration/password_reset_form.html', html_email_template_name='registration/password_reset_email.html'), name='password_reset'),
+    path('password-reset/done/', auth_views.PasswordResetDoneView.as_view(template_name='registration/password_reset_done.html'), name='password_reset_done'),
+    path('password-reset-confirm/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(template_name='registration/password_reset_confirm.html'), name='password_reset_confirm'),
+    path('password-reset-complete/', auth_views.PasswordResetCompleteView.as_view(template_name='registration/password_reset_complete.html'), name='password_reset_complete'),
+    path('register/', views.register, name='register'),
+    path('activate/<uidb64>/<token>/', views.activate, name='activate'),
 ]
 handler403 = 'AppGIS.views.error_403_view'
 # Chỉ thêm static khi DEBUG = True

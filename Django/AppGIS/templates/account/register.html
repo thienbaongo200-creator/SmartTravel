@@ -22,7 +22,17 @@
             </div>
         {% endif %}
     </div>
-
+    <div class="form-group">
+    <label for="{{ form.email.id_for_label }}">Địa chỉ Email</label>
+    {{ form.email }}
+    {% if form.email.errors %}
+        <div class="error-container">
+            {% for error in form.email.errors %}
+                <span class="error-text"><i class="fas fa-exclamation-circle me-1"></i> {{ error }}</span>
+            {% endfor %}
+        </div>
+    {% endif %}
+    </div>
     <div class="form-group password-wrapper">
         <label for="{{ form.password1.id_for_label }}">Mật khẩu</label>
         {{ form.password1 }}

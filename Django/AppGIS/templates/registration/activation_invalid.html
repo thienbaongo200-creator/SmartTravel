@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="auth-container text-center">
+    <h2 class="text-danger">Liên kết không hợp lệ</h2>
+    <p>Liên kết kích hoạt này đã hết hạn hoặc không chính xác.</p>
+    <a href="{% url 'register' %}" class="btn-auth">Đăng ký lại</a>
+</div>
+{% endblock %}
