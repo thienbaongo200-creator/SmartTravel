@@ -77,7 +77,7 @@
                         <p class="restaurant-desc">{{ restaurant.description|default:"Trải nghiệm ẩm thực đặc sắc." }}</p>
                         
                         <div class="restaurant-btn-container">
-                            <a href="{% url 'home' %}?id={{ restaurant.id }}&lat={{ restaurant.latitude }}&lng={{ restaurant.longitude }}&name={{ restaurant.name|urlencode }}&img={{ restaurant.img|urlencode }}&address={{ restaurant.address|urlencode }}&desc={{ restaurant.description|urlencode }}&rating={{ restaurant.rating }}&price={{ restaurant.price|default:0 }}&category=Nhà hàng&menu={{ restaurant.menu_imgs|safe|urlencode }}" class="btn-view-map">
+                            <a href="{% url 'home' %}?id={{ restaurant.id }}&lat={{ restaurant.latitude|stringformat:".6f" }}&lng={{ restaurant.longitude|stringformat:".6f" }}&name={{ restaurant.name|urlencode }}&img={{ restaurant.img|urlencode }}&address={{ restaurant.address|urlencode }}&desc={{ restaurant.description|urlencode }}&rating={{ restaurant.rating }}&price={{ restaurant.price|default:0 }}&category=Nhà hàng&menu={{ restaurant.menu_imgs|safe|urlencode }}" class="btn-view-map">
                                 <i class="fas fa-location-arrow"></i> XEM TRÊN BẢN ĐỒ
                             </a>
                         </div>
