@@ -27,6 +27,7 @@ urlpatterns = [
 
     # Tour du lịch
     path("tours/", views.tours_list, name="tours_list"),
+    path("tours/<int:tour_id>/", views.tour_detail, name="tour_detail"),
     path("tours/<int:tour_id>/book/", views.book_tour, name="book_tour"),
     path("booking_success/", views.booking_success, name="booking_success"),
     

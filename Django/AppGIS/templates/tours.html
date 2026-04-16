@@ -3,67 +3,130 @@
 
 {% block title %}Tour du lịch - Smart Travel Map{% endblock %}
 
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/tours.css' %}">
+{% endblock %}
+
 {% block content %}
 <section class="tour_container" style="padding:40px 20px; background:#f4f6f9; min-height: 100vh;">
-    <h2 style="text-align:center; font-size:28px; margin-bottom:30px; color:#2c3e50;">
+    <h2 style="text-align:center; font-size:28px; margin-bottom:15px; color:#2c3e50; font-weight:700;">
         <i class="fa-solid fa-route"></i> Hệ Thống Tour Du Lịch
     </h2>
 
-    <div style="max-width:1400px; margin:0 auto; display: grid; grid-template-columns: 1fr 350px; gap: 30px; align-items: start;">
+    <p style="text-align:center; max-width:800px; margin:0 auto 35px; font-size:1rem; color:#666; line-height:1.6;">
+        Smart Travel Map mang đến cho bạn những hành trình khám phá đa dạng: từ biển xanh cát trắng Hạ Long, 
+        núi rừng hùng vĩ Tây Bắc, đến phố cổ Hội An và thiên đường nghỉ dưỡng Phú Quốc. 
+        Hãy chọn tour yêu thích và bắt đầu trải nghiệm ngay hôm nay!
+    </p>
+
+    <div style="max-width:1400px; margin:0 auto; display: grid; grid-template-columns: 1fr 320px; gap: 30px; align-items: start;">
         
         <div class="main-content">
             {% if has_booked_tour %}
-            <div style="margin-bottom: 20px; padding: 12px; background: #fff3cd; color: #856404; border-radius: 8px; border: 1px solid #ffeeba; font-size: 0.9rem;">
+            <div style="margin-bottom: 20px; padding: 12px 15px; background: #fff3cd; color: #856404; border-radius: 8px; border: 1px solid #ffeeba; font-size: 0.9rem;">
                 <i class="fa-solid fa-circle-info"></i> Bạn có tour đang chờ xử lý. Vui lòng hoàn thành trước khi đặt mới.
             </div>
             {% endif %}
 
-            <div class="tour-list" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:20px;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px;">
                 {% for tour in tours %}
-                <div class="tour-item" style="background:white; padding:20px; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.08); transition: 0.3s;">
-                    <h3 style="margin:0 0 10px 0; color:#3498db; font-size: 1.2rem;">{{ tour.title }}</h3>
-                    
-                    <div style="font-size: 0.9rem; color: #666; height: 50px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">
-                        {{ tour.description|safe }}
+                <div class="tour-card">
+                    <!-- Tour Image -->
+                    <div class="tour-image-wrapper">
+                        {% if tour.image %}
+                            <img src="{% static tour.image %}" alt="{{ tour.title }}" loading="lazy">
+                        {% else %}
+                            <img src="{% static 'images/tour/default.jpg' %}" alt="Tour" loading="lazy">
+                        {% endif %}
+                        <span class="tour-badge">{{ tour.price }} VNĐ</span>
                     </div>
 
-                    <div style="border-top: 1px solid #eee; padding-top: 10px; margin-top: 10px; font-size: 0.9rem;">
-                        <p style="margin: 5px 0;"><strong>Giá:</strong> <span style="color: #e74c3c;">{{ tour.price }} VNĐ</span></p>
-                        <p style="margin: 5px 0;"><strong>Thời gian:</strong> {{ tour.duration }}</p>
-                    </div>
+                    <!-- Tour Content -->
+                    <div class="tour-content">
+                        <h3 class="tour-title">{{ tour.title }}</h3>
+                        <p class="tour-intro">{{ tour.short_intro }}</p>
 
-                    {% if has_booked_tour %}
-                        <button disabled style="width:100%; margin-top:15px; padding:10px; background:#bdc3c7; color:white; border:none; border-radius:6px; cursor:not-allowed;">
-                            Đã có lịch đặt
-                        </button>
-                    {% else %}
-                        <button onclick="openBookingModal({{ tour.id }}, '{{ tour.title }}', {{ tour.price }})" 
-                                style="width:100%; margin-top:15px; padding:10px; background:#2ecc71; color:white; border:none; border-radius:6px; cursor:pointer; font-weight: bold;">
-                            Đặt ngay
-                        </button>
-                    {% endif %}
+                        <div class="tour-info">
+                            <div class="tour-info-item">
+                                <p>Thời lượng</p>
+                                <strong>{{ tour.duration|default:"N/A" }}</strong>
+                            </div>
+                            <div class="tour-info-item">
+                                <p>Loại tour</p>
+                                <strong>{{ tour.tag|default:"Du lịch" }}</strong>
+                            </div>
+                        </div>
+
+                        <div class="tour-actions">
+                            {% if has_booked_tour %}
+                                <button disabled class="tour-btn tour-btn-primary">
+                                    <i class="fas fa-calendar-check"></i> Đã có lịch đặt
+                                </button>
+                            {% else %}
+                                <button onclick="openBookingModal({{ tour.id }}, '{{ tour.title }}', {{ tour.price }})" 
+                                        class="tour-btn tour-btn-primary">
+                                    <i class="fas fa-calendar-plus"></i> Đặt ngay
+                                </button>
+                            {% endif %}
+                            <a href="{% url 'tour_detail' tour.id %}" class="tour-btn tour-btn-secondary">
+                                <i class="fas fa-eye"></i> Chi tiết
+                            </a>
+                        </div>
+                    </div>
                 </div>
                 {% endfor %}
             </div>
+
+            <!-- Pagination -->
+            {% if page_obj.has_other_pages %}
+            <div class="pagination" style="margin-top: 40px; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
+                {% if page_obj.has_previous %}
+                    <a href="?page=1" class="page-link page-first"><i class="fas fa-angle-double-left"></i></a>
+                    <a href="?page={{ page_obj.previous_page_number }}" class="page-link page-prev"><i class="fas fa-angle-left"></i></a>
+                {% else %}
+                    <span class="page-link disabled"><i class="fas fa-angle-double-left"></i></span>
+                    <span class="page-link disabled"><i class="fas fa-angle-left"></i></span>
+                {% endif %}
+
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                        <span class="page-link active">{{ num }}</span>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <a href="?page={{ num }}" class="page-link">{{ num }}</a>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}" class="page-link page-next"><i class="fas fa-angle-right"></i></a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}" class="page-link page-last"><i class="fas fa-angle-double-right"></i></a>
+                {% else %}
+                    <span class="page-link disabled"><i class="fas fa-angle-right"></i></span>
+                    <span class="page-link disabled"><i class="fas fa-angle-double-right"></i></span>
+                {% endif %}
+
+                <span class="page-info" style="margin-left: 15px; font-size: 0.9rem; color: #666;">
+                    Trang {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+                </span>
+            </div>
+            {% endif %}
         </div>
 
-        <aside class="booked-sidebar" style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); position: sticky; top: 20px;">
-            <h3 style="color:#2c3e50; font-size: 1.1rem; border-bottom: 2px solid #3498db; padding-bottom: 10px; margin-top: 0;">
-                <i class="fa-solid fa-clock-rotate-left"></i> Lịch sử đặt tour
-            </h3>
+        <!-- Sidebar lịch sử đặt tour -->
+        <aside class="booking-sidebar">
+            <h3><i class="fa-solid fa-clock-rotate-left"></i> Lịch sử đặt tour</h3>
             
-            <div id="booked-tours-container" style="margin-top:15px; max-height: 70vh; overflow-y: auto; padding-right: 5px;">
+            <div style="margin-top:15px; max-height: 70vh; overflow-y: auto; padding-right: 5px;">
                 {% if booked_tours %}
                     {% for booking in booked_tours %}
-                    <div style="background:#f8f9fa; padding:15px; border-radius:8px; margin-bottom:15px; border-left: 4px solid {% if booking.status == 'confirmed' %}#2ecc71{% elif booking.status == 'cancelled' %}#e74c3c{% else %}#f1c40f{% endif %};">
-                        <h4 style="margin:0; font-size: 1rem; color:#2c3e50;">{{ booking.tour.title }}</h4>
-                        <div style="font-size:0.85rem; color:#666; margin: 8px 0;">
+                    <div class="booking-item {% if booking.status == 'confirmed' %}confirmed{% elif booking.status == 'cancelled' %}cancelled{% endif %}">
+                        <h4>{{ booking.tour.title }}</h4>
+                        <div class="booking-item-details">
                             <div>Ngày đặt: {{ booking.booked_at|date:"d/m/Y" }}</div>
                             <div>Khách: {{ booking.guests }} | <strong>{{ booking.total_price }}đ</strong></div>
                         </div>
                         
                         <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span style="font-size:0.75rem; background:#fff; border: 1px solid #ddd; padding:2px 8px; border-radius:4px; font-weight: bold; text-transform: capitalize;">
+                            <span class="booking-status">
                                 {% if booking.status == 'pending' %}Chờ xác nhận
                                 {% elif booking.status == 'confirmed' %}Đã xác nhận
                                 {% elif booking.status == 'cancelled' %}Đã hủy
@@ -71,12 +134,12 @@
                             </span>
 
                             {% if booking.status == "pending" %}
-                                <form action="{% url 'cancel_booking' booking.id %}" method="post" onsubmit="return confirm('Bạn có chắc chắn muốn hủy tour này?')">
-                                    {% csrf_token %}
-                                    <button type="submit" style="background:none; border:none; color:#e74c3c; cursor:pointer; font-size: 0.85rem; text-decoration: underline;">
-                                        Hủy tour
-                                    </button>
-                                </form>
+                                <div class="booking-actions">
+                                    <form action="{% url 'cancel_booking' booking.id %}" method="post" onsubmit="return confirm('Bạn có chắc chắn muốn hủy tour này?')" style="display: inline;">
+                                        {% csrf_token %}
+                                        <button type="submit">Hủy tour</button>
+                                    </form>
+                                </div>
                             {% endif %}
                         </div>
                     </div>
@@ -89,53 +152,53 @@
     </div>
 </section>
 
-<div id="bookingModal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index: 9999;">
-  <div class="modal-content" style="background:white; margin:2% auto; padding:25px; border-radius:12px; width:100%; max-width:400px; position:relative; box-shadow: 0 15px 40px rgba(0,0,0,0.4);">
-    <h3 id="modalTourTitle" style="color:#2c3e50; margin-top:0;">Đặt tour</h3>
+<!-- Modal đặt tour -->
+<div id="bookingModal" class="tour-modal">
+  <div class="tour-modal-content">
+    <h3 class="tour-modal-header" id="modalTourTitle">Đặt tour</h3>
     <form id="bookingForm" method="post">
-    {% csrf_token %}
-    <input type="hidden" id="modalTourId" name="tour_id">
-    
-    <div style="background: #ebf5fb; padding: 12px; border-radius: 8px; margin-bottom: 15px;">
-        <p style="margin:0; font-size: 0.9rem;">Giá gốc: <span id="basePrice"></span> VNĐ</p>
-        <p style="margin:5px 0 0; font-size: 1.1rem; color: #d35400;"><strong>Tổng: <span id="totalPrice"></span> VNĐ</strong></p>
-    </div>
+      {% csrf_token %}
+      <input type="hidden" id="modalTourId" name="tour_id">
+      
+      <div class="tour-price-summary">
+          <p>Giá gốc: <span id="basePrice"></span> VNĐ</p>
+          <strong>Tổng: <span id="totalPrice"></span> VNĐ</strong>
+      </div>
 
-    <div class="form-group">
-        <label>Số điện thoại:</label>
-        <input type="tel" name="phone" id="phoneInput" required 
-               pattern="[0-9]{10}" 
-               placeholder="09xxxxxxx"
-               oninvalid="this.setCustomValidity('Vui lòng nhập đúng 10 số điện thoại.')" 
-               oninput="this.setCustomValidity('')">
-    </div>
+      <div class="form-group">
+          <label>Số điện thoại</label>
+          <input type="tel" name="phone" id="phoneInput" required 
+                 pattern="[0-9]{10}" 
+                 placeholder="09xxxxxxx"
+                 oninvalid="this.setCustomValidity('Vui lòng nhập đúng 10 số điện thoại.')" 
+                 oninput="this.setCustomValidity('')">
+      </div>
 
-    <div class="form-group">
-        <label>Số lượng khách:</label>
-        <input type="number" id="guestsInput" name="guests" min="1" value="1" required
-               oninvalid="this.setCustomValidity('Vui lòng nhập số lượng khách (ít nhất là 1).')" 
-               oninput="this.setCustomValidity('')">
-    </div>
+      <div class="form-group">
+          <label>Số lượng khách</label>
+          <input type="number" id="guestsInput" name="guests" min="1" value="1" required
+                 oninvalid="this.setCustomValidity('Vui lòng nhập số lượng khách (ít nhất là 1).')" 
+                 oninput="this.setCustomValidity('')">
+      </div>
 
-    <div class="form-group">
-        <label>Ngày khởi hành:</label>
-        <input type="date" name="start_date" id="dateInput" required
-               oninvalid="this.setCustomValidity('Vui lòng chọn ngày khởi hành.')" 
-               oninput="this.setCustomValidity('')">
-    </div>
+      <div class="form-group">
+          <label>Ngày khởi hành</label>
+          <input type="date" name="start_date" id="dateInput" required
+                 oninvalid="this.setCustomValidity('Vui lòng chọn ngày khởi hành.')" 
+                 oninput="this.setCustomValidity('')">
+      </div>
 
-    <div style="margin-top:20px; display: flex; gap: 10px;">
-        <button type="submit" style="flex:2; padding:12px; background:#2ecc71; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">XÁC NHẬN</button>
-        <button type="button" onclick="closeBookingModal()" style="flex:1; padding:12px; background:#95a5a6; color:white; border:none; border-radius:8px; cursor:pointer;">HỦY</button>
-    </div>
-</form>
+      <div class="tour-modal-actions">
+          <button type="submit" class="confirm">XÁC NHẬN</button>
+          <button type="button" onclick="closeBookingModal()" class="cancel">HỦY</button>
+      </div>
+    </form>
   </div>
 </div>
 
 <script>
-// Các hàm JavaScript giữ nguyên logic cũ nhưng cập nhật UI tương ứng
 function openBookingModal(tourId, tourTitle, basePrice) {
-    document.getElementById("bookingModal").style.display = "block";
+    document.getElementById("bookingModal").classList.add("active");
     document.getElementById("modalTourTitle").textContent = tourTitle;
     document.getElementById("modalTourId").value = tourId;
     document.getElementById("bookingForm").action = "/book-tour/" + tourId + "/";
@@ -152,7 +215,7 @@ function openBookingModal(tourId, tourTitle, basePrice) {
 }
 
 function closeBookingModal() {
-    document.getElementById("bookingModal").style.display = "none";
+    document.getElementById("bookingModal").classList.remove("active");
 }
 
 window.onclick = function(event) {
@@ -160,16 +223,4 @@ window.onclick = function(event) {
 }
 </script>
 
-<style>
-.form-group { margin-bottom: 12px; }
-.form-group label { display: block; font-size: 0.85rem; font-weight: bold; margin-bottom: 5px; color: #555; }
-.form-group input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
-.tour-item:hover { transform: translateY(-5px); box-shadow: 0 6px 15px rgba(0,0,0,0.1) !important; }
-
-/* Responsive cho mobile */
-@media (max-width: 992px) {
-    .tour_container > div { grid-template-columns: 1fr !important; }
-    .booked-sidebar { position: static !important; order: -1; } /* Đưa sidebar lên trên cùng ở mobile */
-}
-</style>
 {% endblock %}
