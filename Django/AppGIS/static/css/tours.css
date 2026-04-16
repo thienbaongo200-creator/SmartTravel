@@ -892,7 +892,7 @@
 
 .gallery-counter {
     position: absolute;
-    bottom: 20px;
+    top: 20px;
     left: 50%;
     transform: translateX(-50%);
     background: rgba(0, 0, 0, 0.6);
@@ -902,6 +902,7 @@
     font-size: 0.95rem;
     font-weight: 600;
     backdrop-filter: blur(8px);
+    z-index: 10001;
 }
 
 .gallery-toolbar {
@@ -1014,7 +1015,7 @@
     }
 
     .gallery-counter {
-        bottom: 15px;
+        top: 15px;
         padding: 8px 15px;
         font-size: 0.9rem;
     }
@@ -1032,6 +1033,7 @@
     }
 
     .gallery-counter {
+        top: 12px;
         font-size: 0.85rem;
         padding: 8px 15px;
     }
