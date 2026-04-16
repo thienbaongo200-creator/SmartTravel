@@ -182,27 +182,41 @@ def nearby_places(request):
         user_lng = float(lng_str)
         radius_km = float(radius_str)
 
+        # Lấy tất cả các điểm du lịch
         points = TourismPoint.objects.all()
         nearby = []
 
         for p in points:
+            # Tính khoảng cách giữa vị trí người dùng và điểm du lịch
             dist = geodesic((user_lat, user_lng), (p.latitude, p.longitude)).km
+            
             if dist <= radius_km:
+                # Trả về đầy đủ các trường để hàm displayInfo(p) ở JS có thể hiển thị
                 nearby.append({
+                    "id": p.id,  # Rất quan trọng để load đánh giá (reviews)
                     "name": p.name,
-                    "latitude": p.latitude,
-                    "longitude": p.longitude,
-                    "address": p.address,
-                    "rating": p.rating,
+                    "latitude": float(p.latitude),
+                    "longitude": float(p.longitude),
+                    "address": p.address or "Đang cập nhật",
+                    "description": p.description or "",
+                    "price": str(p.price) if p.price else "0",
+                    "rating": float(p.rating) if p.rating else 5.0,
+                    "category": p.category.name if p.category else "Địa điểm",
+                    "img": p.img if p.img else "",
+                    "menu_imgs": p.menu_imgs if p.menu_imgs else [], # Danh sách ảnh phụ
+                    "open_hours": getattr(p, 'open_hours', '8:00 - 21:00'), # Nếu model có trường này
                     "distance_km": round(dist, 2)
                 })
 
-        # Tạo polygon buffer (GeoJSON circle)
+        # Sắp xếp theo khoảng cách gần nhất
+        nearby = sorted(nearby, key=lambda x: x['distance_km'])
+
+        # Tạo polygon buffer (GeoJSON circle) để vẽ vùng phủ trên bản đồ
         buffer_coords = []
-        steps = 36  # số điểm để vẽ vòng tròn
-        for i in range(steps):
+        steps = 36  
+        for i in range(steps + 1): # Thêm 1 để khép kín vòng tròn
             angle = 2 * math.pi * i / steps
-            dlat = (radius_km / 111) * math.cos(angle)  # 1 độ lat ~111km
+            dlat = (radius_km / 111) * math.cos(angle)
             dlng = (radius_km / (111 * math.cos(math.radians(user_lat)))) * math.sin(angle)
             buffer_coords.append([user_lng + dlng, user_lat + dlat])
 
@@ -397,7 +411,8 @@ def api_places(request):
             data.append({
                 "id": p.id,
                 "name": p.name,
-                "description": p.description or "",  # <-- Đã thêm mô tả vào đây
+                "phone": p.phone or "",
+                "description": p.description or "",  
                 "latitude": float(p.latitude) if p.latitude else 0,
                 "longitude": float(p.longitude) if p.longitude else 0,
                 "category": p.category.name if p.category else "Khác",
@@ -418,7 +433,7 @@ def api_places(request):
             
             # Lấy mô tả từ form gửi lên
             description = request.POST.get('description', '')
-
+            phone = request.POST.get('phone', '')
             cat_name = request.POST.get('category')
             cat_obj, _ = Category.objects.get_or_create(name=cat_name if cat_name else "Khác")
 
@@ -439,6 +454,7 @@ def api_places(request):
             # 4. Lưu vào Database
             place = TourismPoint.objects.create(
                 name=name,
+                phone=phone,
                 description=description, # <-- Đã thêm lưu mô tả
                 latitude=float(request.POST.get('latitude', 0.0)),
                 longitude=float(request.POST.get('longitude', 0.0)),
@@ -471,7 +487,8 @@ def api_place_detail(request, pk):
             place.price = request.POST.get('price', place.price)
             # Cập nhật mô tả khi sửa
             place.description = request.POST.get('description', place.description) 
-            
+            place.phone = request.POST.get('phone', place.phone)
+                
             # Xử lý tọa độ
             lat = request.POST.get('latitude')
             lng = request.POST.get('longitude')

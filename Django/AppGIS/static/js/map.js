@@ -569,6 +569,11 @@ async function displayInfo(p) {
         </div>
         <div class="info-body">
             <h2>${p.name}</h2>
+            <div id="average-rating-container" style="margin-bottom: 10px; font-size: 1.1rem; color: #f1c40f;">
+                <span id="avg-stars"></span> 
+                <span id="avg-score" style="color: #444; font-weight: bold; margin-left: 5px;"></span>
+                <span id="total-reviews-count" style="color: #888; font-size: 0.9rem; font-weight: normal;"></span>
+            </div>
             <p id="weather-info"><strong>🌦 Thời tiết:</strong> đang tải...</p>
             <p><strong>Địa chỉ:</strong> ${p.address || 'Đang cập nhật'}</p>
             <p><strong>Giờ mở cửa:</strong> ${p.open_hours || '8:00 - 21:00'}</p>
@@ -865,15 +870,15 @@ function showNearbyPlaces() {
             const sidebar = document.getElementById("nearby-sidebar");
             const listContainer = document.getElementById("nearby-list");
             sidebar.style.display = "flex";
-            listContainer.innerHTML = ""; // Xóa danh sách cũ
+            listContainer.innerHTML = ""; 
 
-            // 2. Xóa Layer cũ trên bản đồ
+            // 2. Xóa Layer cũ
             if (window.nearbyLayer) {
                 map.removeLayer(window.nearbyLayer);
             }
             window.nearbyLayer = L.layerGroup().addTo(map);
 
-            // 3. Vẽ vị trí người dùng
+            // 3. Vẽ vòng tròn bán kính và vị trí người dùng
             L.circle([lat, lng], {
                 radius: data.radius_km * 1000,
                 color: "#007bff",
@@ -882,18 +887,23 @@ function showNearbyPlaces() {
             
             L.marker([lat, lng]).bindPopup("📍 Vị trí của bạn").addTo(window.nearbyLayer);
 
-            // 4. Duyệt qua từng địa điểm
             if (places.length === 0) {
                 listContainer.innerHTML = "<p style='padding:15px;'>Không tìm thấy địa điểm nào quanh đây.</p>";
             }
 
+            // 4. Duyệt qua từng địa điểm
             places.forEach(p => {
-                // Thêm Marker lên bản đồ
-                const marker = L.marker([p.latitude, p.longitude])
-                    .bindPopup(`<strong>${p.name}</strong><br>${p.address || ''}`);
+                // TẠO MARKER
+                const marker = L.marker([p.latitude, p.longitude]);
+                
+                // SỰ KIỆN CLICK VÀO MARKER: Hiện thông tin chi tiết
+                marker.on('click', () => {
+                    displayInfo(p); // Gọi hàm hiển thị panel chi tiết của bạn
+                });
+                
                 window.nearbyLayer.addLayer(marker);
 
-                // Thêm Item vào danh sách Sidebar
+                // THÊM ITEM VÀO SIDEBAR
                 const item = document.createElement("div");
                 item.className = `nearby-item category-${p.category || 'attraction'}`;
                 item.innerHTML = `
@@ -902,10 +912,11 @@ function showNearbyPlaces() {
                     <span class="distance-badge">📍 ${p.distance_km.toFixed(2)} km</span>
                 `;
                 
-                // Click vào item trong danh sách thì di chuyển bản đồ tới marker đó
+                // SỰ KIỆN CLICK VÀO ITEM SIDEBAR
                 item.onclick = () => {
                     map.setView([p.latitude, p.longitude], 16);
                     marker.openPopup();
+                    displayInfo(p); // Gọi hàm hiển thị panel chi tiết khi click từ danh sách
                 };
                 
                 listContainer.appendChild(item);
@@ -1196,6 +1207,10 @@ function getCookie(name) {
 }
 async function loadReviewsToPanel(placeId) {
     const listContainer = document.getElementById("direct-reviews-list");
+    const avgStarsContainer = document.getElementById("avg-stars");
+    const avgScoreContainer = document.getElementById("avg-score");
+    const countContainer = document.getElementById("total-reviews-count");
+
     if (!listContainer) return;
 
     try {
@@ -1205,17 +1220,37 @@ async function loadReviewsToPanel(placeId) {
         const data = await response.json();
 
         if (data.reviews && data.reviews.length > 0) {
+            // 1. Logic tính toán trung bình cộng
+            const totalReviews = data.reviews.length;
+            const sumRating = data.reviews.reduce((acc, rev) => acc + rev.rating, 0);
+            const average = (sumRating / totalReviews).toFixed(1);
+
+            // 2. Cập nhật phần hiển thị tổng quan (Top Rating)
+            if (avgStarsContainer) {
+                // Tạo chuỗi sao (ví dụ 4.5 làm tròn thành 5 sao vàng hoặc 4 sao vàng tùy bạn chọn)
+                // Ở đây dùng Math.round để hiển thị số sao vàng tương ứng
+                const roundedAvg = Math.round(average);
+                avgStarsContainer.innerHTML = `<span style="color: #f1c40f;">${'★'.repeat(roundedAvg)}${'☆'.repeat(5 - roundedAvg)}</span>`;
+            }
+            if (avgScoreContainer) avgScoreContainer.innerText = average;
+            if (countContainer) countContainer.innerText = `(${totalReviews} đánh giá)`;
+
+            // 3. Hiển thị danh sách chi tiết các đánh giá
             listContainer.innerHTML = data.reviews.map(rev => `
                 <div class="direct-review-item" style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #eee;">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <strong style="font-size: 14px; color: #333;">${rev.user_name}</strong>
-                        <span style="color: #f1c40f; font-size: 12px;">${'★'.repeat(rev.rating)}${'☆'.repeat(5-rev.rating)}</span>
+                        <span style="color: #f1c40f; font-size: 12px;">${'★'.repeat(rev.rating)}${'☆'.repeat(5 - rev.rating)}</span>
                     </div>
-                    <p style="margin: 5px 0; font-size: 13px; color: #555;">${rev.comment}</p>
+                    <p style="margin: 5px 0; font-size: 13px; color: #555;">${rev.comment || 'Không có nhận xét.'}</p>
                     <small style="color: #999; font-size: 11px;">${rev.created_at}</small>
                 </div>
             `).join('');
         } else {
+            // Trường hợp không có đánh giá
+            if (avgStarsContainer) avgStarsContainer.innerHTML = '<span style="color: #ccc;">' + '☆'.repeat(5) + '</span>';
+            if (avgScoreContainer) avgScoreContainer.innerText = "0.0";
+            if (countContainer) countContainer.innerText = "(0 đánh giá)";
             listContainer.innerHTML = "<p style='color:#999; font-size: 13px;'>Địa điểm này chưa có đánh giá nào. Hãy là người đầu tiên!</p>";
         }
     } catch (error) {
