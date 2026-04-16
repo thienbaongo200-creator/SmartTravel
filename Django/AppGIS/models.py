@@ -1,7 +1,8 @@
+import math
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
-import math
+from django.contrib.postgres.fields import ArrayField
 
 class Category(models.Model):
     name = models.CharField(max_length=100)
@@ -72,12 +73,15 @@ class Review(models.Model):
 
 class Tour(models.Model):
     title = models.CharField(max_length=200)
-    description = models.TextField(blank=True)
+    short_intro = models.CharField(max_length=300, blank=True)  # Giới thiệu ngắn
+    description = models.TextField(blank=True)                  # Mô tả chi tiết
     price = models.DecimalField(max_digits=12, decimal_places=0)
     duration = models.CharField(max_length=100, blank=True)
     tag = models.CharField(max_length=100, blank=True)
+    image = models.CharField(max_length=255, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
-
+    images = ArrayField(models.CharField(max_length=255), size=6, blank=True, null=True)  # tối đa 6 ảnh phụ
+    
     def __str__(self):
         return self.title
 
