@@ -100,7 +100,7 @@
                 </div>
                 <div id="image_preview" class="thumb-container"></div>
             </div>
-
+                <input type="text" name="phone" placeholder="Số điện thoại liên hệ" class="full-width">
                 <input type="number" name="price" placeholder="Giá tiền (VNĐ)" class="full-width">
                 <button type="submit" class="btn btn-add">Thêm mới</button>
             </form>
@@ -152,6 +152,7 @@
               <label>Mô tả:</label>
               <label class="small fw-bold text-muted mb-2">Mô tả chi tiết</label>
                 <div id="editor-edit-place"></div>
+                <input type="text" id="editPhone" name="phone" placeholder="Số điện thoại" class="full-width">
               <input type="number" id="editPrice" name="price" placeholder="Giá tiền (VNĐ)" class="full-width">
               
               <label>Thay ảnh chính:</label>
@@ -289,6 +290,9 @@ function renderTable() {
                     <div style="font-weight: bold; color: #d35400; font-size: 0.95em;">
                         ${new Intl.NumberFormat('vi-VN').format(p.price || 0)} VNĐ
                     </div>
+                    <div style="font-size: 0.85em; color: #27ae60; margin-top: 3px;">
+                        <i class="fas fa-phone"></i> ${p.phone || 'Chưa có SĐT'}
+                    </div>
                 </td>
                 <td>
                     <div style="display: flex; gap: 8px;">
@@ -393,7 +397,7 @@ function openEditModalById(id) {
     document.getElementById('editLng').value = p.longitude;
     document.getElementById('editPrice').value = p.price;
     document.getElementById('editAddress').value = p.address || '';
-    
+    document.getElementById('editPhone').value = p.phone || '';
     // ĐỔ DỮ LIỆU VÀO CKEDITOR
     if (editPlaceEditor) {
         editPlaceEditor.setData(p.description || '');
