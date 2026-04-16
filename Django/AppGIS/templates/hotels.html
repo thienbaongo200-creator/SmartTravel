@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Khách sạn - Smart Travel Map{% endblock %}
+
+{% block content %}
+
+<section class="hotels-section">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold text-uppercase">Khách sạn nổi bật</h2>
+            <div style="width: 50px; height: 3px; background: #ffc107; margin: 10px auto;"></div>
+            <p class="text-muted small">Tận hưởng dịch vụ nghỉ dưỡng cao cấp và tiện nghi</p>
+        </div>
+
+        <div class="row">
+            {% for hotel in hotels %}
+            <div class="col-12 mb-4">
+                <div class="hotel-card shadow-sm">
+                    <div class="hotel-img-container" id="slider-{{ forloop.counter }}">
+                        <div class="rating-badge">
+                            <i class="fas fa-star"></i> {{ hotel.rating|default:"5.0" }}
+                        </div>
+
+                        <button class="slider-nav nav-prev" onclick="moveSlider('{{ forloop.counter }}', -1)"><i class="fas fa-chevron-left"></i></button>
+                        <button class="slider-nav nav-next" onclick="moveSlider('{{ forloop.counter }}', 1)"><i class="fas fa-chevron-right"></i></button>
+                        
+                        <div class="image-slider">
+                            <div class="slider-item">
+                                {% if hotel.img %}
+                                    {% if "http" in hotel.img or "/" in hotel.img %}
+                                        {# Kiểm tra nếu là đường dẫn media mà thiếu dấu gạch chéo đầu #}
+                                        <img src="{% if 'media/' in hotel.img and not hotel.img|slice:':1' == '/' %}/{{ hotel.img }}{% else %}{{ hotel.img }}{% endif %}" 
+                                            class="hotel-img" onclick="openLightbox(this.src)" 
+                                            onerror="this.src='{% static 'images/default-hotel.jpg' %}'">
+                                    {% else %}
+                                        <img src="{% static 'images/' %}{{ hotel.img }}" 
+                                            class="hotel-img" onclick="openLightbox(this.src)" 
+                                            onerror="this.src='{% static 'images/default-hotel.jpg' %}'">
+                                    {% endif %}
+                                {% else %}
+                                    <img src="{% static 'images/default-hotel.jpg' %}" class="hotel-img">
+                                {% endif %}
+                            </div>
+
+                            {% if hotel.menu_imgs %}
+                                {% for m_img in hotel.menu_imgs %}
+                                <div class="slider-item">
+                                    {% if "http" in m_img or "/" in m_img %}
+                                        <img src="{% if 'media/' in m_img and not m_img|slice:':1' == '/' %}/{{ m_img }}{% else %}{{ m_img }}{% endif %}" 
+                                            class="hotel-img" onclick="openLightbox(this.src)">
+                                    {% else %}
+                                        <img src="{% static 'images/' %}{{ m_img }}" class="hotel-img" onclick="openLightbox(this.src)">
+                                    {% endif %}
+                                </div>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="hotel-content-body">
+                        <h5 class="hotel-title" title="{{ hotel.name }}">{{ hotel.name }}</h5>
+                        
+                        <div class="hotel-price-wrapper">
+                            <span class="hotel-price-label">Giá phòng từ:</span>
+                            <span class="hotel-price-value">
+                                {% if hotel.price %}
+                                    {{ hotel.price|intcomma }} VNĐ<small style="font-size: 0.7rem; color: #888; font-weight: normal;">/đêm</small>
+                                {% else %}
+                                    Liên hệ
+                                {% endif %}
+                            </span>
+                        </div>
+
+                        <ul class="info-list">
+                            <li><i class="fas fa-map-marker-alt"></i> <span>{{ hotel.address|default:"Đang cập nhật địa chỉ" }}</span></li>
+                            <li><i class="fas fa-clock"></i> <span>Phục vụ: {{ hotel.open_hours|default:"24/7" }}</span></li>
+                        </ul>
+
+                        <p class="hotel-desc">
+                            {{ hotel.description|default:"Dịch vụ nghỉ dưỡng cao cấp với đầy đủ tiện nghi hiện đại cho kỳ nghỉ của bạn." }}
+                        </p>
+                        
+                        <div class="hotel-btn-container">
+                            <a href="{% url 'home' %}?id={{ hotel.id }}&lat={{ hotel.latitude|stringformat:".6f" }}&lng={{ hotel.longitude|stringformat:".6f" }}&name={{ hotel.name|urlencode }}&img={{ hotel.img|urlencode }}&address={{ hotel.address|urlencode }}&price={{ hotel.price|default:0 }}&category=Khách sạn&desc={{ hotel.description|urlencode }}&menu={{ hotel.menu_imgs|safe|urlencode }}" class="btn-hotel-action">
+                                <i class="fas fa-map-marked-alt"></i> XEM TRÊN BẢN ĐỒ
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center py-5">
+                <p class="text-muted italic">Hiện chưa có dữ liệu khách sạn.</p>
+            </div>
+            {% endfor %}
+
+            {% if hotels.has_other_pages %}
+            <div class="col-12">
+                <div class="pagination-container text-center mt-4">
+                    <ul class="pagination justify-content-center">
+                        {% if hotels.has_previous %}
+                            <li><a href="?page={{ hotels.previous_page_number }}" class="page-link-custom">&laquo; Trước</a></li>
+                        {% endif %}
+
+                        {% for i in hotels.paginator.page_range %}
+                            {% if hotels.number == i %}
+                                <li class="active"><span class="page-link-custom">{{ i }}</span></li>
+                            {% elif i > hotels.number|add:'-3' and i < hotels.number|add:'3' %}
+                                <li><a href="?page={{ i }}" class="page-link-custom">{{ i }}</a></li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if hotels.has_next %}
+                            <li><a href="?page={{ hotels.next_page_number }}" class="page-link-custom">Sau &raquo;</a></li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<div id="imageModal">
+    <span class="modal-close" onclick="closeLightbox()">&times;</span>
+    <div id="modalContent" onclick="closeLightbox()">
+        <img id="modalImg" src="" onclick="event.stopPropagation()">
+    </div>
+</div>
+
+<script>
+    let sliderPositions = {};
+    function moveSlider(id, direction) {
+        if (typeof sliderPositions[id] === 'undefined') sliderPositions[id] = 0;
+        const container = document.getElementById(`slider-${id}`);
+        const slider = container.querySelector('.image-slider');
+        const items = slider.querySelectorAll('.slider-item');
+        if (items.length <= 1) return; // Không cần trượt nếu chỉ có 1 ảnh
+
+        sliderPositions[id] = (sliderPositions[id] + direction + items.length) % items.length;
+        slider.style.transform = `translateX(-${sliderPositions[id] * 100}%)`;
+    }
+
+    let currentScale = 1;
+    const modal = document.getElementById('imageModal');
+    const modalImg = document.getElementById('modalImg');
+
+    function openLightbox(src) {
+        currentScale = 1;
+        modalImg.style.transform = `scale(${currentScale})`;
+        modalImg.src = src;
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox() {
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+
+    // Zoom ảnh bằng chuột
+    modal.addEventListener('wheel', function(e) {
+        e.preventDefault();
+        const delta = e.deltaY > 0 ? -0.2 : 0.2;
+        const newScale = currentScale + delta;
+        if (newScale >= 0.5 && newScale <= 5) {
+            currentScale = newScale;
+            modalImg.style.transform = `scale(${currentScale})`;
+        }
+    }, { passive: false });
+
+    document.addEventListener('keydown', (e) => { if (e.key === "Escape") closeLightbox(); });
+</script>
+{% endblock %}

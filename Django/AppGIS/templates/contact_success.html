@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Gửi thành công{% endblock %}
+
+{% block content %}
+<div class="success-container">
+    <div class="success-alert">
+        <h2 class="fw-bold">Đã gửi thành công!</h2>
+        <p>Cảm ơn bạn đã đóng góp ý kiến. Chúng tôi sẽ cải thiện sớm nhất có thể.</p>
+        <a href="{% url 'contact' %}" class="btn">Quay lại trang Liên hệ</a>
+    </div>
+</div>
+{% endblock %}

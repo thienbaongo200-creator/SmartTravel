@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    /* Cấu trúc nền phủ toàn màn hình với hình ảnh công nghệ/bảo mật */
+    .error-page-section {
+        background: linear-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.75)), 
+                    url('https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2070&auto=format&fit=crop'); 
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        min-height: 90vh;
+        display: flex;
+        align-items: center; /* Căn giữa theo chiều dọc */
+        justify-content: center; /* Căn giữa theo chiều ngang */
+        font-family: 'Segoe UI', Roboto, sans-serif;
+    }
+
+    /* Card chứa nội dung */
+    .custom-card {
+        background: rgba(255, 255, 255, 0.98);
+        padding: 60px 40px;
+        border-radius: 20px;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        max-width: 600px;
+        width: 90%;
+        border-top: 10px solid #e74c3c; /* Màu đỏ cảnh báo */
+        /* Đảm bảo nội dung bên trong card luôn ở chính giữa */
+        display: flex;
+        flex-direction: column;
+        align-items: center; 
+        text-align: center;
+    }
+
+    /* Loại bỏ hoàn toàn gạch chân cho các liên kết */
+    .custom-card a {
+        text-decoration: none !important;
+    }
+
+    /* Mã lỗi 403 */
+    .code-text-403 {
+        font-size: clamp(80px, 15vw, 120px);
+        font-weight: 900;
+        line-height: 1;
+        color: #e74c3c;
+        margin-bottom: 20px;
+        font-family: 'Arial Black', sans-serif;
+        display: block;
+    }
+
+    /* Biểu tượng bảo mật với hiệu ứng đập nhẹ (Pulse) */
+    .icon-403 {
+        font-size: 70px;
+        color: #e74c3c;
+        margin-bottom: 25px;
+        filter: drop-shadow(0 5px 15px rgba(231, 76, 60, 0.3));
+        animation: pulseLock 2s infinite ease-in-out;
+    }
+
+    @keyframes pulseLock {
+        0% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.1); opacity: 0.8; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+
+    /* Tùy chỉnh nút bấm đồng bộ với 404 */
+    .btn-sync {
+        padding: 15px 35px;
+        border-radius: 50px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        transition: all 0.3s ease;
+        background-color: #e74c3c;
+        color: white !important;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        margin-top: 20px;
+    }
+
+    .btn-sync:hover {
+        background-color: #c0392b;
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(231, 76, 60, 0.3);
+        color: white !important;
+    }
+</style>
+
+<div class="error-page-section">
+    <div class="custom-card">
+        <div class="icon-403">
+            <i class="fas fa-user-shield"></i>
+        </div>
+
+        <span class="code-text-403">403</span>
+
+        <h2 class="mb-3 text-dark font-weight-bold">TRUY CẬP BỊ CHẶN</h2>
+        <p class="text-muted">
+            Dừng lại lữ khách! Khu vực này yêu cầu quyền quản trị.<br>
+            Bạn không có đủ thẩm quyền để xem bản đồ này.
+        </p>
+
+        <a href="{% url 'home' %}" class="btn btn-sync shadow-sm">
+            <i class="fas fa-home me-2"></i> Quay về trang chủ
+        </a>
+    </div>
+</div>
+{% endblock %}
