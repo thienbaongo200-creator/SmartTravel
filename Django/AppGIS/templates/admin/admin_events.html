@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Sự kiện | Admin Dashboard</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <script src="https://cdn.ckeditor.com/4.22.1/standard/ckeditor.js"></script>
+    <style>
+        body { background-color: #f8f9fa; font-family: 'Segoe UI', sans-serif; }
+        .required-label::after { content: " *"; color: red; }
+        .img-thumbnail { border-radius: 8px; object-fit: cover; background: #eee; }
+        .editing-mode { border: 2px solid #ffc107 !important; box-shadow: 0 0 15px rgba(255, 193, 7, 0.2); }
+        
+        .status-badge {
+            font-size: 0.75rem;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-weight: 600;
+            display: inline-block;
+            margin-top: 5px;
+        }
+        
+        @keyframes pulse-red {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        .badge-danger { animation: pulse-red 1.5s infinite; }
+
+        .time-badge { 
+            background-color: #f1f3f5; 
+            padding: 8px 12px; 
+            border-radius: 8px; 
+            border-left: 4px solid #007bff;
+            font-size: 0.85rem; 
+        }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid mt-4 px-4">
+    <div class="row">
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0 sticky-top" style="top: 20px;" id="formCard">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="fw-bold m-0" id="formTitle"><i class="fas fa-plus-circle text-primary"></i> Thêm sự kiện mới</h5>
+                </div>
+                <div class="card-body">
+                    <form id="eventForm">
+                        {% csrf_token %}
+                        <input type="hidden" id="eventId">
+
+                        <div class="form-group">
+                            <label class="small font-weight-bold required-label">TIÊU ĐỀ</label>
+                            <input type="text" name="title" id="title" class="form-control" required>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="form-group">
+                                    <label class="small font-weight-bold">THỂ LOẠI</label>
+                                    <select name="category" id="category" class="form-control">
+                                        <option value="Văn hóa">Văn hóa</option>
+                                        <option value="Lễ hội">Lễ hội</option>
+                                        <option value="Âm nhạc">Âm nhạc</option>
+                                        <option value="Ẩm thực">Ẩm thực</option>
+                                        <option value="Khác">Khác</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="form-group">
+                                    <label class="small font-weight-bold">TRẠNG THÁI</label>
+                                    <select name="status_type" id="status_type" class="form-control">
+                                        <option value="Sắp diễn ra">Sắp diễn ra</option>
+                                        <option value="Đang diễn ra">Đang diễn ra</option>
+                                        <option value="Đã kết thúc">Đã kết thúc</option>
+                                        <option value="Tạm hoãn">Tạm hoãn</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="small font-weight-bold">ĐỊA ĐIỂM</label>
+                            <input type="text" name="location" id="location" class="form-control">
+                        </div>
+
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="form-group">
+                                    <label class="small font-weight-bold required-label">BẮT ĐẦU</label>
+                                    <input type="date" name="start_date" id="start_date" class="form-control" required>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="form-group">
+                                    <label class="small font-weight-bold">KẾT THÚC</label>
+                                    <input type="date" name="end_date" id="end_date" class="form-control">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="small font-weight-bold">MÔ TẢ</label>
+                            <textarea name="description" id="description"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="small font-weight-bold">HÌNH ẢNH</label>
+                            <div class="custom-file">
+                                <input type="file" name="images" class="custom-file-input" id="inputImages" accept="image/*" multiple>
+                                <label class="custom-file-label" for="inputImages">Chọn file...</label>
+                            </div>
+                            <small class="text-muted" id="imageHelp">Bắt buộc khi thêm mới.</small>
+                        </div>
+
+                        <div id="actionButtons">
+                            <button type="submit" class="btn btn-primary btn-block py-2 font-weight-bold shadow-sm" id="btnSubmit">Lưu sự kiện</button>
+                            <button type="button" class="btn btn-light btn-block border mt-2" id="btnCancel" style="display:none;" onclick="resetForm()">Hủy bỏ</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="m-0 font-weight-bold text-primary">Danh sách sự kiện</h5>
+                    <span class="badge badge-pill badge-primary" id="eventCount">0</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light text-muted small text-uppercase">
+                            <tr>
+                                <th>Thông tin sự kiện</th>
+                                <th>Thể loại</th>
+                                <th>Thời gian</th>
+                                <th class="text-center">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="eventTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    let allEvents = [];
+    let eventEditor;
+
+    // Các phần tử input ngày tháng
+    const startDateInput = document.getElementById('start_date');
+    const endDateInput = document.getElementById('end_date');
+
+    async function initEditor() {
+        eventEditor = CKEDITOR.replace('description');
+    }
+
+    // Logic ràng buộc thời gian ngay khi chọn lịch
+    startDateInput.addEventListener('change', function() {
+        if (this.value) {
+            // Khóa các ngày trước ngày bắt đầu ở ô kết thúc
+            endDateInput.min = this.value;
+            // Nếu ngày kết thúc cũ đang nhỏ hơn ngày bắt đầu mới chọn -> cập nhật lại
+            if (endDateInput.value && endDateInput.value < this.value) {
+                endDateInput.value = this.value;
+            }
+        }
+    });
+
+    async function loadEvents() {
+        try {
+            const res = await fetch('/api/events/');
+            allEvents = await res.json();
+            const tbody = document.getElementById('eventTableBody');
+            document.getElementById('eventCount').innerText = allEvents.length;
+
+            tbody.innerHTML = allEvents.map(ev => `
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <img src="${(ev.images && ev.images.length > 0) ? ev.images[0] : 'https://via.placeholder.com/80x60'}" 
+                                 class="img-thumbnail mr-3" style="width:80px; height:55px;">
+                            <div>
+                                <div class="font-weight-bold">${ev.title}</div>
+                                <div class="text-muted small"><i class="fas fa-map-marker-alt"></i> ${ev.location || 'Chưa cập nhật'}</div>
+                                <span class="status-badge ${ev.status_class}">${ev.status}</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="align-middle">
+                        <span class="badge badge-light border px-2 py-1">${ev.category || 'Văn hóa'}</span>
+                    </td>
+                    <td class="align-middle">
+                        <div class="time-badge">
+                            <i class="far fa-calendar-alt text-primary"></i> ${ev.start_date}
+                        </div>
+                    </td>
+                    <td class="text-center align-middle">
+                        <div class="btn-group shadow-sm">
+                            <button class="btn btn-sm btn-light border" onclick="openEdit(${ev.id})" title="Sửa"><i class="fas fa-pen text-primary"></i></button>
+                            <button class="btn btn-sm btn-light border" onclick="deleteEvent(${ev.id})" title="Xóa"><i class="fas fa-trash text-danger"></i></button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        } catch (e) { console.error("Lỗi load data:", e); }
+    }
+
+    document.getElementById('eventForm').onsubmit = async function(e) {
+        e.preventDefault();
+
+        // VALIDATION: Kiểm tra lại ngày tháng trước khi gửi
+        const start = startDateInput.value;
+        const end = endDateInput.value;
+        if (end && start && end < start) {
+            alert("⚠️ Lỗi: Ngày kết thúc không thể nhỏ hơn ngày bắt đầu!");
+            endDateInput.focus();
+            return;
+        }
+
+        const id = document.getElementById('eventId').value;
+        const formData = new FormData(this);
+        formData.append('description', eventEditor.getData());
+
+        const url = id ? `/api/events/${id}/` : '/api/events/';
+        const headers = { "X-CSRFToken": "{{ csrf_token }}" };
+        if (id) headers["X-HTTP-Method-Override"] = "PUT";
+
+        try {
+            const res = await fetch(url, {
+                method: "POST",
+                body: formData,
+                headers: headers
+            });
+
+            if (res.ok) {
+                alert(id ? "Cập nhật thành công!" : "Đã thêm sự kiện mới!");
+                resetForm();
+                loadEvents();
+            } else {
+                alert("Lỗi khi lưu dữ liệu. Vui lòng kiểm tra lại.");
+            }
+        } catch (error) { alert("Lỗi kết nối server!"); }
+    };
+
+    function openEdit(id) {
+        const ev = allEvents.find(x => x.id == id);
+        if (!ev) return;
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        document.getElementById('eventId').value = ev.id;
+        document.getElementById('title').value = ev.title;
+        document.getElementById('location').value = ev.location;
+        document.getElementById('start_date').value = ev.start_date;
+        document.getElementById('end_date').value = ev.end_date || "";
+        document.getElementById('category').value = ev.category || "Văn hóa";
+        document.getElementById('status_type').value = ev.status || "Sắp diễn ra";
+        eventEditor.setData(ev.description || "");
+
+        // Cập nhật thuộc tính min cho ngày kết thúc ngay khi mở form sửa
+        endDateInput.min = ev.start_date;
+
+        document.getElementById('formCard').classList.add('editing-mode');
+        document.getElementById('formTitle').innerHTML = '<i class="fas fa-edit text-warning"></i> Đang sửa sự kiện';
+        document.getElementById('btnSubmit').className = "btn btn-warning btn-block py-2 font-weight-bold";
+        document.getElementById('btnSubmit').innerText = "Cập nhật thay đổi";
+        document.getElementById('btnCancel').style.display = "block";
+        document.getElementById('imageHelp').innerText = "Để trống nếu giữ nguyên ảnh cũ.";
+    }
+
+    function resetForm() {
+        document.getElementById('eventForm').reset();
+        document.getElementById('eventId').value = "";
+        eventEditor.setData("");
+        endDateInput.min = ""; // Reset giới hạn ngày
+        document.getElementById('formCard').classList.remove('editing-mode');
+        document.getElementById('formTitle').innerHTML = '<i class="fas fa-plus-circle text-primary"></i> Thêm sự kiện mới';
+        document.getElementById('btnSubmit').className = "btn btn-primary btn-block py-2 font-weight-bold";
+        document.getElementById('btnSubmit').innerText = "Lưu sự kiện";
+        document.getElementById('btnCancel').style.display = "none";
+        document.getElementById('imageHelp').innerText = "Bắt buộc khi thêm mới.";
+        document.querySelector('.custom-file-label').innerText = "Chọn file...";
+    }
+
+    async function deleteEvent(id) {
+        if (!confirm("Xác nhận xóa sự kiện này?")) return;
+        try {
+            const res = await fetch(`/api/events/${id}/`, {
+                method: "DELETE",
+                headers: { "X-CSRFToken": "{{ csrf_token }}" }
+            });
+            if (res.ok) loadEvents();
+        } catch (e) { alert("Lỗi khi xóa!"); }
+    }
+
+    window.onload = async () => {
+        await initEditor();
+        await loadEvents();
+    };
+
+    document.querySelector('.custom-file-input').addEventListener('change', function(e) {
+        this.nextElementSibling.innerText = e.target.files.length + " file đã chọn";
+    });
+</script>
+
+</body>
+</html>

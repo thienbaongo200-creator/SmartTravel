@@ -1,69 +1,240 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Sự kiện{% endblock %}
+{% block title %}Sự kiện - Smart Travel Map{% endblock %}
 
 {% block content %}
-<section class="events_section">
+<section class="events-section py-5">
     <div class="container">
         <div class="text-center mb-5">
-            <h2>Sự kiện du lịch nổi bật</h2>
-            <p class="text-muted">
-                Smart Travel Map mang đến cho bạn những sự kiện hấp dẫn, nơi du khách có thể hòa mình vào không khí lễ hội, văn hóa và giải trí đặc sắc.
-            </p>
+            <h2 class="fw-bold text-uppercase">Sự kiện nổi bật</h2>
+            <div style="width: 50px; height: 3px; background: #ffc107; margin: 10px auto;"></div>
+            <p class="text-muted small">Khám phá các hoạt động văn hóa và lễ hội đặc sắc</p>
         </div>
 
-        <div class="events_grid">
-            <div class="event_card">
-                <img src="{% static 'images/AoDaiFestival.jpg' %}" alt="Lễ hội Áo dài">
-                <div class="card-body">
-                    <h3>Lễ hội Áo dài TP.HCM</h3>
-                    <p>
-                        Tôn vinh vẻ đẹp truyền thống của tà áo dài Việt Nam với các hoạt động trình diễn, triển lãm và giao lưu văn hóa.
-                    </p>
-                    <ul>
-                        <li><strong>Thời gian:</strong> Tháng 3 hàng năm</li>
-                        <li><strong>Địa điểm:</strong> TP.HCM</li>
-                        <li><strong>Hoạt động:</strong> Trình diễn áo dài, triển lãm nghệ thuật</li>
-                    </ul>
+        <div class="row">
+            {% for su_kien in ds_su_kien %}
+            <div class="col-12 mb-4">
+                <div class="hotel-card shadow-sm">
+                    <div class="hotel-img-container" id="slider-{{ forloop.counter }}">
+                        <div class="rating-badge">
+                            <i class="fas fa-calendar-alt"></i> {{ su_kien.start_date|date:"d/m" }}
+                        </div>
+                        <button class="slider-nav nav-prev" onclick="moveSlider('{{ forloop.counter }}', -1)"><i class="fas fa-chevron-left"></i></button>
+                        <button class="slider-nav nav-next" onclick="moveSlider('{{ forloop.counter }}', 1)"><i class="fas fa-chevron-right"></i></button>
+                        <div class="image-slider">
+                            {% for img in su_kien.images.all %}
+                            <div class="slider-item">
+                                <img src="{{ img.image.url }}" class="hotel-img" onclick="openLightbox(this.src)" onerror="this.src='{% static 'images/default.jpg' %}'">
+                            </div>
+                            {% empty %}
+                            <div class="slider-item">
+                                <img src="{% static 'images/default.jpg' %}" class="hotel-img">
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="hotel-content-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <h5 class="hotel-title">{{ su_kien.title }}</h5>
+                            
+                            <span class="badge-status {{ su_kien.status_class|default:'badge-info' }}">
+                                {{ su_kien.status_type|default:"Đang cập nhật" }}
+                            </span>
+                        </div>
+
+                        <div class="hotel-price-wrapper mt-2">
+                            <span class="hotel-price-label">Thời gian:</span>
+                            <span class="hotel-price-value" style="font-size: 0.95rem;">
+                                {{ su_kien.start_date|date:"d/m/Y" }} 
+                                {% if su_kien.end_date %} - {{ su_kien.end_date|date:"d/m/Y" }}{% endif %}
+                            </span>
+                        </div>
+
+                        <ul class="info-list">
+                            <li><i class="fas fa-map-marker-alt"></i> <span>{{ su_kien.location|default:"Chưa cập nhật địa điểm" }}</span></li>
+                            
+                            <li><i class="fas fa-tag"></i> <span>Thể loại: {{ su_kien.category|default:"Văn hóa" }}</span></li>
+                        </ul>
+
+                        <div class="hotel-desc">
+                            {{ su_kien.description|striptags|truncatewords:40 }}
+                        </div>
+                        
+                        <div class="hotel-btn-container mt-auto">
+                            <a href="#" class="btn-hotel-action">Xem chi tiết</a>
+                        </div>
+                    </div>
                 </div>
             </div>
-
-            <div class="event_card">
-                <img src="{% static 'images/NguyenHueFlowerStreet.jpg' %}" alt="Đường hoa Nguyễn Huệ">
-                <div class="card-body">
-                    <h3>Đường hoa Nguyễn Huệ</h3>
-                    <p>
-                        Sự kiện thường niên vào dịp Tết Nguyên Đán, biến phố đi bộ Nguyễn Huệ thành không gian nghệ thuật rực rỡ sắc hoa.
-                    </p>
-                    <ul>
-                        <li><strong>Thời gian:</strong> Tết Nguyên Đán</li>
-                        <li><strong>Địa điểm:</strong> Quận 1, TP.HCM</li>
-                        <li><strong>Hoạt động:</strong> Tham quan, chụp ảnh, nghệ thuật đường phố</li>
-                    </ul>
-                </div>
+            {% empty %}
+            <div class="col-12 text-center py-5">
+                <p class="text-muted italic">Hiện chưa có dữ liệu sự kiện.</p>
             </div>
-
-            <div class="event_card">
-                <img src="{% static 'images/HCMTourismFestival.jpg' %}" alt="Ngày hội Du lịch TP.HCM">
-                <div class="card-body">
-                    <h3>Ngày hội Du lịch TP.HCM</h3>
-                    <p>
-                        Sự kiện quảng bá du lịch lớn nhất thành phố, quy tụ nhiều doanh nghiệp, gian hàng và hoạt động văn hóa – ẩm thực phong phú.
-                    </p>
-                    <ul>
-                        <li><strong>Thời gian:</strong> Tháng 4 hàng năm</li>
-                        <li><strong>Địa điểm:</strong> Công viên 23/9, Quận 1</li>
-                        <li><strong>Hoạt động:</strong> Hội chợ du lịch, biểu diễn nghệ thuật, ẩm thực</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-
-        <div class="section-footer">
-            <h4>Khám phá thêm nhiều sự kiện hấp dẫn khác</h4>
-            <p>Smart Travel Map sẽ liên tục cập nhật để bạn không bỏ lỡ bất kỳ lễ hội nào.</p>
+            {% endfor %}
         </div>
     </div>
 </section>
+
+
+<div id="imageModal">
+    <span class="modal-close" onclick="closeLightbox()">&times;</span>
+    <div id="modalContent" onclick="closeLightbox()">
+        <img id="modalImg" src="" onclick="event.stopPropagation()">
+    </div>
+</div>
+
+<script>
+    // Logic Slider đồng bộ với hotels.html
+    let sliderPositions = {};
+    function moveSlider(id, direction) {
+        if (typeof sliderPositions[id] === 'undefined') sliderPositions[id] = 0;
+        const container = document.getElementById(`slider-${id}`);
+        const slider = container.querySelector('.image-slider');
+        const items = slider.querySelectorAll('.slider-item');
+        if (items.length <= 1) return;
+
+        sliderPositions[id] = (sliderPositions[id] + direction + items.length) % items.length;
+        slider.style.transform = `translateX(-${sliderPositions[id] * 100}%)`;
+    }
+
+    // Logic Lightbox
+    let currentScale = 1;
+    const modal = document.getElementById('imageModal');
+    const modalImg = document.getElementById('modalImg');
+
+    function openLightbox(src) {
+        currentScale = 1;
+        modalImg.style.transform = `scale(${currentScale})`;
+        modalImg.src = src;
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox() {
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+
+    modal.addEventListener('wheel', function(e) {
+        e.preventDefault();
+        const delta = e.deltaY > 0 ? -0.2 : 0.2;
+        const newScale = currentScale + delta;
+        if (newScale >= 0.5 && newScale <= 5) {
+            currentScale = newScale;
+            modalImg.style.transform = `scale(${currentScale})`;
+        }
+    }, { passive: false });
+
+    document.addEventListener('keydown', (e) => { if (e.key === "Escape") closeLightbox(); });
+</script>
+
+<style>
+    /* Đảm bảo CSS đồng bộ nếu hotels.html dùng CSS riêng */
+    .hotel-card {
+        display: flex;
+        background: #fff;
+        border-radius: 8px;
+        overflow: hidden;
+        border: 1px solid #eee;
+    }
+    .hotel-img-container {
+        width: 350px;
+        position: relative;
+        overflow: hidden;
+        flex-shrink: 0;
+    }
+    .image-slider {
+        display: flex;
+        transition: transform 0.4s ease;
+        height: 100%;
+    }
+    .slider-item {
+        min-width: 100%;
+        height: 250px;
+    }
+    .hotel-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        cursor: pointer;
+    }
+    .hotel-content-body {
+        padding: 20px;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+    }
+    .hotel-title { font-size: 1.25rem; font-weight: 700; color: #1a2b48; }
+    .rating-badge {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background: rgba(255, 193, 7, 0.9);
+        color: #000;
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-weight: bold;
+        z-index: 10;
+    }
+    .slider-nav {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(255,255,255,0.8);
+        border: none;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        z-index: 5;
+        cursor: pointer;
+    }
+    .nav-prev { left: 10px; }
+    .nav-next { right: 10px; }
+    .info-list {
+        list-style: none;
+        padding: 0;
+        margin: 15px 0;
+    }
+    .info-list li {
+        font-size: 0.9rem;
+        color: #555;
+        margin-bottom: 5px;
+    }
+    .info-list i {
+        width: 20px;
+        color: #ffc107;
+    }
+    .btn-hotel-action {
+        display: inline-block;
+        padding: 10px 20px;
+        background: #1a2b48;
+        color: #fff;
+        text-decoration: none;
+        font-weight: bold;
+        font-size: 0.8rem;
+        border-radius: 4px;
+        margin-top: auto;
+        transition: 0.3s;
+    }
+    .btn-hotel-action:hover {
+        background: #ffc107;
+        color: #000;
+    }
+    /* Modal CSS tương tự hotels.html */
+    #imageModal {
+        display: none;
+        position: fixed;
+        z-index: 9999;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.9);
+        justify-content: center; align-items: center;
+    }
+    #modalImg { max-width: 90%; max-height: 90%; transition: transform 0.2s; }
+    .modal-close {
+        position: absolute; top: 20px; right: 30px;
+        color: #fff; font-size: 40px; cursor: pointer;
+    }
+</style>
 {% endblock %}
