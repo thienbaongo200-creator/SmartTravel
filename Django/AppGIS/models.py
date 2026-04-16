@@ -19,7 +19,7 @@ class TourismPoint(models.Model):
     longitude = models.FloatField()
     category = models.ForeignKey(Category, on_delete=models.CASCADE, null=True, blank=True)
     address = models.CharField(max_length=255, blank=True, null=True)
-    # giờ mở/đóng cửa
+    phone = models.CharField(max_length=20, blank=True, null=True, verbose_name="Số điện thoại")
     open_time = models.TimeField(default="09:00")
     close_time = models.TimeField(default="22:00")
     rating = models.FloatField(blank=True, null=True)
