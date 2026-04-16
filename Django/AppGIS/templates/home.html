@@ -298,6 +298,21 @@
                 .bindPopup(`<b>${decodedName}</b>`)
                 .openPopup();
 
+            // --- Xử lý Gallery (menu_imgs) từ URL ---
+            let menuImgs = [];
+            const rawMenu = urlParams.get('menu');
+            if (rawMenu) {
+                try {
+                    // Giải mã URL và parse chuỗi JSON
+                    const decodedMenu = decodeURIComponent(rawMenu);
+                    // Chuyển đổi format từ Python ['a', 'b'] sang JSON chuẩn ["a", "b"] nếu cần
+                    menuImgs = JSON.parse(decodedMenu.replace(/'/g, '"'));
+                } catch (e) {
+                    console.error("Lỗi parse menu từ URL:", e);
+                    menuImgs = [];
+                }
+            }
+
             displayInfo({
                 id: urlParams.get('id'),
                 name: decodedName,
@@ -305,12 +320,12 @@
                 latitude: lat,
                 longitude: lng,
                 address: urlParams.get('address') ? decodeURIComponent(urlParams.get('address')) : "Đang cập nhật",
-                description: urlParams.get('desc') ? decodeURIComponent(urlParams.get('desc')) : "Không có mô tả.",
+                // Lấy description từ URL
+                description: urlParams.get('desc') ? decodeURIComponent(urlParams.get('desc')) : "Dịch vụ nghỉ dưỡng cao cấp với đầy đủ tiện nghi.",
                 rating: urlParams.get('rating') || "5.0",
                 price: urlParams.get('price') || "0",
-                // Lấy category từ URL để hiển thị "/đêm" chính xác
                 category: urlParams.get('category') || 'Khách sạn', 
-                menu_imgs: urlParams.get('menu') ? JSON.parse(decodeURIComponent(urlParams.get('menu'))) : []
+                menu_imgs: menuImgs // Truyền mảng ảnh đã được xử lý
             });
         }
         if (++retryCount > 50) clearInterval(checkMapReady);
