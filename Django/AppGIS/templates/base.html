@@ -89,5 +89,31 @@
         }
     }
     </script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+        $(document).ready(function(){
+            // Kích hoạt tất cả các carousel
+            $('.carousel').carousel({
+                interval: false 
+            });
+
+            // Xử lý thủ công khi bấm nút
+            $('.carousel-control-prev').click(function(e){
+                e.preventDefault();
+                var target = $(this).attr('href');
+                $(target).carousel('prev');
+            });
+
+            $('.carousel-control-next').click(function(e){
+                e.preventDefault();
+                var target = $(this).attr('href');
+                $(target).carousel('next');
+            });
+        });
+    </script>
+
 </body>
 </html>

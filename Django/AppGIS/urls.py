@@ -48,6 +48,7 @@ urlpatterns = [
     path("admin_user/", views.admin_user, name="admin_user"),
     path("admin/tour-booking/", views.admin_tour_booking, name="admin_tour_booking"),
     path("admin/contacts/", views.admin_contacts, name="admin_contacts"),
+   path("admin/events/", views.admin_events, name="admin_manage_events"),
     
     # API cho địa điểm
     path("api/places/", views.get_places_by_category, name="api_places"),
@@ -63,6 +64,9 @@ urlpatterns = [
     path("api/bookings/<int:pk>/", views.api_booking_detail, name="api_booking_detail"),
     path('tours/cancel/<int:booking_id>/', views.cancel_booking, name='cancel_booking'),
     path('book-tour/<int:tour_id>/', views.book_tour, name='book_tour'),
+    # API cho sự kiện
+    path('api/events/', views.api_events, name='api_events'),
+    path('api/events/<int:pk>/', views.api_events, name='api_events_detail'),
 
     path('admin-panel/tours/', views.admin_tours, name='admin_tours'),
     path('api/admin/tours/', views.api_tours, name='api_tours'),
