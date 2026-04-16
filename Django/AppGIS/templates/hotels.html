@@ -83,7 +83,7 @@
                         </p>
                         
                         <div class="hotel-btn-container">
-                            <a href="{% url 'home' %}?id={{ hotel.id }}&lat={{ hotel.latitude }}&lng={{ hotel.longitude }}&name={{ hotel.name|urlencode }}&img={{ hotel.img|urlencode }}&address={{ hotel.address|urlencode }}&price={{ hotel.price|default:0 }}&category=Khách sạn" class="btn-hotel-action">
+                            <a href="{% url 'home' %}?id={{ hotel.id }}&lat={{ hotel.latitude|stringformat:".6f" }}&lng={{ hotel.longitude|stringformat:".6f" }}&name={{ hotel.name|urlencode }}&img={{ hotel.img|urlencode }}&address={{ hotel.address|urlencode }}&price={{ hotel.price|default:0 }}&category=Khách sạn&desc={{ hotel.description|urlencode }}&menu={{ hotel.menu_imgs|safe|urlencode }}" class="btn-hotel-action">
                                 <i class="fas fa-map-marked-alt"></i> XEM TRÊN BẢN ĐỒ
                             </a>
                         </div>

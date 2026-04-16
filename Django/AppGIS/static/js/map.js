@@ -317,38 +317,45 @@ async function showRouteFromSearch(destLat = null, destLng = null, destName = nu
     const startInput = document.getElementById("startPoint");
     const endInput = document.getElementById("endPoint");
 
+    if (!modal || !startInput || !endInput) return;
+
     modal.style.display = "block";
     
+    // ÉP KIỂU SỐ thực để đảm bảo dữ liệu chuẩn
+    const lat = destLat ? parseFloat(destLat) : null;
+    const lng = destLng ? parseFloat(destLng) : null;
+
     // Nếu có đích đến từ Marker/Info Panel
-    if (destLat && destLng) {
-        endInput.value = destName ? destName : `${destLat}, ${destLng}`;
-        endInput.dataset.lat = destLat;
-        endInput.dataset.lng = destLng;
+    if (!isNaN(lat) && !isNaN(lng)) {
+        endInput.value = destName ? decodeURIComponent(destName) : `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+        endInput.dataset.lat = lat;
+        endInput.dataset.lng = lng;
     } else {
         endInput.value = "";
         delete endInput.dataset.lat;
-        delete endInput.dataset.lng
+        delete endInput.dataset.lng;
     }
 
-    // Xử lý điểm xuất phát: Ưu tiên GPS
+    // Xử lý điểm xuất phát (Giữ nguyên logic GPS của bạn)
     if (window.userMarker) {
         const pos = window.userMarker.getLatLng();
-        startInput.value = "Vị trí của bạn"; // Hiển thị text cho thân thiện
+        startInput.value = "Vị trí của bạn";
         startInput.dataset.lat = pos.lat;
         startInput.dataset.lng = pos.lng;
     } else {
         startInput.value = "";
-        startInput.placeholder = "Nhập địa chỉ hoặc tọa độ...";
+        startInput.placeholder = "Đang xác định vị trí...";
         
-        // Thử lấy GPS nếu chưa có
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition((pos) => {
-                const lat = pos.coords.latitude;
-                const lng = pos.coords.longitude;
-                updateUserMarker(lat, lng);
+                const uLat = pos.coords.latitude;
+                const uLng = pos.coords.longitude;
+                if (typeof updateUserMarker === 'function') updateUserMarker(uLat, uLng);
                 startInput.value = "Vị trí của bạn";
-                startInput.dataset.lat = lat;
-                startInput.dataset.lng = lng;
+                startInput.dataset.lat = uLat;
+                startInput.dataset.lng = uLng;
+            }, (err) => {
+                startInput.placeholder = "Nhập điểm xuất phát...";
             });
         }
     }
