@@ -256,10 +256,6 @@ def restaurants_list(request):
     restaurants = paginator.get_page(page_number)
     return render(request, "restaurants.html", {"restaurants": restaurants})
 
-def tours_list(request):
-    tours = Tour.objects.all()
-    return render(request, "tours.html", {"tours": tours})
-
 @login_required
 def book_tour(request, tour_id):
     tour = get_object_or_404(Tour, pk=tour_id)
@@ -828,7 +824,7 @@ def get_reviews(request, place_id):
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
 def tours_list(request):
-    tours = Tour.objects.all()
+    tours_all = Tour.objects.all()
     booked_tours = []
     has_booked_tour = False
 
@@ -836,11 +832,26 @@ def tours_list(request):
         booked_tours = TourBooking.objects.filter(user=request.user).select_related('tour').order_by('-booked_at')
         has_booked_tour = TourBooking.objects.filter(user=request.user, status="pending").exists()
     
+    # Phân trang - 6 tour mỗi trang
+    paginator = Paginator(tours_all, 6)
+    page_number = request.GET.get('page')
+    tours = paginator.get_page(page_number)
+    
     return render(request, 'tours.html', {
         'tours': tours,
         'booked_tours': booked_tours,
-        'has_booked_tour': has_booked_tour
+        'has_booked_tour': has_booked_tour,
+        'paginator': paginator,
+        'page_obj': tours
     })
+
+def tour_detail(request, tour_id):
+    tour = get_object_or_404(Tour, pk=tour_id)
+    has_booked_tour = False
+    if request.user.is_authenticated:
+        has_booked_tour = TourBooking.objects.filter(user=request.user, status="pending").exists()
+    return render(request, 'tour_detail.html', {'tour': tour, 'has_booked_tour': has_booked_tour})
+
 def register(request):
     if request.method == 'POST':
         form = UserRegisterForm(request.POST)
