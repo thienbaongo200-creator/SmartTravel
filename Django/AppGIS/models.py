@@ -3,6 +3,8 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
 from django.contrib.postgres.fields import ArrayField
+from django.db import models
+import math
 
 class Category(models.Model):
     name = models.CharField(max_length=100)
@@ -113,3 +115,46 @@ class ContactMessage(models.Model):
         ordering = ['-created_at']
     def __str__(self):
         return f"{self.name} - {self.email}"
+class Event(models.Model):
+    title = models.CharField(max_length=200)
+    location = models.CharField(max_length=255, null=True, blank=True)
+    start_date = models.DateField()
+    end_date = models.DateField(null=True, blank=True)
+    description = models.TextField(null=True, blank=True)
+    
+    # THÊM MỚI: Thể loại (Lễ hội, Văn hóa, Âm nhạc...)
+    category = models.CharField(max_length=100, default="Văn hóa")
+    
+    # THÊM MỚI: Trạng thái (Sắp diễn ra, Đang diễn ra...)
+    status = models.CharField(max_length=50, default="Sắp diễn ra")
+
+    def __str__(self):
+        return self.title
+
+    @property
+    def status_class(self):
+        """Hàm tự động trả về class CSS tương ứng với trạng thái để đổi màu bên giao diện"""
+        status_map = {
+            'Đang diễn ra': 'badge-danger',
+            'Sắp diễn ra': 'badge-info',
+            'Tạm hoãn': 'badge-warning',
+            'Đã kết thúc': 'badge-secondary',
+        }
+        return status_map.get(self.status, 'badge-info')
+    @property
+    def status_info(self):
+        today = date.today()
+        if self.end_date and self.end_date < today:
+            return {"text": "Đã kết thúc", "class": "badge-secondary"}
+        
+        if self.start_date:
+            diff = (self.start_date - today).days
+            if diff < 0: return {"text": "Đang diễn ra", "class": "badge-danger"}
+            if diff == 0: return {"text": "Bắt đầu hôm nay", "class": "badge-danger"}
+            if diff == 1: return {"text": "Ngày mai diễn ra", "class": "badge-warning"}
+            return {"text": f"Còn {diff} ngày", "class": "badge-info"}
+            
+        return {"text": "Chưa xếp lịch", "class": "badge-dark"}
+class EventImage(models.Model):
+    event = models.ForeignKey(Event, related_name='images', on_delete=models.CASCADE)
+    image = models.ImageField(upload_to='events/gallery/')
