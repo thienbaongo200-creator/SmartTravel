@@ -6,9 +6,8 @@ import unicodedata
 from django.contrib.auth import login as auth_login
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth import login, logout
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.models import User
 from django.core.files.storage import default_storage
@@ -358,7 +357,7 @@ def submit_review(request, point_id):
 # Admin Dashboard
 # ==============================
 def is_admin_user(user):
-    return user.is_authenticated and user.is_staff
+    return user.is_authenticated and user.is_superuser
 
 def error_404_view(request, exception=None, **kwargs):
     return render(request, '404.html', status=404)
@@ -530,7 +529,6 @@ def api_users(request):
                 "id": u.id,
                 "username": u.username,
                 "email": u.email,
-                "is_staff": u.is_staff,
                 "is_superuser": u.is_superuser,
                 "is_active": u.is_active,
             })
@@ -550,7 +548,7 @@ def api_users(request):
                 email=email,
                 password=password
             )
-            user.is_staff = raw_data.get('is_staff', False)
+            user.is_staff = False
             user.is_superuser = raw_data.get('is_superuser', False)
             user.is_active = raw_data.get('is_active', True)
             user.save()
@@ -573,7 +571,7 @@ def api_user_detail(request, pk):
             user.email = raw_data.get('email', user.email)
             if raw_data.get('password'):
                 user.set_password(raw_data['password'])
-            user.is_staff = raw_data.get('is_staff', user.is_staff)
+            user.is_staff = False
             user.is_superuser = raw_data.get('is_superuser', user.is_superuser)
             user.is_active = raw_data.get('is_active', user.is_active)
             user.save()
@@ -662,7 +660,7 @@ def admin_contacts(request):
         raise PermissionDenied
     messages = ContactMessage.objects.all().order_by('-created_at')
     return render(request, 'admin/admin_contacts.html', {"messages": messages})
-@staff_member_required
+@user_passes_test(lambda u: u.is_superuser)
 def delete_contact(request, pk):
     if request.method == 'DELETE':
         contact = get_object_or_404(ContactMessage, pk=pk)
@@ -671,7 +669,7 @@ def delete_contact(request, pk):
     return JsonResponse({'status': 'error'}, status=400)
 
 # API Phản hồi qua Email
-@staff_member_required
+@user_passes_test(lambda u: u.is_superuser)
 def reply_contact(request, pk):
     if request.method == 'POST':
         try:
@@ -716,7 +714,7 @@ def login_view(request):
         if form.is_valid():
             user = form.get_user()
             auth_login(request, user)
-            return redirect('admin_dashboard' if user.is_staff else 'home') 
+            return redirect('admin_dashboard' if user.is_superuser else 'home') 
     else:
         form = UserLoginForm()
     return render(request, 'account/login.html', {'form': form})

@@ -76,10 +76,6 @@
                             <input type="password" name="password" class="form-control custom-input" placeholder="••••••••" required>
                         </div>
                         <div class="bg-light p-3 rounded-4 mb-4">
-                            <div class="form-check mb-2">
-                                <input class="form-check-input" type="checkbox" name="is_staff" id="staffCheck">
-                                <label class="form-check-label small fw-bold" for="staffCheck">Nhân viên (Staff)</label>
-                            </div>
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" name="is_superuser" id="superCheck">
                                 <label class="form-check-label small fw-bold" for="superCheck">Quản trị viên</label>
@@ -128,8 +124,7 @@
                     <label class="small fw-bold mb-2">Mật khẩu mới</label>
                     <input type="password" id="editPassword" class="form-control custom-input" placeholder="Để trống nếu không đổi">
                 </div>
-                <div class="d-flex gap-4 mb-4 border p-3 rounded-4">
-                    <label class="small fw-bold"><input type="checkbox" id="editIsStaff"> Staff</label>
+                <div class="mb-4 border p-3 rounded-4">
                     <label class="small fw-bold"><input type="checkbox" id="editIsSuperuser"> Admin</label>
                 </div>
                 <div class="d-flex gap-2">
@@ -160,13 +155,11 @@
                         </div>
                     </td>
                     <td>
-                        ${u.is_superuser ? '<span class="role-badge bg-soft-warning"><i class="fas fa-crown me-1"></i>Admin</span>' : ''}
-                        ${u.is_staff ? '<span class="role-badge bg-soft-primary"><i class="fas fa-user-tie me-1"></i>Staff</span>' : ''}
-                        ${!u.is_staff && !u.is_superuser ? '<span class="text-muted small">Thành viên</span>' : ''}
+                        ${u.is_superuser ? '<span class="role-badge bg-soft-warning"><i class="fas fa-crown me-1"></i>Admin</span>' : '<span class="text-muted small">Thành viên</span>'}
                     </td>
                     <td class="text-center">
                         <div class="d-flex justify-content-center gap-1">
-                            <button onclick="openEditUserModal(${u.id}, '${u.username}', '${u.email}', ${u.is_staff}, ${u.is_superuser})" 
+                            <button onclick="openEditUserModal(${u.id}, '${u.username}', '${u.email}', ${u.is_superuser})" 
                                     class="btn btn-sm btn-light border rounded-3 p-2">
                                 <i class="fas fa-pen text-primary"></i>
                             </button>
@@ -188,7 +181,6 @@
                 username: formData.get("username"),
                 email: formData.get("email"),
                 password: formData.get("password"),
-                is_staff: formData.get("is_staff") ? true : false,
                 is_superuser: formData.get("is_superuser") ? true : false
             };
             await fetch("/api/admin/users/", {
@@ -206,10 +198,9 @@
             loadUsers();
         }
 
-        function openEditUserModal(id, username, email, isStaff, isSuperuser) {
+        function openEditUserModal(id, username, email, isSuperuser) {
             document.getElementById("editUserId").value = id;
             document.getElementById("editEmail").value = email;
-            document.getElementById("editIsStaff").checked = isStaff;
             document.getElementById("editIsSuperuser").checked = isSuperuser;
             document.getElementById("editUserModal").style.display = "flex";
         }
@@ -224,7 +215,6 @@
             const data = {
                 email: document.getElementById("editEmail").value,
                 password: document.getElementById("editPassword").value,
-                is_staff: document.getElementById("editIsStaff").checked,
                 is_superuser: document.getElementById("editIsSuperuser").checked
             };
             await fetch(`/api/admin/users/${id}/`, {
