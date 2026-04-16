@@ -401,7 +401,8 @@ def api_places(request):
             data.append({
                 "id": p.id,
                 "name": p.name,
-                "description": p.description or "",  # <-- Đã thêm mô tả vào đây
+                "phone": p.phone or "",
+                "description": p.description or "",  
                 "latitude": float(p.latitude) if p.latitude else 0,
                 "longitude": float(p.longitude) if p.longitude else 0,
                 "category": p.category.name if p.category else "Khác",
@@ -422,7 +423,7 @@ def api_places(request):
             
             # Lấy mô tả từ form gửi lên
             description = request.POST.get('description', '')
-
+            phone = request.POST.get('phone', '')
             cat_name = request.POST.get('category')
             cat_obj, _ = Category.objects.get_or_create(name=cat_name if cat_name else "Khác")
 
@@ -443,6 +444,7 @@ def api_places(request):
             # 4. Lưu vào Database
             place = TourismPoint.objects.create(
                 name=name,
+                phone=phone,
                 description=description, # <-- Đã thêm lưu mô tả
                 latitude=float(request.POST.get('latitude', 0.0)),
                 longitude=float(request.POST.get('longitude', 0.0)),
@@ -475,7 +477,8 @@ def api_place_detail(request, pk):
             place.price = request.POST.get('price', place.price)
             # Cập nhật mô tả khi sửa
             place.description = request.POST.get('description', place.description) 
-            
+            place.phone = request.POST.get('phone', place.phone)
+                
             # Xử lý tọa độ
             lat = request.POST.get('latitude')
             lng = request.POST.get('longitude')
