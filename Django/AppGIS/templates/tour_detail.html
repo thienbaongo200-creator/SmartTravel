@@ -1,0 +1,336 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ tour.title }} - Smart Travel Map{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/tours.css' %}">
+{% endblock %}
+
+{% block content %}
+<section style="background:#f4f6f9; min-height: 100vh;">
+    
+    <!-- Tour Header dengan ảnh -->
+    <div class="tour-detail-header">
+        {% if tour.image %}
+            <img src="{% static tour.image %}" alt="{{ tour.title }}">
+        {% else %}
+            <img src="{% static 'images/tour/default.jpg' %}" alt="Tour">
+        {% endif %}
+        <div class="tour-detail-overlay">
+            <h1 class="tour-detail-title">{{ tour.title }}</h1>
+            <p class="tour-detail-intro">{{ tour.short_intro }}</p>
+        </div>
+    </div>
+
+    <!-- Tour Details -->
+    <div style="padding: 40px 20px;">
+        <div class="tour-details-container" style="max-width: 1200px; margin: 0 auto;">
+            
+            <!-- Main Content -->
+            <div class="tour-main-content">
+                
+                <!-- Tour Info Cards -->
+                <div class="tour-info-cards">
+                    <div class="tour-info-card price">
+                        <i class="fas fa-dollar-sign"></i>
+                        <h3>{{ tour.price|floatformat:0 }}</h3>
+                        <p>Giá tour (VNĐ)</p>
+                    </div>
+                    <div class="tour-info-card duration">
+                        <i class="fas fa-clock"></i>
+                        <h3>{{ tour.duration|default:"N/A" }}</h3>
+                        <p>Thời gian</p>
+                    </div>
+                    <div class="tour-info-card tag">
+                        <i class="fas fa-tag"></i>
+                        <h3>{{ tour.tag|default:"Du lịch" }}</h3>
+                        <p>Loại tour</p>
+                    </div>
+                </div>
+
+                <!-- Tour Description -->
+                {% if tour.description %}
+                <div class="tour-description">
+                    <h2>Chi tiết tour</h2>
+                    <div style="color: #555;">
+                        {{ tour.description|linebreaks }}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Tour Gallery -->
+                {% if tour.images %}
+                <div class="tour-gallery">
+                    <h3><i class="fas fa-images"></i> Bộ sưu tập ảnh</h3>
+                    <div class="gallery-grid">
+                        {% for img in tour.images %}
+                        <div class="gallery-item" onclick="openGalleryModal('{% static img %}')">
+                            <img src="{% static img %}" alt="Gallery image" loading="lazy">
+                            <div class="gallery-item-overlay">
+                                <i class="fas fa-expand"></i>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Tour Actions -->
+                <div class="tour-actions-detail">
+                    <a href="{% url 'tours_list' %}" class="tour-btn-lg secondary">
+                        <i class="fas fa-arrow-left"></i> Quay lại danh sách
+                    </a>
+                    
+                    {% if user.is_authenticated %}
+                        {% if has_booked_tour %}
+                            <button disabled class="tour-btn-lg primary">
+                                <i class="fas fa-calendar-check"></i> Đã có lịch đặt
+                            </button>
+                        {% else %}
+                            <button onclick="openBookingModal({{ tour.id }}, '{{ tour.title }}', {{ tour.price }})" 
+                                    class="tour-btn-lg primary">
+                                <i class="fas fa-calendar-plus"></i> Đặt tour ngay
+                            </button>
+                        {% endif %}
+                    {% else %}
+                        <a href="{% url 'login' %}" class="tour-btn-lg primary">
+                            <i class="fas fa-sign-in-alt"></i> Đăng nhập để đặt tour
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="tour-sidebar">
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-radius: 8px; color: white; text-align: center; margin-bottom: 20px;">
+                    <p style="margin: 0; font-size: 0.85rem; text-transform: uppercase; opacity: 0.9;">Giá khởi hành</p>
+                    <h3 style="margin: 8px 0 0 0; font-size: 1.8rem;">{{ tour.price|floatformat:0 }} VNĐ</h3>
+                </div>
+
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                    <p style="margin: 0 0 8px 0; font-size: 0.75rem; color: #999; text-transform: uppercase; font-weight: 600;">Thời lượng</p>
+                    <p style="margin: 0; font-size: 1.1rem; color: #2c3e50; font-weight: 700;">{{ tour.duration|default:"N/A" }}</p>
+                </div>
+
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
+                    <p style="margin: 0 0 8px 0; font-size: 0.75rem; color: #999; text-transform: uppercase; font-weight: 600;">Loại tour</p>
+                    <p style="margin: 0; font-size: 1.1rem; color: #2c3e50; font-weight: 700;">{{ tour.tag|default:"Du lịch" }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Modal đặt tour -->
+<div id="bookingModal" class="tour-modal">
+  <div class="tour-modal-content">
+    <h3 class="tour-modal-header" id="modalTourTitle">Đặt tour</h3>
+    <form id="bookingForm" method="post">
+      {% csrf_token %}
+      <input type="hidden" id="modalTourId" name="tour_id">
+      
+      <div class="tour-price-summary">
+          <p>Giá gốc: <span id="basePrice"></span> VNĐ</p>
+          <strong>Tổng: <span id="totalPrice"></span> VNĐ</strong>
+      </div>
+
+      <div class="form-group">
+          <label>Số điện thoại</label>
+          <input type="tel" name="phone" id="phoneInput" required 
+                 pattern="[0-9]{10}" 
+                 placeholder="09xxxxxxx"
+                 oninvalid="this.setCustomValidity('Vui lòng nhập đúng 10 số điện thoại.')" 
+                 oninput="this.setCustomValidity('')">
+      </div>
+
+      <div class="form-group">
+          <label>Số lượng khách</label>
+          <input type="number" id="guestsInput" name="guests" min="1" value="1" required
+                 oninvalid="this.setCustomValidity('Vui lòng nhập số lượng khách (ít nhất là 1).')" 
+                 oninput="this.setCustomValidity('')">
+      </div>
+
+      <div class="form-group">
+          <label>Ngày khởi hành</label>
+          <input type="date" name="start_date" id="dateInput" required
+                 oninvalid="this.setCustomValidity('Vui lòng chọn ngày khởi hành.')" 
+                 oninput="this.setCustomValidity('')">
+      </div>
+
+      <div class="tour-modal-actions">
+          <button type="submit" class="confirm">XÁC NHẬN</button>
+          <button type="button" onclick="closeBookingModal()" class="cancel">HỦY</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Gallery -->
+<div id="galleryModal" class="gallery-modal">
+  <div class="gallery-modal-content">
+    <button class="gallery-close" onclick="closeGalleryModal()" title="Đóng (Esc)"><i class="fas fa-times"></i></button>
+    <button class="gallery-nav gallery-prev" onclick="prevGalleryImage()" title="Ảnh trước (←)"><i class="fas fa-chevron-left"></i></button>
+    <img id="galleryImage" src="" alt="Gallery Image" style="cursor: zoom-in;">
+    <button class="gallery-nav gallery-next" onclick="nextGalleryImage()" title="Ảnh sau (→)"><i class="fas fa-chevron-right"></i></button>
+    
+    <!-- Zoom Toolbar -->
+    <div class="gallery-toolbar">
+      <button class="gallery-zoom-btn gallery-zoom-out" onclick="zoomOutGallery()" title="Thu nhỏ (−)"><i class="fas fa-minus"></i></button>
+      <span class="gallery-zoom-display" id="zoomPercentage">100%</span>
+      <button class="gallery-zoom-btn gallery-zoom-in" onclick="zoomInGallery()" title="Phóng to (+)"><i class="fas fa-plus"></i></button>
+      <div class="gallery-toolbar-divider"></div>
+      <button class="gallery-zoom-btn gallery-zoom-reset" onclick="resetZoomGallery()" title="Đặt lại (0)"><i class="fas fa-compress-alt"></i></button>
+    </div>
+    
+    <div class="gallery-counter">
+      <span id="galleryIndex">1</span> / <span id="galleryTotal">1</span>
+    </div>
+  </div>
+</div>
+
+<script>
+let galleryImages = [];
+let currentGalleryIndex = 0;
+let currentZoom = 100;
+const MIN_ZOOM = 50;
+const MAX_ZOOM = 300;
+const ZOOM_STEP = 25;
+
+function openBookingModal(tourId, tourTitle, basePrice) {
+    document.getElementById("bookingModal").classList.add("active");
+    document.getElementById("modalTourTitle").textContent = tourTitle;
+    document.getElementById("modalTourId").value = tourId;
+    document.getElementById("bookingForm").action = "/book-tour/" + tourId + "/";
+    
+    const formatter = new Intl.NumberFormat('vi-VN');
+    document.getElementById("basePrice").textContent = formatter.format(basePrice);
+    document.getElementById("totalPrice").textContent = formatter.format(basePrice);
+
+    document.getElementById("guestsInput").oninput = function() {
+        const guests = parseInt(this.value) || 1;
+        document.getElementById("totalPrice").textContent = formatter.format(basePrice * guests);
+    };
+    document.getElementById("dateInput").setAttribute('min', new Date().toISOString().split('T')[0]);
+}
+
+function closeBookingModal() {
+    document.getElementById("bookingModal").classList.remove("active");
+}
+
+window.onclick = function(event) {
+    if (event.target == document.getElementById("bookingModal")) closeBookingModal();
+    if (event.target == document.getElementById("galleryModal")) closeGalleryModal();
+}
+
+function openGalleryModal(imageSrc) {
+    // Lấy tất cả ảnh trong gallery
+    galleryImages = Array.from(document.querySelectorAll('.gallery-item img')).map(img => img.src);
+    currentGalleryIndex = galleryImages.indexOf(imageSrc);
+    if (currentGalleryIndex === -1) currentGalleryIndex = 0;
+    
+    currentZoom = 100;
+    document.getElementById("galleryModal").classList.add("active");
+    document.getElementById("galleryTotal").textContent = galleryImages.length;
+    displayGalleryImage();
+}
+
+function closeGalleryModal() {
+    document.getElementById("galleryModal").classList.remove("active");
+    currentZoom = 100;
+}
+
+function nextGalleryImage() {
+    currentGalleryIndex = (currentGalleryIndex + 1) % galleryImages.length;
+    currentZoom = 100;
+    displayGalleryImage();
+}
+
+function prevGalleryImage() {
+    currentGalleryIndex = (currentGalleryIndex - 1 + galleryImages.length) % galleryImages.length;
+    currentZoom = 100;
+    displayGalleryImage();
+}
+
+function displayGalleryImage() {
+    const img = document.getElementById("galleryImage");
+    img.src = galleryImages[currentGalleryIndex];
+    img.style.transform = `scale(${currentZoom / 100})`;
+    document.getElementById("galleryIndex").textContent = currentGalleryIndex + 1;
+    document.getElementById("zoomPercentage").textContent = currentZoom + '%';
+    updateZoomButtonStates();
+}
+
+function zoomInGallery() {
+    if (currentZoom < MAX_ZOOM) {
+        currentZoom = Math.min(currentZoom + ZOOM_STEP, MAX_ZOOM);
+        updateGalleryZoom();
+    }
+}
+
+function zoomOutGallery() {
+    if (currentZoom > MIN_ZOOM) {
+        currentZoom = Math.max(currentZoom - ZOOM_STEP, MIN_ZOOM);
+        updateGalleryZoom();
+    }
+}
+
+function resetZoomGallery() {
+    currentZoom = 100;
+    updateGalleryZoom();
+}
+
+function updateGalleryZoom() {
+    const img = document.getElementById("galleryImage");
+    img.style.transform = `scale(${currentZoom / 100})`;
+    document.getElementById("zoomPercentage").textContent = currentZoom + '%';
+    updateZoomButtonStates();
+}
+
+function updateZoomButtonStates() {
+    const zoomInBtn = document.querySelector('.gallery-zoom-in');
+    const zoomOutBtn = document.querySelector('.gallery-zoom-out');
+    
+    if (currentZoom >= MAX_ZOOM) {
+        zoomInBtn.classList.add('disabled');
+        zoomInBtn.disabled = true;
+    } else {
+        zoomInBtn.classList.remove('disabled');
+        zoomInBtn.disabled = false;
+    }
+    
+    if (currentZoom <= MIN_ZOOM) {
+        zoomOutBtn.classList.add('disabled');
+        zoomOutBtn.disabled = true;
+    } else {
+        zoomOutBtn.classList.remove('disabled');
+        zoomOutBtn.disabled = false;
+    }
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', function(e) {
+    const galleryModal = document.getElementById("galleryModal");
+    if (galleryModal.classList.contains("active")) {
+        if (e.key === "ArrowRight") nextGalleryImage();
+        if (e.key === "ArrowLeft") prevGalleryImage();
+        if (e.key === "Escape") closeGalleryModal();
+        if (e.key === "+") zoomInGallery();
+        if (e.key === "-") zoomOutGallery();
+        if (e.key === "0") resetZoomGallery();
+    }
+});
+
+// Mouse wheel zoom
+document.getElementById("galleryModal").addEventListener('wheel', function(e) {
+    if (this.classList.contains("active")) {
+        e.preventDefault();
+        if (e.deltaY < 0) {
+            zoomInGallery();
+        } else {
+            zoomOutGallery();
+        }
+    }
+}, { passive: false });
+</script>
+{% endblock %}
