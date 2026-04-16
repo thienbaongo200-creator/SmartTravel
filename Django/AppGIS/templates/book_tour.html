@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Đặt Tour: {{ tour.title }} - Smart Travel Map{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<section style="background: #f4f7f6; padding: 60px 0; min-height: 90vh;">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div style="background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.05); margin-bottom: 30px;">
+                    <div style="background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%); padding: 30px; color: white;">
+                        <h2 style="margin: 0; font-weight: 700;"><i class="fa-solid fa-suitcase-rolling"></i> Đặt Tour: {{ tour.title }}</h2>
+                        <p style="margin: 10px 0 0 0; opacity: 0.9;">{{ tour.desc|truncatewords:30 }}</p>
+                    </div>
+                    <div style="display: flex; gap: 30px; padding: 20px 30px; background: #fdfdfd; border-bottom: 1px solid #eee;">
+                        <span style="color: #27ae60; font-weight: 600;"><i class="fa-solid fa-tag"></i> Giá: {{ tour.price }}</span>
+                        <span style="color: #34495e; font-weight: 600;"><i class="fa-regular fa-clock"></i> Thời lượng: {{ tour.duration }}</span>
+                    </div>
+
+                    <div style="padding: 40px;">
+                        <form method="post">
+                            {% csrf_token %}
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold"><i class="fa-solid fa-user"></i> Họ và tên</label>
+                                    <input type="text" name="name" class="form-control custom-input" placeholder="Ví dụ: Nguyễn Văn A" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold"><i class="fa-solid fa-phone"></i> Số điện thoại</label>
+                                    <input type="text" name="phone" class="form-control custom-input" placeholder="0901xxxxxx" required>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold"><i class="fa-solid fa-envelope"></i> Email liên hệ</label>
+                                <input type="email" name="email" class="form-control custom-input" placeholder="name@example.com" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold"><i class="fa-solid fa-users"></i> Số lượng người đi</label>
+                                <input type="number" name="people" class="form-control custom-input" min="1" value="1" required>
+                            </div>
+                            <div class="mb-4">
+                                <label class="form-label fw-bold"><i class="fa-solid fa-pen-to-square"></i> Ghi chú thêm</label>
+                                <textarea name="note" class="form-control custom-input" rows="4" placeholder="Ví dụ: Có trẻ em đi cùng, cần hướng dẫn viên tiếng Anh..."></textarea>
+                            </div>
+                            <button type="submit" class="btn-confirm-tour">
+                                XÁC NHẬN ĐẶT TOUR NGAY
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <a href="{% url 'tours' %}" style="text-decoration: none; color: #7f8c8d;"><i class="fa-solid fa-arrow-left"></i> Quay lại danh sách tour</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .custom-input {
+        padding: 12px 15px;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+        transition: 0.3s;
+    }
+    .custom-input:focus {
+        border-color: #2ecc71;
+        box-shadow: 0 0 0 0.25rem rgba(46, 204, 113, 0.1);
+    }
+    .btn-confirm-tour {
+        width: 100%;
+        padding: 15px;
+        background: #2ecc71;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 18px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+    .btn-confirm-tour:hover {
+        background: #27ae60;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(46, 204, 113, 0.3);
+    }
+</style>
+{% endblock %}

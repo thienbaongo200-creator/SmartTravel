@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Sự kiện{% endblock %}
+
+{% block content %}
+<section class="events_section">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2>Sự kiện du lịch nổi bật</h2>
+            <p class="text-muted">
+                Smart Travel Map mang đến cho bạn những sự kiện hấp dẫn, nơi du khách có thể hòa mình vào không khí lễ hội, văn hóa và giải trí đặc sắc.
+            </p>
+        </div>
+
+        <div class="events_grid">
+            <div class="event_card">
+                <img src="{% static 'images/AoDaiFestival.jpg' %}" alt="Lễ hội Áo dài">
+                <div class="card-body">
+                    <h3>Lễ hội Áo dài TP.HCM</h3>
+                    <p>
+                        Tôn vinh vẻ đẹp truyền thống của tà áo dài Việt Nam với các hoạt động trình diễn, triển lãm và giao lưu văn hóa.
+                    </p>
+                    <ul>
+                        <li><strong>Thời gian:</strong> Tháng 3 hàng năm</li>
+                        <li><strong>Địa điểm:</strong> TP.HCM</li>
+                        <li><strong>Hoạt động:</strong> Trình diễn áo dài, triển lãm nghệ thuật</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="event_card">
+                <img src="{% static 'images/NguyenHueFlowerStreet.jpg' %}" alt="Đường hoa Nguyễn Huệ">
+                <div class="card-body">
+                    <h3>Đường hoa Nguyễn Huệ</h3>
+                    <p>
+                        Sự kiện thường niên vào dịp Tết Nguyên Đán, biến phố đi bộ Nguyễn Huệ thành không gian nghệ thuật rực rỡ sắc hoa.
+                    </p>
+                    <ul>
+                        <li><strong>Thời gian:</strong> Tết Nguyên Đán</li>
+                        <li><strong>Địa điểm:</strong> Quận 1, TP.HCM</li>
+                        <li><strong>Hoạt động:</strong> Tham quan, chụp ảnh, nghệ thuật đường phố</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="event_card">
+                <img src="{% static 'images/HCMTourismFestival.jpg' %}" alt="Ngày hội Du lịch TP.HCM">
+                <div class="card-body">
+                    <h3>Ngày hội Du lịch TP.HCM</h3>
+                    <p>
+                        Sự kiện quảng bá du lịch lớn nhất thành phố, quy tụ nhiều doanh nghiệp, gian hàng và hoạt động văn hóa – ẩm thực phong phú.
+                    </p>
+                    <ul>
+                        <li><strong>Thời gian:</strong> Tháng 4 hàng năm</li>
+                        <li><strong>Địa điểm:</strong> Công viên 23/9, Quận 1</li>
+                        <li><strong>Hoạt động:</strong> Hội chợ du lịch, biểu diễn nghệ thuật, ẩm thực</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-footer">
+            <h4>Khám phá thêm nhiều sự kiện hấp dẫn khác</h4>
+            <p>Smart Travel Map sẽ liên tục cập nhật để bạn không bỏ lỡ bất kỳ lễ hội nào.</p>
+        </div>
+    </div>
+</section>
+{% endblock %}

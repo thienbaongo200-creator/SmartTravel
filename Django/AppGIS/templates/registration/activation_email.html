@@ -1,0 +1,95 @@
+{% autoescape off %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        .email-wrapper {
+            background-color: #f4f7fe;
+            padding: 40px 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .email-content {
+            max-width: 500px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        }
+        .email-header {
+            background-color: #4361ee;
+            padding: 30px;
+            text-align: center;
+            color: #ffffff;
+        }
+        .email-body {
+            padding: 40px 30px;
+            text-align: center;
+        }
+        .email-body h2 {
+            color: #2b3674;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+        .email-body p {
+            color: #707eae;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+        .btn-activate {
+            background-color: #4361ee;
+            color: #ffffff !important;
+            padding: 16px 32px;
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: bold;
+            display: inline-block;
+            box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
+            transition: transform 0.2s;
+        }
+        .email-footer {
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #a3aed0;
+        }
+        .link-alt {
+            word-break: break-all;
+            color: #4361ee;
+            margin-top: 20px;
+            font-size: 11px;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-wrapper">
+        <div class="email-content">
+            <div class="email-header">
+                <h1 style="margin:0; font-size: 28px;">Smart Travel</h1>
+            </div>
+
+            <div class="email-body">
+                <h2>Xác nhận Email của bạn</h2>
+                <p>Chào <strong>{{ user.username }}</strong>,<br>
+                Cảm ơn bạn đã tin tưởng lựa chọn Smart Travel. Để bắt đầu hành trình khám phá các điểm đến tuyệt vời, vui lòng nhấn vào nút bên dưới để kích hoạt tài khoản.</p>
+                
+                <a href="http://{{ domain }}{% url 'activate' uidb64=uid token=token %}" class="btn-activate">
+                    Kích hoạt tài khoản ngay
+                </a>
+
+                <p style="margin-top: 30px; font-size: 13px;">Link này sẽ hết hạn trong vòng 24h vì lý do bảo mật.</p>
+            </div>
+
+            <div class="email-footer">
+                <p>&copy; 2026 Smart Travel Project</p>
+                <div class="link-alt">
+                    Nếu nút trên không hoạt động, hãy copy link này: <br>
+                    http://{{ domain }}{% url 'activate' uidb64=uid token=token %}
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+{% endautoescape %}

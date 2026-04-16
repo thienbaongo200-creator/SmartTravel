@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="auth-container text-center">
+    <h2 style="color: #2b3674;">Kiểm tra Email</h2>
+    <p>Một link xác nhận đã được gửi đến email của bạn. Vui lòng kiểm tra hộp thư để hoàn tất đăng ký.</p>
+    <a href="{% url 'login' %}" class="btn btn-primary">Quay lại Đăng nhập</a>
+</div>
+{% endblock %}

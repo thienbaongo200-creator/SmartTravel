@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Liên hệ - Smart Travel Map{% endblock %}
+
+{% block content %}
+<section class="contact_section">
+    <h2>Liên hệ với chúng tôi</h2>
+    <form method="post" id="contactForm">
+        {% csrf_token %}
+        
+        <input type="text" name="name" placeholder="Tên của bạn" required
+            oninvalid="this.setCustomValidity('Vui lòng điền tên của bạn vào trường này.')"
+            oninput="this.setCustomValidity('')">
+            
+        <input type="email" name="email" placeholder="Email" required
+            oninvalid="if(this.validity.valueMissing){this.setCustomValidity('Vui lòng nhập địa chỉ email.')} else if(this.validity.typeMismatch){this.setCustomValidity('Định dạng email không hợp lệ (Ví dụ: ten@gmail.com).')}"
+            oninput="this.setCustomValidity('')">
+            
+        <textarea name="message" placeholder="Tin nhắn" rows="5" required
+            oninvalid="this.setCustomValidity('Vui lòng nhập nội dung tin nhắn.')"
+            oninput="this.setCustomValidity('')"></textarea>
+        
+        <button type="submit" class="btn" 
+                style="background: linear-gradient(45deg, #0d6efd, #6610f2); 
+                       color: white; 
+                       border-radius: 30px; 
+                       padding: 10px 25px; 
+                       font-weight: 600;">
+            Gửi
+        </button>
+    </form>
+
+    <div class="contact-info mt-4">
+        <p><strong>Email:</strong> support@smarttourism.vn</p>
+        <p><strong>Điện thoại:</strong> +84 2245426</p>
+        <p><strong>Địa chỉ:</strong> Trung tâm hỗ trợ du lịch, TP.HCM</p>
+    </div>
+
+    <div class="social-links mt-4">
+        <a href="https://www.facebook.com/" target="_blank" class="me-3">
+            <i class="fa-brands fa-facebook fs-4 text-primary"></i>
+        </a>
+        <a href="https://www.instagram.com/" target="_blank" class="me-3">
+            <i class="fa-brands fa-instagram fs-4 text-danger"></i>
+        </a>
+        <a href="https://x.com/" target="_blank" class="me-3">
+            <i class="fa-brands fa-twitter fs-4 text-info"></i>
+        </a>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://kit.fontawesome.com/769a7475d7.js" crossorigin="anonymous"></script>
+{% endblock %}
