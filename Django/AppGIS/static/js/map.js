@@ -870,15 +870,15 @@ function showNearbyPlaces() {
             const sidebar = document.getElementById("nearby-sidebar");
             const listContainer = document.getElementById("nearby-list");
             sidebar.style.display = "flex";
-            listContainer.innerHTML = ""; // Xóa danh sách cũ
+            listContainer.innerHTML = ""; 
 
-            // 2. Xóa Layer cũ trên bản đồ
+            // 2. Xóa Layer cũ
             if (window.nearbyLayer) {
                 map.removeLayer(window.nearbyLayer);
             }
             window.nearbyLayer = L.layerGroup().addTo(map);
 
-            // 3. Vẽ vị trí người dùng
+            // 3. Vẽ vòng tròn bán kính và vị trí người dùng
             L.circle([lat, lng], {
                 radius: data.radius_km * 1000,
                 color: "#007bff",
@@ -887,18 +887,23 @@ function showNearbyPlaces() {
             
             L.marker([lat, lng]).bindPopup("📍 Vị trí của bạn").addTo(window.nearbyLayer);
 
-            // 4. Duyệt qua từng địa điểm
             if (places.length === 0) {
                 listContainer.innerHTML = "<p style='padding:15px;'>Không tìm thấy địa điểm nào quanh đây.</p>";
             }
 
+            // 4. Duyệt qua từng địa điểm
             places.forEach(p => {
-                // Thêm Marker lên bản đồ
-                const marker = L.marker([p.latitude, p.longitude])
-                    .bindPopup(`<strong>${p.name}</strong><br>${p.address || ''}`);
+                // TẠO MARKER
+                const marker = L.marker([p.latitude, p.longitude]);
+                
+                // SỰ KIỆN CLICK VÀO MARKER: Hiện thông tin chi tiết
+                marker.on('click', () => {
+                    displayInfo(p); // Gọi hàm hiển thị panel chi tiết của bạn
+                });
+                
                 window.nearbyLayer.addLayer(marker);
 
-                // Thêm Item vào danh sách Sidebar
+                // THÊM ITEM VÀO SIDEBAR
                 const item = document.createElement("div");
                 item.className = `nearby-item category-${p.category || 'attraction'}`;
                 item.innerHTML = `
@@ -907,10 +912,11 @@ function showNearbyPlaces() {
                     <span class="distance-badge">📍 ${p.distance_km.toFixed(2)} km</span>
                 `;
                 
-                // Click vào item trong danh sách thì di chuyển bản đồ tới marker đó
+                // SỰ KIỆN CLICK VÀO ITEM SIDEBAR
                 item.onclick = () => {
                     map.setView([p.latitude, p.longitude], 16);
                     marker.openPopup();
+                    displayInfo(p); // Gọi hàm hiển thị panel chi tiết khi click từ danh sách
                 };
                 
                 listContainer.appendChild(item);
