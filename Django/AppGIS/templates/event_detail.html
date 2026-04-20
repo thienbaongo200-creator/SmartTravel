@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ su_kien.title }} | Smart Travel Map{% endblock %}
+
+{% block content %}
+<style>
+    :root { --primary-blue: #1a2b48; --accent-yellow: #ffc107; }
+    .event-gallery { 
+        display: grid; grid-template-columns: 2fr 1fr; grid-template-rows: repeat(2, 240px); 
+        gap: 10px; margin: 20px 0 40px; border-radius: 20px; overflow: hidden;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    }
+    .gallery-img { width: 100%; height: 100%; object-fit: cover; cursor: pointer; transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1); }
+    .img-wrapper { overflow: hidden; position: relative; }
+    .img-wrapper::after { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.1); transition: 0.3s; }
+    .img-wrapper:hover .gallery-img { transform: scale(1.1); }
+    .img-wrapper:hover::after { background: transparent; }
+    .info-card { border: 1px solid rgba(0,0,0,0.05); border-radius: 24px; padding: 32px; position: sticky; top: 120px; background: #fff; box-shadow: 0 20px 40px rgba(0,0,0,0.05) !important; }
+    .info-item i { width: 44px; height: 44px; background: #f8f9fa; color: var(--primary-blue); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-right: 16px; font-size: 1.2rem; }
+    .nav-tabs { border: none; gap: 20px; }
+    .nav-tabs .nav-link { border: none; color: #666; padding: 10px 0; position: relative; }
+    .nav-tabs .nav-link.active { color: var(--primary-blue); background: none; border: none; }
+    .nav-tabs .nav-link.active::after { content: ""; position: absolute; bottom: 0; left: 0; width: 100%; height: 3px; background: var(--accent-yellow); border-radius: 3px; }
+    #eventMap { border-radius: 20px; border: 4px solid #fff; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+</style>
+
+<div class="container py-4">
+    <nav class="mb-4">
+        <ol class="breadcrumb" style="font-size: 0.9rem;">
+            <li class="breadcrumb-item"><a href="/" class="text-decoration-none text-muted">Trang chủ</a></li>
+            <li class="breadcrumb-item active text-dark fw-bold">{{ su_kien.title }}</li>
+        </ol>
+    </nav>
+
+    <div class="row g-5">
+        <div class="col-lg-8">
+            <div class="event-header mb-4">
+                <span class="status-ribbon {{ su_kien.status_class|default:'bg-success text-white' }} shadow-sm">
+                    {{ su_kien.status|default:"Đang diễn ra" }}
+                </span>
+                <h1 class="display-5 fw-bold mt-3" style="color: var(--primary-blue);">{{ su_kien.title }}</h1>
+                <p class="text-muted fs-5"><i class="fas fa-map-pin text-danger me-2"></i>{{ su_kien.location }}</p>
+            </div>
+
+            <div class="event-gallery">
+                <div class="main-box img-wrapper">
+                    {% with first=su_kien.images.all.0 %}
+                        {% if first %}
+                            <img src="{{ first.image.url }}" class="gallery-img" onclick="viewImage(this.src)">
+                        {% else %}
+                            <img src="{% static 'images/default_main.jpg' %}" class="gallery-img">
+                        {% endif %}
+                    {% endwith %}
+                </div>
+                <div class="side-imgs">
+                    {% for img in su_kien.images.all|slice:"1:3" %}
+                    <div class="img-wrapper">
+                        <img src="{{ img.image.url }}" class="gallery-img" onclick="viewImage(this.src)">
+                    </div>
+                    {% empty %}
+                        <div class="img-wrapper"><img src="{% static 'images/default_1.jpg' %}" class="gallery-img"></div>
+                        <div class="img-wrapper"><img src="{% static 'images/default_2.jpg' %}" class="gallery-img"></div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <ul class="nav nav-tabs mb-4" id="eventTab" role="tablist">
+                <li class="nav-item">
+                    <button class="nav-link active fw-bold fs-5" data-bs-toggle="tab" data-bs-target="#info">Giới thiệu</button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link fw-bold fs-5" data-bs-toggle="tab" data-bs-target="#location">Bản đồ</button>
+                </li>
+            </ul>
+
+            <div class="tab-content">
+                <div class="tab-pane fade show active" id="info">
+                    <div class="description-body lh-lg">
+                        {{ su_kien.description|safe }}
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="location">
+                    <div id="eventMap" 
+                         data-lat="{{ su_kien.lat|default:10.8231 }}" 
+                         data-lng="{{ su_kien.lng|default:106.6297 }}" 
+                         data-title="{{ su_kien.title|escapejs }}" 
+                         style="height: 500px; width: 100%;">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="info-card border-0">
+                <h4 class="fw-bold mb-4">Lịch trình & Chi tiết</h4>
+                
+                <div class="info-item d-flex align-items-center mb-4">
+                    <i class="far fa-calendar-alt"></i>
+                    <div>
+                        <small class="text-muted d-block">THỜI GIAN</small>
+                        <span class="fw-bold">
+                            {{ su_kien.start_date|date:"d/m/Y" }} - 
+                            {% if su_kien.end_date %}
+                                {{ su_kien.end_date|date:"d/m/Y" }}
+                            {% else %}
+                                Kết thúc trong ngày
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="info-item d-flex align-items-center mb-4">
+                    <i class="fas fa-ticket-alt"></i>
+                    <div>
+                        <small class="text-muted d-block">THỂ LOẠI</small>
+                        <span class="fw-bold">{{ su_kien.category|default:"Văn hóa & Nghệ thuật" }}</span>
+                    </div>
+                </div>
+
+                <div class="info-item d-flex align-items-center mb-4">
+                    <i class="fas fa-user-friends"></i>
+                    <div>
+                        <small class="text-muted d-block">ĐỐI TƯỢNG</small>
+                        <span class="fw-bold">Mọi lứa tuổi</span>
+                    </div>
+                </div>
+
+                <button onclick="getDirections()" class="btn btn-warning w-100 fw-bold py-3 rounded-4 shadow-sm mt-3 border-0 transition">
+                    <i class="fas fa-location-arrow me-2"></i> CHỈ ĐƯỜNG NGAY
+                </button>
+                
+                <div class="d-flex gap-2 mt-3">
+                    <button class="btn btn-outline-secondary flex-grow-1 rounded-4 py-2"><i class="far fa-heart me-2"></i>Lưu</button>
+                    <button class="btn btn-outline-secondary flex-grow-1 rounded-4 py-2"><i class="fas fa-share-alt me-2"></i>Chia sẻ</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="imgModal" onclick="this.style.display='none'" style="display:none; position:fixed; z-index:9999; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); cursor:zoom-out; align-items:center; justify-content:center;">
+    <img id="fullImg" style="max-width:90%; max-height:90%; border-radius:10px;">
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Import Leaflet CSS & JS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const mapEl = document.getElementById('eventMap');
+    if (!mapEl) return;
+
+    // Lấy dữ liệu từ data-attribute
+    const lat = parseFloat(mapEl.dataset.lat || "10.8231");
+    const lng = parseFloat(mapEl.dataset.lng || "106.6297");
+    const title = mapEl.dataset.title || "Sự kiện";
+
+    // Khởi tạo bản đồ
+    const map = L.map(mapEl).setView([lat, lng], 15);
+
+    // Layer nền OpenStreetMap
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Marker
+    L.marker([lat, lng]).addTo(map)
+        .bindPopup(`<b>${title}</b><br>Đang chờ bạn!`)
+        .openPopup();
+});
+
+// Hàm chỉ đường
+function getDirections() {
+    const mapEl = document.getElementById('eventMap');
+    const lat = mapEl.dataset.lat || "10.8231";
+    const lng = mapEl.dataset.lng || "106.6297";
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+    window.open(url, '_blank');
+}
+</script>
+{% endblock %}
