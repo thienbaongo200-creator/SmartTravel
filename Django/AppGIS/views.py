@@ -27,7 +27,7 @@ from datetime import date
 from .models import (
     Category, ContactMessage, Review, 
     Tour, TourBooking, TourismPoint, ContactMessage,Event, 
-    EventImage
+    EventImage, AboutContent
 )
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
@@ -49,17 +49,89 @@ def index(request):
     return render(request, 'home.html')
 
 def about(request):
-    return render(request, 'about.html')
+    # Lấy hoặc tạo nội dung mặc định
+    content, created = AboutContent.objects.get_or_create(pk=1, defaults={
+        'title': 'Về Hệ Thống Web GIS Thông Minh',
+        'subtitle': 'Kiến tạo nền tảng số dựa trên dữ liệu không gian',
+        'description': 'Chúng tôi cung cấp giải pháp bản đồ tương tác hiện đại, giúp biến dữ liệu địa lý phức tạp thành những thông tin trực quan, dễ tiếp cận cho mọi người.',
+        'vision_title': 'Tầm nhìn',
+        'vision_text': 'Trở thành nền tảng bản đồ số hàng đầu, hỗ trợ đắc lực trong việc tra cứu thông tin địa lý và ra quyết định dựa trên dữ liệu.',
+        'mission_title': 'Sứ mệnh',
+        'mission_text': 'Số hóa dữ liệu hạ tầng và du lịch nhằm minh bạch hóa thông tin, giúp người dùng tối ưu hóa lộ trình di chuyển.',
+        'values_title': 'Giá trị cốt lõi',
+        'values_text': 'Dữ liệu chính xác - Công nghệ tiên tiến - Trải nghiệm người dùng mượt mà trên mọi thiết bị.',
+        'stats_data_points': '1,000+',
+        'stats_data_label': 'Điểm dữ liệu địa lý',
+        'stats_accuracy': '99.9%',
+        'stats_accuracy_label': 'Độ chính xác tọa độ',
+        'stats_response_time': '0.5s',
+        'stats_response_label': 'Tốc độ phản hồi',
+        'workflow_title': 'Hệ Thống Hoạt Động Thế Nào?',
+        'step1_title': 'Thu thập',
+        'step1_text': 'Dữ liệu được tích hợp từ các nguồn tin cậy và tệp tin GeoJSON chuẩn.',
+        'step2_title': 'Xử lý',
+        'step2_text': 'GeoPandas & Django thực hiện các thuật toán phân tích không gian phức tạp.',
+        'step3_title': 'Hiển thị',
+        'step3_text': 'Folium trực quan hóa kết quả lên bản đồ nền tương tác sinh động.',
+        'tech_title': 'Nền Tảng Công Nghệ',
+        'tech1_name': 'Folium & Leaflet',
+        'tech1_desc': 'Hiển thị bản đồ tương tác',
+        'tech2_name': 'GeoPandas',
+        'tech2_desc': 'Phân tích dữ liệu GIS',
+        'tech3_name': 'GeoPy & PyProj',
+        'tech3_desc': 'Xử lý tọa độ & Khoảng cách',
+        'tech4_name': 'Django 6.0',
+        'tech4_desc': 'Backend Framework',
+        'cta_text': 'Sẵn sàng khám phá những địa điểm thú vị?',
+        'cta_button': 'KHÁM PHÁ BẢN ĐỒ NGAY'
+    })
+    
+    return render(request, 'about.html', {'content': content, 'is_admin': request.user.is_superuser})
+
+@login_required
+def update_about(request):
+    if not request.user.is_superuser:
+        return JsonResponse({'error': 'Unauthorized'}, status=403)
+    
+    if request.method == 'POST':
+        field = request.POST.get('field')
+        value = request.POST.get('value')
+        print(f"Updating field: {field} with value: {value}")  # Debug
+        
+        content, created = AboutContent.objects.get_or_create(pk=1)
+        if hasattr(content, field):
+            setattr(content, field, value)
+            content.save()
+            print(f"Saved: {field} = {value}")  # Debug
+            return JsonResponse({'success': True})
+    
+    return JsonResponse({'error': 'Invalid request'}, status=400)
 
 def destinations(request):
     points = TourismPoint.objects.all() 
     return render(request, "destinations.html", {"points": points})
 
 def events(request):
-    """Hiển thị sự kiện cho khách du lịch"""
-    # prefetch_related('images') giúp lấy toàn bộ ảnh gallery của mỗi sự kiện chỉ trong 1 lần query
-    ds_su_kien = Event.objects.all().prefetch_related('images').order_by('-start_date')
-    return render(request, 'events.html', {'ds_su_kien': ds_su_kien})
+    """Hiển thị sự kiện cho khách du lịch với server-side filtering"""
+    # Lấy tất cả events
+    events = Event.objects.all().order_by('-start_date')
+    
+    # Server-side filtering
+    status_filter = request.GET.get('status', '')
+    category_filter = request.GET.get('category', '')
+    location_filter = request.GET.get('location', '')
+    
+    if status_filter:
+        events = events.filter(status=status_filter)
+    if category_filter:
+        events = events.filter(category=category_filter)
+    if location_filter:
+        events = events.filter(location__icontains=location_filter)
+    
+    context = {
+        'ds_su_kien': events,
+    }
+    return render(request, 'events.html', context)
 
 def services(request):
     return render(request, 'services.html')
@@ -901,15 +973,16 @@ def activate(request, uidb64, token):
     else:
         return render(request, 'registration/activation_invalid.html')
 
+from django.contrib.auth.decorators import user_passes_test
+
+@user_passes_test(lambda u: u.is_superuser)
 def admin_events(request): 
     return render(request, 'admin/admin_events.html')    
 
 @csrf_exempt
 @user_passes_test(lambda u: u.is_superuser)
 def api_events(request, pk=None):
-    today = date.today()
-
-    # --- LẤY DANH SÁCH & TỰ ĐỘNG XÁC ĐỊNH TRẠNG THÁI (GET) ---
+    # --- LẤY DANH SÁCH (GET) ---
     if request.method == "GET":
         events = Event.objects.all().prefetch_related('images').order_by('-start_date')
         data = []
@@ -917,39 +990,6 @@ def api_events(request, pk=None):
         for e in events:
             gallery = [img.image.url for img in e.images.all()]
             
-            status_text = ""
-            status_class = ""
-
-            # --- LOGIC KIỂM TRA TRẠNG THÁI MỚI ---
-            # 1. Kiểm tra ngày kết thúc trước (Nếu có end_date và đã qua ngày đó)
-            if e.end_date and e.end_date < today:
-                status_text = "Đã kết thúc"
-                status_class = "badge-secondary"
-            
-            # 2. Nếu chưa kết thúc, tính toán dựa trên ngày bắt đầu
-            elif e.start_date:
-                diff = (e.start_date - today).days
-                
-                if diff < 0:
-                    # Đã bắt đầu nhưng chưa tới ngày kết thúc
-                    status_text = "Đang diễn ra"
-                    status_class = "badge-danger"
-                elif diff == 0:
-                    status_text = "Bắt đầu hôm nay"
-                    status_class = "badge-danger"
-                elif diff == 1:
-                    status_text = "Ngày mai diễn ra"
-                    status_class = "badge-warning"
-                elif diff == 2:
-                    status_text = "Ngày kia diễn ra"
-                    status_class = "badge-info"
-                else:
-                    status_text = f"Còn {diff} ngày"
-                    status_class = "badge-outline-primary"
-            else:
-                status_text = "Chưa xếp lịch"
-                status_class = "badge-dark"
-
             data.append({
                 "id": e.id,
                 "title": e.title,
@@ -957,9 +997,10 @@ def api_events(request, pk=None):
                 "start_date": e.start_date.strftime('%Y-%m-%d') if e.start_date else "",
                 "end_date": e.end_date.strftime('%Y-%m-%d') if e.end_date else "",
                 "description": e.description,
-                "images": gallery,
-                "status": status_text,
-                "status_class": status_class
+                "category": e.category,
+                "status": e.status,
+                "status_class": e.status_class,
+                "images": gallery
             })
         return JsonResponse(data, safe=False)
 
@@ -970,8 +1011,10 @@ def api_events(request, pk=None):
             event.title = request.POST.get('title', event.title)
             event.location = request.POST.get('location', event.location)
             event.start_date = request.POST.get('start_date') or event.start_date
-            event.end_date = request.POST.get('end_date') or event.end_date # Cập nhật thêm end_date
+            event.end_date = request.POST.get('end_date') or event.end_date
             event.description = request.POST.get('description', event.description)
+            event.category = request.POST.get('category', event.category)
+            event.status = request.POST.get('status_type', event.status)  # Sử dụng status_type từ form
             event.save()
 
             files = request.FILES.getlist('images')
@@ -989,9 +1032,11 @@ def api_events(request, pk=None):
             event = Event.objects.create(
                 title=request.POST.get('title'),
                 start_date=request.POST.get('start_date'),
-                end_date=request.POST.get('end_date'), # Đừng quên lưu end_date khi tạo mới
+                end_date=request.POST.get('end_date'),
                 location=request.POST.get('location'),
-                description=request.POST.get('description')
+                description=request.POST.get('description'),
+                category=request.POST.get('category', 'Văn hóa'),
+                status=request.POST.get('status_type', 'Sắp diễn ra')  # Sử dụng status_type từ form
             )
             for f in request.FILES.getlist('images'):
                 EventImage.objects.create(event=event, image=f)

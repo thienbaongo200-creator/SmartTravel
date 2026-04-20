@@ -12,6 +12,7 @@ urlpatterns = [
     # Trang chính
     path("", views.index, name="home"),
     path("about/", views.about, name="about"),
+    path("about/update/", views.update_about, name="update_about"),
     path("destinations/", views.destinations, name="destinations"),
     path("events/", views.events, name="events"),
     path("services/", views.services, name="services"),
