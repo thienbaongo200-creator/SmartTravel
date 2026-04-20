@@ -8,148 +8,158 @@
 {% endblock %}
 
 {% block content %}
-<section class="tour_container" style="padding:40px 20px; background:#f4f6f9; min-height: 100vh;">
-    <h2 style="text-align:center; font-size:28px; margin-bottom:15px; color:#2c3e50; font-weight:700;">
-        <i class="fa-solid fa-route"></i> Hệ Thống Tour Du Lịch
+
+<section class="tour_container page-wrapper">
+  <div class="container">
+    <h2 class="page-title">
+      <i class="fa-solid fa-route" aria-hidden="true"></i>
+      Hệ Thống Tour Du Lịch
     </h2>
 
-    <p style="text-align:center; max-width:800px; margin:0 auto 35px; font-size:1rem; color:#666; line-height:1.6;">
-        Smart Travel Map mang đến cho bạn những hành trình khám phá đa dạng: từ biển xanh cát trắng Hạ Long, 
-        núi rừng hùng vĩ Tây Bắc, đến phố cổ Hội An và thiên đường nghỉ dưỡng Phú Quốc. 
-        Hãy chọn tour yêu thích và bắt đầu trải nghiệm ngay hôm nay!
+    <p class="page-intro">
+      Smart Travel Map mang đến cho bạn những hành trình khám phá đa dạng: từ biển xanh cát trắng Hạ Long,
+      núi rừng hùng vĩ Tây Bắc, đến phố cổ Hội An và thiên đường nghỉ dưỡng Phú Quốc.
+      Hãy chọn tour yêu thích và bắt đầu trải nghiệm ngay hôm nay!
     </p>
 
-    <div style="max-width:1400px; margin:0 auto; display: grid; grid-template-columns: 1fr 320px; gap: 30px; align-items: start;">
-        
-        <div class="main-content">
-            {% if has_booked_tour %}
-            <div style="margin-bottom: 20px; padding: 12px 15px; background: #fff3cd; color: #856404; border-radius: 8px; border: 1px solid #ffeeba; font-size: 0.9rem;">
-                <i class="fa-solid fa-circle-info"></i> Bạn có tour đang chờ xử lý. Vui lòng hoàn thành trước khi đặt mới.
+    <!-- Layout wrapper: main-content first, sidebar second -->
+    <div class="tour-details-container">
+      <!-- Main content -->
+      <div class="main-content">
+        {% if has_booked_tour %}
+        <div class="alert alert-warning" role="status">
+          <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+          Bạn có tour đang chờ xử lý. Vui lòng hoàn thành trước khi đặt mới.
+        </div>
+        {% endif %}
+
+        <!-- Cards grid -->
+        <div class="cards-grid">
+          {% for tour in tours %}
+          <article class="tour-card" aria-labelledby="tour-title-{{ tour.id }}">
+            <div class="tour-image-wrapper">
+              {% if tour.image %}
+                <img src="{% static tour.image %}" alt="{{ tour.title }}" loading="lazy">
+              {% else %}
+                <img src="{% static 'images/tour/default.jpg' %}" alt="Tour" loading="lazy">
+              {% endif %}
+              <span class="tour-badge" aria-hidden="true">{{ tour.price }} VNĐ</span>
             </div>
-            {% endif %}
 
-            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px;">
-                {% for tour in tours %}
-                <div class="tour-card">
-                    <!-- Tour Image -->
-                    <div class="tour-image-wrapper">
-                        {% if tour.image %}
-                            <img src="{% static tour.image %}" alt="{{ tour.title }}" loading="lazy">
-                        {% else %}
-                            <img src="{% static 'images/tour/default.jpg' %}" alt="Tour" loading="lazy">
-                        {% endif %}
-                        <span class="tour-badge">{{ tour.price }} VNĐ</span>
-                    </div>
+            <div class="tour-content">
+              <h3 id="tour-title-{{ tour.id }}" class="tour-title">{{ tour.title }}</h3>
+              <p class="tour-intro">{{ tour.short_intro }}</p>
 
-                    <!-- Tour Content -->
-                    <div class="tour-content">
-                        <h3 class="tour-title">{{ tour.title }}</h3>
-                        <p class="tour-intro">{{ tour.short_intro }}</p>
-
-                        <div class="tour-info">
-                            <div class="tour-info-item">
-                                <p>Thời lượng</p>
-                                <strong>{{ tour.duration|default:"N/A" }}</strong>
-                            </div>
-                            <div class="tour-info-item">
-                                <p>Loại tour</p>
-                                <strong>{{ tour.tag|default:"Du lịch" }}</strong>
-                            </div>
-                        </div>
-
-                        <div class="tour-actions">
-                            {% if has_booked_tour %}
-                                <button disabled class="tour-btn tour-btn-primary">
-                                    <i class="fas fa-calendar-check"></i> Đã có lịch đặt
-                                </button>
-                            {% else %}
-                                <button onclick="openBookingModal({{ tour.id }}, '{{ tour.title }}', {{ tour.price }})" 
-                                        class="tour-btn tour-btn-primary">
-                                    <i class="fas fa-calendar-plus"></i> Đặt ngay
-                                </button>
-                            {% endif %}
-                            <a href="{% url 'tour_detail' tour.id %}" class="tour-btn tour-btn-secondary">
-                                <i class="fas fa-eye"></i> Chi tiết
-                            </a>
-                        </div>
-                    </div>
+              <div class="tour-info">
+                <div class="tour-info-item">
+                  <p>Thời lượng</p>
+                  <strong>{{ tour.duration|default:"N/A" }}</strong>
                 </div>
-                {% endfor %}
-            </div>
+                <div class="tour-info-item">
+                  <p>Loại tour</p>
+                  <strong>{{ tour.tag|default:"Du lịch" }}</strong>
+                </div>
+              </div>
 
-            <!-- Pagination -->
-            {% if page_obj.has_other_pages %}
-            <div class="pagination" style="margin-top: 40px; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
-                {% if page_obj.has_previous %}
-                    <a href="?page=1" class="page-link page-first"><i class="fas fa-angle-double-left"></i></a>
-                    <a href="?page={{ page_obj.previous_page_number }}" class="page-link page-prev"><i class="fas fa-angle-left"></i></a>
+              <div class="tour-actions" role="group" aria-label="Hành động tour">
+                {% if has_booked_tour %}
+                  <button disabled class="tour-btn tour-btn-primary" aria-disabled="true">
+                    <i class="fas fa-calendar-check" aria-hidden="true"></i> Đã có lịch đặt
+                  </button>
                 {% else %}
-                    <span class="page-link disabled"><i class="fas fa-angle-double-left"></i></span>
-                    <span class="page-link disabled"><i class="fas fa-angle-left"></i></span>
+                  <button type="button"
+                          onclick="openBookingModal({{ tour.id }}, '{{ tour.title|escapejs }}', {{ tour.price }})"
+                          class="tour-btn tour-btn-primary">
+                    <i class="fas fa-calendar-plus" aria-hidden="true"></i> Đặt ngay
+                  </button>
                 {% endif %}
-
-                {% for num in page_obj.paginator.page_range %}
-                    {% if page_obj.number == num %}
-                        <span class="page-link active">{{ num }}</span>
-                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                        <a href="?page={{ num }}" class="page-link">{{ num }}</a>
-                    {% endif %}
-                {% endfor %}
-
-                {% if page_obj.has_next %}
-                    <a href="?page={{ page_obj.next_page_number }}" class="page-link page-next"><i class="fas fa-angle-right"></i></a>
-                    <a href="?page={{ page_obj.paginator.num_pages }}" class="page-link page-last"><i class="fas fa-angle-double-right"></i></a>
-                {% else %}
-                    <span class="page-link disabled"><i class="fas fa-angle-right"></i></span>
-                    <span class="page-link disabled"><i class="fas fa-angle-double-right"></i></span>
-                {% endif %}
-
-                <span class="page-info" style="margin-left: 15px; font-size: 0.9rem; color: #666;">
-                    Trang {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
-                </span>
+                <a href="{% url 'tour_detail' tour.id %}" class="tour-btn tour-btn-secondary" role="link">
+                  <i class="fas fa-eye" aria-hidden="true"></i> Chi tiết
+                </a>
+              </div>
             </div>
-            {% endif %}
+          </article>
+          {% endfor %}
         </div>
 
-        <!-- Sidebar lịch sử đặt tour -->
-        <aside class="booking-sidebar">
-            <h3><i class="fa-solid fa-clock-rotate-left"></i> Lịch sử đặt tour</h3>
-            
-            <div style="margin-top:15px; max-height: 70vh; overflow-y: auto; padding-right: 5px;">
-                {% if booked_tours %}
-                    {% for booking in booked_tours %}
-                    <div class="booking-item {% if booking.status == 'confirmed' %}confirmed{% elif booking.status == 'cancelled' %}cancelled{% endif %}">
-                        <h4>{{ booking.tour.title }}</h4>
-                        <div class="booking-item-details">
-                            <div>Ngày đặt: {{ booking.booked_at|date:"d/m/Y" }}</div>
-                            <div>Khách: {{ booking.guests }} | <strong>{{ booking.total_price }}đ</strong></div>
-                        </div>
-                        
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span class="booking-status">
-                                {% if booking.status == 'pending' %}Chờ xác nhận
-                                {% elif booking.status == 'confirmed' %}Đã xác nhận
-                                {% elif booking.status == 'cancelled' %}Đã hủy
-                                {% else %}{{ booking.status }}{% endif %}
-                            </span>
+        <!-- Pagination (placed inside main-content, after cards-grid) -->
+        {% if page_obj.has_other_pages %}
+        <nav class="pagination" aria-label="Phân trang">
+          {% if page_obj.has_previous %}
+            <a href="?page=1" class="page-link page-first" aria-label="Trang đầu"><i class="fas fa-angle-double-left"></i></a>
+            <a href="?page={{ page_obj.previous_page_number }}" class="page-link page-prev" aria-label="Trang trước"><i class="fas fa-angle-left"></i></a>
+          {% else %}
+            <span class="page-link disabled" aria-hidden="true"><i class="fas fa-angle-double-left"></i></span>
+            <span class="page-link disabled" aria-hidden="true"><i class="fas fa-angle-left"></i></span>
+          {% endif %}
 
-                            {% if booking.status == "pending" %}
-                                <div class="booking-actions">
-                                    <form action="{% url 'cancel_booking' booking.id %}" method="post" onsubmit="return confirm('Bạn có chắc chắn muốn hủy tour này?')" style="display: inline;">
-                                        {% csrf_token %}
-                                        <button type="submit">Hủy tour</button>
-                                    </form>
-                                </div>
-                            {% endif %}
-                        </div>
-                    </div>
-                    {% endfor %}
-                {% else %}
-                    <p style="color:#888; font-style:italic; font-size: 0.9rem; text-align: center;">Bạn chưa đặt tour nào.</p>
+          {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+              <span class="page-link active" aria-current="page">{{ num }}</span>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+              <a href="?page={{ num }}" class="page-link">{{ num }}</a>
+            {% endif %}
+          {% endfor %}
+
+          {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}" class="page-link page-next" aria-label="Trang sau"><i class="fas fa-angle-right"></i></a>
+            <a href="?page={{ page_obj.paginator.num_pages }}" class="page-link page-last" aria-label="Trang cuối"><i class="fas fa-angle-double-right"></i></a>
+          {% else %}
+            <span class="page-link disabled" aria-hidden="true"><i class="fas fa-angle-right"></i></span>
+            <span class="page-link disabled" aria-hidden="true"><i class="fas fa-angle-double-right"></i></span>
+          {% endif %}
+
+          <span class="page-info" aria-hidden="true">Trang {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+        </nav>
+        {% endif %}
+      </div>
+
+      <!-- Sidebar lịch sử đặt tour -->
+      <aside class="booking-sidebar" aria-labelledby="booking-history-title">
+        <h3 id="booking-history-title">
+          <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i>
+          Lịch sử đặt tour
+        </h3>
+
+        <div class="booking-list-wrapper">
+          {% if booked_tours %}
+          <ul class="booking-list" role="list">
+            {% for booking in booked_tours %}
+            <li class="booking-item {% if booking.status == 'confirmed' %}confirmed{% elif booking.status == 'cancelled' %}cancelled{% endif %}" role="listitem">
+              <h4 class="booking-item-title">{{ booking.tour.title }}</h4>
+
+              <div class="booking-item-details">
+                <div class="booking-date">Ngày đặt: <span class="muted">{{ booking.booked_at|date:"d/m/Y" }}</span></div>
+                <div class="booking-guests">Khách: <span class="muted">{{ booking.guests }}</span> | <strong class="booking-price">{{ booking.total_price }}đ</strong></div>
+              </div>
+
+              <div class="booking-item-footer">
+                <span class="booking-status" aria-live="polite">
+                  {% if booking.status == 'pending' %}Chờ xác nhận
+                  {% elif booking.status == 'confirmed' %}Đã xác nhận
+                  {% elif booking.status == 'cancelled' %}Đã hủy
+                  {% else %}{{ booking.status }}{% endif %}
+                </span>
+
+                {% if booking.status == "pending" %}
+                <div class="booking-actions">
+                  <form action="{% url 'cancel_booking' booking.id %}" method="post" onsubmit="return confirm('Bạn có chắc chắn muốn hủy tour này?')">
+                    {% csrf_token %}
+                    <button type="submit" class="booking-cancel-btn">Hủy tour</button>
+                  </form>
+                </div>
                 {% endif %}
-            </div>
-        </aside>
+              </div>
+            </li>
+            {% endfor %}
+          </ul>
+          {% else %}
+          <p class="booking-empty">Bạn chưa đặt tour nào.</p>
+          {% endif %}
+        </div>
+      </aside>
     </div>
+  </div>
 </section>
 
 <!-- Modal đặt tour -->
