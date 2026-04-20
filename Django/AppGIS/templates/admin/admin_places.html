@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Quản lý Địa điểm Du lịch</title>
+    <title>Quản lý Địa điểm | Smart Travel</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -13,19 +13,14 @@
 </head>
 <body>
 
-<!-- ─── MOBILE TOPBAR ─── -->
 <div class="topbar">
     <button class="btn-menu" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
     <div class="topbar-brand"><i class="fas fa-map-marked-alt"></i>Smart Travel</div>
 </div>
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
-<!-- ─── SIDEBAR ─── -->
 <div class="sidebar" id="sidebar">
-    <div class="sidebar-brand">
-        <i class="fas fa-map-marked-alt"></i>
-        <span>Smart Travel</span>
-    </div>
+    <div class="sidebar-brand"><i class="fas fa-map-marked-alt"></i><span>Smart Travel</span></div>
     <nav>
         <a href="{% url 'admin_dashboard' %}" class="sidebar-link"><i class="fas fa-th-large"></i>Dashboard</a>
         <a href="{% url 'admin_places' %}" class="sidebar-link active"><i class="fas fa-layer-group"></i>Quản lý Địa điểm</a>
@@ -40,38 +35,31 @@
     </nav>
 </div>
 
-<!-- ─── MAIN CONTENT ─── -->
 <div class="main-content">
-
-    <!-- Page header -->
     <div class="page-header">
         <h1><i class="fas fa-map-marker-alt"></i>Quản lý Địa điểm Du lịch</h1>
+        <a href="{% url 'admin_dashboard' %}" class="btn-back"><i class="fas fa-arrow-left"></i>Dashboard</a>
     </div>
 
-    <!-- Category tabs -->
     <div class="tabs-wrapper">
-        <button class="tab-btn active" onclick="switchTab(this, null)">Tất cả</button>
-        <button class="tab-btn" onclick="switchTab(this, 'Khu vui chơi')">Khu vui chơi</button>
-        <button class="tab-btn" onclick="switchTab(this, 'Nhà hàng')">Nhà hàng</button>
-        <button class="tab-btn" onclick="switchTab(this, 'Di tích')">Di tích</button>
-        <button class="tab-btn" onclick="switchTab(this, 'Khách sạn')">Khách sạn</button>
+        <button class="tab-btn active" onclick="switchTab(this,null)">Tất cả</button>
+        <button class="tab-btn" onclick="switchTab(this,'Khu vui chơi')">Khu vui chơi</button>
+        <button class="tab-btn" onclick="switchTab(this,'Nhà hàng')">Nhà hàng</button>
+        <button class="tab-btn" onclick="switchTab(this,'Di tích')">Di tích</button>
+        <button class="tab-btn" onclick="switchTab(this,'Khách sạn')">Khách sạn</button>
     </div>
 
-    <!-- ADD FORM CARD -->
+    <!-- ADD FORM -->
     <div class="card">
-        <div class="card-header">
-            <i class="fas fa-plus-circle"></i>
-            <h2>Thêm địa điểm mới</h2>
-        </div>
+        <div class="card-header"><i class="fas fa-plus-circle"></i><h2>Thêm địa điểm mới</h2></div>
         <div class="card-body">
             <form id="addForm" enctype="multipart/form-data" novalidate>
                 <div class="form-grid">
-                    <!-- Left: Fields -->
                     <div class="form-section">
 
                         <div class="form-group">
                             <label class="form-label">Tên địa điểm <span class="req">*</span></label>
-                            <input id="add_name" type="text" name="name" placeholder="VD: Khu du lịch Suối Tiên" class="form-control" required minlength="3" maxlength="200">
+                            <input id="add_name" type="text" name="name" placeholder="VD: Khu du lịch Suối Tiên" class="form-control" required>
                             <span class="field-hint" id="add_name_hint"></span>
                         </div>
 
@@ -85,19 +73,19 @@
                             <label class="form-label">Địa chỉ</label>
                             <div class="input-group">
                                 <input id="address" type="text" name="address" placeholder="Nhập địa chỉ rồi bấm 🔍" class="form-control">
-                                <button type="button" class="btn-search" onclick="searchAddress('address','latitude','longitude', mainMap, 'mainMarker')"><i class="fas fa-search"></i></button>
+                                <button type="button" class="btn-search" onclick="searchAddress('address','latitude','longitude',mainMap,'mainMarker')"><i class="fas fa-search"></i></button>
                             </div>
                         </div>
 
                         <div class="coords-row">
                             <div class="form-group">
                                 <label class="form-label">Vĩ độ <span class="req">*</span></label>
-                                <input id="latitude" type="number" step="any" name="latitude" placeholder="10.776..." class="form-control" required min="-90" max="90">
+                                <input id="latitude" type="number" step="any" name="latitude" placeholder="10.776..." class="form-control" required>
                                 <span class="field-hint" id="add_lat_hint"></span>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Kinh độ <span class="req">*</span></label>
-                                <input id="longitude" type="number" step="any" name="longitude" placeholder="106.700..." class="form-control" required min="-180" max="180">
+                                <input id="longitude" type="number" step="any" name="longitude" placeholder="106.700..." class="form-control" required>
                                 <span class="field-hint" id="add_lng_hint"></span>
                             </div>
                         </div>
@@ -120,7 +108,7 @@
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label">Ảnh Gallery <small class="text-small">(tối đa 6 ảnh)</small></label>
+                            <label class="form-label">Ảnh Gallery <span class="text-small">(tối đa 6 ảnh)</span></label>
                             <div class="upload-area" onclick="document.getElementById('image_files').click()">
                                 <i class="fas fa-images"></i>
                                 <label>Nhấn để chọn nhiều ảnh</label>
@@ -133,7 +121,7 @@
 
                         <div class="form-group">
                             <label class="form-label">Số điện thoại</label>
-                            <input id="add_phone" type="tel" name="phone" placeholder="VD: 0909 123 456" class="form-control" pattern="^(0|\+84)[0-9]{8,10}$">
+                            <input id="add_phone" type="tel" name="phone" placeholder="VD: 0909 123 456" class="form-control">
                             <span class="field-hint" id="add_phone_hint"></span>
                         </div>
 
@@ -143,16 +131,11 @@
                             <span class="field-hint" id="add_price_hint"></span>
                         </div>
 
-                        <div>
-                            <button type="submit" class="btn btn-primary" style="width:100%">
-                                <i class="fas fa-plus"></i>Thêm địa điểm mới
-                            </button>
-                        </div>
+                        <button type="submit" class="btn btn-primary" style="width:100%"><i class="fas fa-plus"></i>Thêm địa điểm mới</button>
                     </div>
 
-                    <!-- Right: Map -->
                     <div>
-                        <div class="form-label map-label"><i class="fas fa-map"></i>Chọn vị trí trên bản đồ</div>
+                        <div class="map-label"><i class="fas fa-map"></i>Chọn vị trí trên bản đồ</div>
                         <div class="map-container"><div id="map"></div></div>
                         <p class="text-info-small"><i class="fas fa-info-circle"></i> Nhấn vào bản đồ hoặc kéo ghim để chọn tọa độ</p>
                     </div>
@@ -161,12 +144,9 @@
         </div>
     </div>
 
-    <!-- TABLE CARD -->
+    <!-- TABLE -->
     <div class="card">
-        <div class="card-header">
-            <i class="fas fa-list-ul"></i>
-            <h2>Danh sách địa điểm</h2>
-        </div>
+        <div class="card-header"><i class="fas fa-list-ul"></i><h2>Danh sách địa điểm</h2></div>
         <div class="table-wrap">
             <table>
                 <thead>
@@ -186,85 +166,74 @@
     </div>
 </div>
 
-<!-- ═══ EDIT MODAL ═══ -->
+<!-- EDIT MODAL -->
 <div id="editModal" class="modal-overlay">
     <div class="modal-box">
         <div class="modal-header">
             <h3><i class="fas fa-edit"></i>Chỉnh sửa địa điểm</h3>
-            <button class="btn-icon" onclick="closeEditModal()"><i class="fas fa-times"></i></button>
+            <button class="btn-close-modal" onclick="closeEditModal()"><i class="fas fa-times"></i></button>
         </div>
         <div class="modal-body">
             <form id="editForm" enctype="multipart/form-data" novalidate>
                 <input type="hidden" id="editId">
                 <div class="form-grid">
                     <div class="form-section">
-
                         <div class="form-group">
                             <label class="form-label">Tên địa điểm <span class="req">*</span></label>
-                            <input id="editName" type="text" name="name" class="form-control" required minlength="3" maxlength="200">
+                            <input id="editName" type="text" name="name" class="form-control" required>
                             <span class="field-hint" id="edit_name_hint"></span>
                         </div>
-
                         <div class="form-group">
                             <label class="form-label">Loại địa điểm <span class="req">*</span></label>
                             <input id="editCategory" type="text" name="category" class="form-control" required>
                             <span class="field-hint" id="edit_category_hint"></span>
                         </div>
-
                         <div class="form-group">
                             <label class="form-label">Địa chỉ</label>
                             <div class="input-group">
                                 <input id="editAddress" type="text" name="address" class="form-control">
-                                <button type="button" class="btn-search" onclick="searchAddress('editAddress','editLat','editLng', editMap, 'editMarker')"><i class="fas fa-search"></i></button>
+                                <button type="button" class="btn-search" onclick="searchAddress('editAddress','editLat','editLng',editMap,'editMarker')"><i class="fas fa-search"></i></button>
                             </div>
                         </div>
-
                         <div class="coords-row">
                             <div class="form-group">
                                 <label class="form-label">Vĩ độ <span class="req">*</span></label>
-                                <input id="editLat" type="number" step="any" name="latitude" class="form-control" required min="-90" max="90">
+                                <input id="editLat" type="number" step="any" name="latitude" class="form-control" required>
                                 <span class="field-hint" id="edit_lat_hint"></span>
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Kinh độ <span class="req">*</span></label>
-                                <input id="editLng" type="number" step="any" name="longitude" class="form-control" required min="-180" max="180">
+                                <input id="editLng" type="number" step="any" name="longitude" class="form-control" required>
                                 <span class="field-hint" id="edit_lng_hint"></span>
                             </div>
                         </div>
-
                         <div class="form-group">
                             <label class="form-label">Mô tả chi tiết</label>
                             <div id="editor-edit-place"></div>
                         </div>
-
                         <div class="form-group">
                             <label class="form-label">Số điện thoại</label>
-                            <input id="editPhone" type="tel" name="phone" class="form-control" pattern="^(0|\+84)[0-9]{8,10}$">
+                            <input id="editPhone" type="tel" name="phone" class="form-control">
                             <span class="field-hint" id="edit_phone_hint"></span>
                         </div>
-
                         <div class="form-group">
                             <label class="form-label">Giá tiền (VNĐ)</label>
                             <input id="editPrice" type="number" name="price" class="form-control" min="0">
                             <span class="field-hint" id="edit_price_hint"></span>
                         </div>
-
                         <div class="form-group">
                             <label class="form-label">Thay ảnh đại diện</label>
                             <div class="upload-area" onclick="document.getElementById('edit_main_image').click()">
-                                <i class="fas fa-image"></i>
-                                <label>Nhấn để chọn ảnh</label>
+                                <i class="fas fa-image"></i><label>Nhấn để chọn ảnh</label>
                                 <input type="file" id="edit_main_image" name="main_image" accept="image/*">
                                 <span class="file-name" id="main_file_name">Chưa chọn ảnh nào</span>
                             </div>
                             <div class="thumb-row" id="edit_main_image_preview"></div>
                         </div>
-
                         <div class="form-group">
                             <label class="form-label">Thêm ảnh Gallery</label>
                             <div class="upload-area" onclick="document.getElementById('edit_image_files').click()">
-                                <i class="fas fa-images"></i>
-                                <label>Nhấn để chọn nhiều ảnh</label>
+                                <i class="fas fa-images"></i><label>Nhấn để chọn nhiều ảnh</label>
                                 <input type="file" id="edit_image_files" name="images" accept="image/*" multiple>
                                 <span class="file-name" id="gallery_file_name">Chưa chọn ảnh nào</span>
                             </div>
@@ -272,9 +241,8 @@
                             <span class="field-hint" id="edit_gallery_hint"></span>
                         </div>
                     </div>
-
                     <div>
-                        <div class="form-label map-label"><i class="fas fa-map"></i>Vị trí trên bản đồ</div>
+                        <div class="map-label"><i class="fas fa-map"></i>Vị trí trên bản đồ</div>
                         <div class="map-container map-height-300"><div id="editMap"></div></div>
                     </div>
                 </div>
@@ -289,53 +257,45 @@
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
-// ── GLOBALS ──────────────────────────────────────
 let mainMap, mainMarker, editMap, editMarker;
 let markers = [], allData = [], filteredData = [];
 let currentPage = 1;
 const PER_PAGE = 10;
 let addPlaceEditor, editPlaceEditor;
 
-// ── MOBILE SIDEBAR ────────────────────────────────
 function toggleSidebar() {
     document.getElementById('sidebar').classList.toggle('open');
     document.getElementById('sidebarOverlay').classList.toggle('show');
 }
 
-// ── IMAGE URL HELPER ──────────────────────────────
 function getImageUrl(url) {
     if (!url) return "{% static 'images/default.jpg' %}";
     if (url.startsWith('http') || url.startsWith('/media/') || url.startsWith('/static/')) return url;
     return '/static/images/' + url;
 }
 
-// ── INIT MAP ──────────────────────────────────────
 function initMainMap() {
     mainMap = L.map('map').setView([10.776, 106.700], 13);
     L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png').addTo(mainMap);
     mainMarker = L.marker([10.776, 106.700], {draggable: true}).addTo(mainMap);
-    mainMap.on('click', e => { mainMarker.setLatLng(e.latlng); updateCoords('latitude', 'longitude', e.latlng); });
-    mainMarker.on('dragend', () => updateCoords('latitude', 'longitude', mainMarker.getLatLng()));
+    mainMap.on('click', e => { mainMarker.setLatLng(e.latlng); updateCoords('latitude','longitude', e.latlng); });
+    mainMarker.on('dragend', () => updateCoords('latitude','longitude', mainMarker.getLatLng()));
 }
 
 function updateCoords(latId, lngId, latlng) {
     document.getElementById(latId).value = latlng.lat.toFixed(6);
     document.getElementById(lngId).value = latlng.lng.toFixed(6);
-    // Trigger validation update after coord change
-    triggerValidation(document.getElementById(latId));
-    triggerValidation(document.getElementById(lngId));
+    validateField(latId === 'latitude' ? 'latitude' : 'editLat');
+    validateField(lngId === 'longitude' ? 'longitude' : 'editLng');
 }
 
-// ── LOAD DATA ─────────────────────────────────────
 async function loadPlaces(filter = null) {
     try {
         const res = await fetch("/api/admin/places/");
         allData = await res.json();
         filteredData = filter ? allData.filter(p => p.category === filter) : allData;
-        currentPage = 1;
-        renderTable();
+        currentPage = 1; renderTable();
     } catch (err) {
-        console.error("Lỗi khi tải dữ liệu:", err);
         document.getElementById('placesTable').innerHTML =
             `<tr><td colspan="4"><div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Không thể tải dữ liệu</p></div></td></tr>`;
     }
@@ -347,386 +307,255 @@ function switchTab(btn, filter) {
     loadPlaces(filter);
 }
 
-// ── RENDER TABLE ──────────────────────────────────
 function renderTable() {
     const tbody = document.getElementById("placesTable");
     tbody.innerHTML = "";
-    markers.forEach(m => mainMap.removeLayer(m));
-    markers = [];
-
+    markers.forEach(m => mainMap.removeLayer(m)); markers = [];
     const start = (currentPage - 1) * PER_PAGE;
-    const pageItems = filteredData.slice(start, start + PER_PAGE);
-
-    if (pageItems.length === 0) {
+    const items = filteredData.slice(start, start + PER_PAGE);
+    if (!items.length) {
         tbody.innerHTML = `<tr><td colspan="4"><div class="empty-state"><i class="fas fa-map-marker-alt"></i><p>Không có địa điểm nào</p></div></td></tr>`;
-        document.getElementById('pagination').innerHTML = '';
-        return;
+        document.getElementById('pagination').innerHTML = ''; return;
     }
-
-    pageItems.forEach(p => {
-        const mainImg = getImageUrl(p.img);
-        const m = L.marker([p.latitude, p.longitude]).addTo(mainMap)
-                   .bindPopup(`<b>${p.name}</b><br><img src="${mainImg}" width="100">`);
+    items.forEach(p => {
+        const img = getImageUrl(p.img);
+        const m = L.marker([p.latitude, p.longitude]).addTo(mainMap).bindPopup(`<b>${p.name}</b>`);
         markers.push(m);
-
-        const galleryHtml = (p.gallery || []).map(url =>
-            `<img src="${getImageUrl(url)}" class="gallery-thumb" alt="">`
-        ).join('') || '<span class="gallery-empty">Chưa có</span>';
-
-        const descHtml = p.description
-            ? `<div class="place-desc">${p.description}</div>`
-            : `<div class="place-desc place-desc-empty">Chưa có mô tả</div>`;
-
+        const gallery = (p.gallery||[]).map(u => `<img src="${getImageUrl(u)}" class="gallery-thumb" alt="">`).join('') || '<span class="gallery-empty">Chưa có</span>';
         tbody.innerHTML += `
         <tr>
-            <td><img src="${mainImg}" class="place-main-img" alt="${p.name}"></td>
-            <td><div class="gallery-strip">${galleryHtml}</div></td>
+            <td><img src="${img}" class="place-main-img" alt="${p.name}"></td>
+            <td><div class="gallery-strip">${gallery}</div></td>
             <td>
-                <div style="margin-bottom:4px">
-                    <span class="place-name">${p.name}</span>
-                    <span class="badge badge-blue" style="margin-left:6px">${p.category || '—'}</span>
-                </div>
-                ${descHtml}
-                <div class="place-price">${new Intl.NumberFormat('vi-VN').format(p.price || 0)} VNĐ</div>
-                <div class="place-phone"><i class="fas fa-phone" style="margin-right:4px"></i>${p.phone || 'Chưa có SĐT'}</div>
+                <div><span class="place-name">${p.name}</span> <span class="badge badge-blue">${p.category||'—'}</span></div>
+                <div class="place-desc ${p.description?'':'place-desc-empty'}">${p.description||'Chưa có mô tả'}</div>
+                <div class="place-price">${new Intl.NumberFormat('vi-VN').format(p.price||0)} VNĐ</div>
+                <div class="place-phone"><i class="fas fa-phone"></i>${p.phone||'Chưa có SĐT'}</div>
             </td>
-            <td>
-                <div class="action-btns">
-                    <button class="btn-icon" title="Chỉnh sửa" onclick="openEditModalById(${p.id})"><i class="fas fa-pen" style="color:var(--primary)"></i></button>
-                    <button class="btn-icon" title="Xóa" onclick="deletePlace(${p.id})"><i class="fas fa-trash" style="color:var(--danger)"></i></button>
-                </div>
-            </td>
+            <td><div class="action-btns">
+                <button class="btn-icon" title="Sửa" onclick="openEditModalById(${p.id})"><i class="fas fa-pen" style="color:var(--primary)"></i></button>
+                <button class="btn-icon" title="Xóa" onclick="deletePlace(${p.id})"><i class="fas fa-trash" style="color:var(--danger)"></i></button>
+            </div></td>
         </tr>`;
     });
-
     renderPagination();
 }
 
 function renderPagination() {
-    const div = document.getElementById("pagination");
-    div.innerHTML = "";
+    const div = document.getElementById("pagination"); div.innerHTML = "";
     const total = Math.ceil(filteredData.length / PER_PAGE);
     if (total <= 1) return;
-
-    const makeBtn = (label, page, disabled, active) => {
-        const btn = document.createElement('button');
-        btn.className = 'btn-page' + (active ? ' active' : '');
-        btn.innerHTML = label;
-        btn.disabled = disabled;
-        btn.onclick = () => { currentPage = page; renderTable(); };
-        return btn;
-    };
-
-    div.appendChild(makeBtn('«', currentPage - 1, currentPage === 1, false));
-    for (let i = 1; i <= total; i++) {
-        div.appendChild(makeBtn(i, i, false, i === currentPage));
-    }
-    div.appendChild(makeBtn('»', currentPage + 1, currentPage === total, false));
+    const mk = (l, p, dis, act) => { const b = document.createElement('button'); b.className='btn-page'+(act?' active':''); b.innerHTML=l; b.disabled=dis; b.onclick=()=>{currentPage=p;renderTable();}; return b; };
+    div.appendChild(mk('«', currentPage-1, currentPage===1, false));
+    for (let i=1; i<=total; i++) div.appendChild(mk(i, i, false, i===currentPage));
+    div.appendChild(mk('»', currentPage+1, currentPage===total, false));
 }
 
-// ── ADDRESS SEARCH ────────────────────────────────
-async function searchAddress(addrId, latId, lngId, mapInstance, markerName) {
+async function searchAddress(addrId, latId, lngId, mapInst, markerName) {
     const q = document.getElementById(addrId).value.trim();
-    if (!q) { showHint(addrId + '_hint', 'Vui lòng nhập địa chỉ trước'); return; }
+    if (!q) return;
     try {
         const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}`);
         const data = await res.json();
-        if (data.length > 0) {
+        if (data.length) {
             const lat = parseFloat(data[0].lat), lon = parseFloat(data[0].lon);
-            mapInstance.setView([lat, lon], 15);
+            mapInst.setView([lat, lon], 15);
             if (markerName === 'mainMarker') mainMarker.setLatLng([lat, lon]);
             else if (editMarker) editMarker.setLatLng([lat, lon]);
             document.getElementById(latId).value = lat.toFixed(6);
             document.getElementById(lngId).value = lon.toFixed(6);
         } else alert("Không tìm thấy địa chỉ này!");
-    } catch (e) { console.error(e); }
+    } catch(e) { console.error(e); }
 }
 
-// ── CKEDITOR ──────────────────────────────────────
 async function initPlaceEditors() {
-    const addEl = document.querySelector('#editor-add-place');
-    const editEl = document.querySelector('#editor-edit-place');
-    if (addEl) addPlaceEditor = await ClassicEditor.create(addEl, { placeholder: 'Nhập mô tả chi tiết...' }).catch(console.error);
-    if (editEl) editPlaceEditor = await ClassicEditor.create(editEl, { placeholder: 'Cập nhật mô tả chi tiết...' }).catch(console.error);
+    const a = document.querySelector('#editor-add-place');
+    const e = document.querySelector('#editor-edit-place');
+    if (a) addPlaceEditor = await ClassicEditor.create(a, {placeholder:'Nhập mô tả chi tiết...'}).catch(console.error);
+    if (e) editPlaceEditor = await ClassicEditor.create(e, {placeholder:'Cập nhật mô tả...'}).catch(console.error);
 }
 
-// ── CUSTOM VALIDATION ─────────────────────────────
+// ── VALIDATION ────────────────────────────────────
 const VALIDATORS = {
-    add_name:     { el: 'add_name',     hint: 'add_name_hint',     rules: [
-        [v => v.trim().length === 0,     'Tên địa điểm không được để trống'],
-        [v => v.trim().length < 3,       'Tên phải có ít nhất 3 ký tự'],
-        [v => v.trim().length > 200,     'Tên không được vượt quá 200 ký tự'],
+    add_name:     {el:'add_name',    hint:'add_name_hint',    rules:[
+        [v=>!v.trim(),                   'Tên địa điểm không được để trống'],
+        [v=>v.trim().length<3,           'Tên phải có ít nhất 3 ký tự'],
+        [v=>v.trim().length>200,         'Tên không được vượt quá 200 ký tự'],
     ]},
-    add_category: { el: 'add_category', hint: 'add_category_hint', rules: [
-        [v => v.trim().length === 0,     'Loại địa điểm không được để trống'],
+    add_category: {el:'add_category',hint:'add_category_hint',rules:[
+        [v=>!v.trim(),                   'Loại địa điểm không được để trống'],
     ]},
-    latitude:     { el: 'latitude',     hint: 'add_lat_hint',      rules: [
-        [v => v === '',                  'Vĩ độ không được để trống'],
-        [v => isNaN(+v) || +v < -90 || +v > 90, 'Vĩ độ phải nằm trong khoảng -90 đến 90'],
+    latitude:     {el:'latitude',    hint:'add_lat_hint',     rules:[
+        [v=>v==='',                      'Vĩ độ không được để trống'],
+        [v=>isNaN(+v)||+v<-90||+v>90,   'Vĩ độ phải nằm trong khoảng -90 đến 90'],
     ]},
-    longitude:    { el: 'longitude',    hint: 'add_lng_hint',      rules: [
-        [v => v === '',                  'Kinh độ không được để trống'],
-        [v => isNaN(+v) || +v < -180 || +v > 180, 'Kinh độ phải nằm trong khoảng -180 đến 180'],
+    longitude:    {el:'longitude',   hint:'add_lng_hint',     rules:[
+        [v=>v==='',                      'Kinh độ không được để trống'],
+        [v=>isNaN(+v)||+v<-180||+v>180, 'Kinh độ phải nằm trong khoảng -180 đến 180'],
     ]},
-    add_phone:    { el: 'add_phone',    hint: 'add_phone_hint',    rules: [
-        [v => v !== '' && !/^(0|\+84)[0-9]{8,10}$/.test(v.trim()), 'SĐT không hợp lệ (VD: 0909123456 hoặc +84909123456)'],
+    add_phone:    {el:'add_phone',   hint:'add_phone_hint',   rules:[
+        [v=>v!==''&&!/^(0|\+84)[0-9]{8,10}$/.test(v.trim()),'SĐT không hợp lệ (VD: 0909123456)'],
     ]},
-    add_price:    { el: 'add_price',    hint: 'add_price_hint',    rules: [
-        [v => v !== '' && +v < 0,        'Giá tiền không được âm'],
+    add_price:    {el:'add_price',   hint:'add_price_hint',   rules:[
+        [v=>v!==''&&+v<0,               'Giá tiền không được âm'],
     ]},
-    main_image:   { el: 'main_image',   hint: 'add_main_hint',     rules: [], isFile: true },
-    // Edit modal
-    editName:     { el: 'editName',     hint: 'edit_name_hint',    rules: [
-        [v => v.trim().length === 0,     'Tên địa điểm không được để trống'],
-        [v => v.trim().length < 3,       'Tên phải có ít nhất 3 ký tự'],
+    editName:     {el:'editName',    hint:'edit_name_hint',   rules:[
+        [v=>!v.trim(),                   'Tên địa điểm không được để trống'],
+        [v=>v.trim().length<3,           'Tên phải có ít nhất 3 ký tự'],
     ]},
-    editCategory: { el: 'editCategory', hint: 'edit_category_hint',rules: [
-        [v => v.trim().length === 0,     'Loại địa điểm không được để trống'],
+    editCategory: {el:'editCategory',hint:'edit_category_hint',rules:[
+        [v=>!v.trim(),                   'Loại địa điểm không được để trống'],
     ]},
-    editLat:      { el: 'editLat',      hint: 'edit_lat_hint',     rules: [
-        [v => v === '',                  'Vĩ độ không được để trống'],
-        [v => isNaN(+v) || +v < -90 || +v > 90, 'Vĩ độ phải nằm trong khoảng -90 đến 90'],
+    editLat:      {el:'editLat',     hint:'edit_lat_hint',    rules:[
+        [v=>v==='',                      'Vĩ độ không được để trống'],
+        [v=>isNaN(+v)||+v<-90||+v>90,   'Vĩ độ phải nằm trong khoảng -90 đến 90'],
     ]},
-    editLng:      { el: 'editLng',      hint: 'edit_lng_hint',     rules: [
-        [v => v === '',                  'Kinh độ không được để trống'],
-        [v => isNaN(+v) || +v < -180 || +v > 180, 'Kinh độ phải nằm trong khoảng -180 đến 180'],
+    editLng:      {el:'editLng',     hint:'edit_lng_hint',    rules:[
+        [v=>v==='',                      'Kinh độ không được để trống'],
+        [v=>isNaN(+v)||+v<-180||+v>180, 'Kinh độ phải nằm trong khoảng -180 đến 180'],
     ]},
-    editPhone:    { el: 'editPhone',    hint: 'edit_phone_hint',   rules: [
-        [v => v !== '' && !/^(0|\+84)[0-9]{8,10}$/.test(v.trim()), 'SĐT không hợp lệ'],
+    editPhone:    {el:'editPhone',   hint:'edit_phone_hint',  rules:[
+        [v=>v!==''&&!/^(0|\+84)[0-9]{8,10}$/.test(v.trim()),'SĐT không hợp lệ'],
     ]},
-    editPrice:    { el: 'editPrice',    hint: 'edit_price_hint',   rules: [
-        [v => v !== '' && +v < 0,        'Giá tiền không được âm'],
+    editPrice:    {el:'editPrice',   hint:'edit_price_hint',  rules:[
+        [v=>v!==''&&+v<0,               'Giá tiền không được âm'],
     ]},
 };
 
 function validateField(key) {
-    const cfg = VALIDATORS[key];
-    if (!cfg) return true;
+    const cfg = VALIDATORS[key]; if (!cfg) return true;
     const el = document.getElementById(cfg.el);
     const hint = document.getElementById(cfg.hint);
     if (!el || !hint) return true;
-    const val = el.value;
     let msg = '';
-    for (const [test, text] of cfg.rules) {
-        if (test(val)) { msg = text; break; }
-    }
+    for (const [test, text] of cfg.rules) { if (test(el.value)) { msg = text; break; } }
     el.setCustomValidity(msg);
-    if (msg) {
-        el.classList.add('is-invalid'); el.classList.remove('is-valid');
-        hint.textContent = msg; hint.classList.add('show');
-    } else {
-        el.classList.remove('is-invalid');
-        if (val.trim() !== '') el.classList.add('is-valid');
-        hint.textContent = ''; hint.classList.remove('show');
-    }
-    return msg === '';
+    if (msg) { el.classList.add('is-invalid'); el.classList.remove('is-valid'); hint.textContent=msg; hint.classList.add('show'); }
+    else      { el.classList.remove('is-invalid'); if(el.value.trim()) el.classList.add('is-valid'); hint.textContent=''; hint.classList.remove('show'); }
+    return !msg;
 }
 
-function triggerValidation(el) {
-    const key = el.id;
-    validateField(key);
+function validateForm(keys) { return keys.map(k => validateField(k)).every(Boolean); }
+
+function validateGallery(inputId, hintId, max=6) {
+    const inp = document.getElementById(inputId), hint = document.getElementById(hintId);
+    if (!inp||!hint) return true;
+    if (inp.files.length > max) {
+        hint.textContent=`Chỉ được chọn tối đa ${max} ảnh`; hint.classList.add('show');
+        inp.setCustomValidity(`Tối đa ${max} ảnh`); return false;
+    }
+    hint.classList.remove('show'); inp.setCustomValidity(''); return true;
 }
 
 function attachLiveValidation(ids) {
-    ids.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.addEventListener('blur', () => validateField(id));
-    });
+    ids.forEach(id => { const el = document.getElementById(id); if(el) el.addEventListener('blur', ()=>validateField(id)); });
 }
 
-function validateGallery(inputId, hintId, max = 6) {
-    const inp = document.getElementById(inputId);
-    const hint = document.getElementById(hintId);
-    if (!inp || !hint) return true;
-    if (inp.files.length > max) {
-        hint.textContent = `Chỉ được chọn tối đa ${max} ảnh`; hint.classList.add('show');
-        inp.setCustomValidity(`Chỉ được chọn tối đa ${max} ảnh`);
-        return false;
-    }
-    hint.classList.remove('show'); inp.setCustomValidity('');
-    return true;
-}
-
-function validateForm(fieldIds) {
-    let ok = true;
-    fieldIds.forEach(id => { if (!validateField(id)) ok = false; });
-    return ok;
-}
-
-function showHint(hintId, msg) {
-    const h = document.getElementById(hintId);
-    if (h) { h.textContent = msg; h.classList.add('show'); }
-}
-
-// ── FILE PREVIEW & NAME ───────────────────────────
+// ── FILE HELPERS ──────────────────────────────────
 function setupPreview(inputId, previewId) {
-    const input = document.getElementById(inputId);
-    if (!input) return;
+    const input = document.getElementById(inputId); if (!input) return;
     input.onchange = function() {
-        const container = document.getElementById(previewId);
-        container.innerHTML = '';
-        Array.from(this.files).slice(0, 6).forEach(file => {
-            const reader = new FileReader();
-            reader.onload = ev => {
-                const img = document.createElement('img');
-                img.src = ev.target.result;
-                container.appendChild(img);
-            };
-            reader.readAsDataURL(file);
+        const c = document.getElementById(previewId); c.innerHTML = '';
+        Array.from(this.files).slice(0,6).forEach(f => {
+            const r = new FileReader();
+            r.onload = ev => { const img=document.createElement('img'); img.src=ev.target.result; c.appendChild(img); };
+            r.readAsDataURL(f);
         });
     };
 }
 
-function handleFileNameDisplay(inputId, spanId) {
-    const input = document.getElementById(inputId);
-    const span = document.getElementById(spanId);
-    if (input && span) {
-        input.addEventListener('change', function() {
-            span.innerText = this.files.length > 1 ? `${this.files.length} ảnh đã chọn` :
-                this.files.length === 1 ? this.files[0].name : 'Chưa chọn ảnh nào';
-        });
-    }
+function handleFileName(inputId, spanId) {
+    const input=document.getElementById(inputId), span=document.getElementById(spanId);
+    if(input&&span) input.addEventListener('change', function() {
+        span.innerText = this.files.length>1 ? `${this.files.length} ảnh đã chọn` : this.files.length===1 ? this.files[0].name : 'Chưa chọn ảnh nào';
+    });
 }
 
 // ── FORM SUBMIT: ADD ──────────────────────────────
-document.getElementById("addForm").onsubmit = async (e) => {
+document.getElementById("addForm").onsubmit = async e => {
     e.preventDefault();
-    const fields = ['add_name','add_category','latitude','longitude','add_phone','add_price'];
-    if (!validateForm(fields)) {
-        // scroll to first error
-        document.querySelector('.is-invalid')?.scrollIntoView({behavior:'smooth', block:'center'});
-        return;
+    const ok = validateForm(['add_name','add_category','latitude','longitude','add_phone','add_price']);
+    if (!ok) { document.querySelector('#addForm .is-invalid')?.scrollIntoView({behavior:'smooth',block:'center'}); return; }
+    const imgEl = document.getElementById('main_image');
+    if (!imgEl.files.length) {
+        const h=document.getElementById('add_main_hint'); h.textContent='Vui lòng chọn ảnh đại diện'; h.classList.add('show');
+        imgEl.setCustomValidity('Bắt buộc'); return;
     }
-    // Check main image
-    const mainImg = document.getElementById('main_image');
-    if (!mainImg.files.length) {
-        showHint('add_main_hint', 'Vui lòng chọn ảnh đại diện');
-        mainImg.setCustomValidity('Vui lòng chọn ảnh đại diện');
-        mainImg.closest('.upload-area').style.borderColor = 'var(--danger)';
-        return;
-    }
-    if (!validateGallery('image_files', 'add_gallery_hint')) return;
-
-    const formData = new FormData(e.target);
-    if (addPlaceEditor) formData.append('description', addPlaceEditor.getData());
-
-    const res = await fetch("/api/admin/places/", {
-        method: "POST", body: formData,
-        headers: { "X-CSRFToken": "{{ csrf_token }}" }
-    });
+    if (!validateGallery('image_files','add_gallery_hint')) return;
+    const fd = new FormData(e.target);
+    if (addPlaceEditor) fd.append('description', addPlaceEditor.getData());
+    const res = await fetch("/api/admin/places/", {method:"POST",body:fd,headers:{"X-CSRFToken":"{{ csrf_token }}"}});
     if (res.ok) {
         alert("✅ Thêm địa điểm thành công!");
-        e.target.reset();
-        if (addPlaceEditor) addPlaceEditor.setData('');
-        document.getElementById('add_main_file_name').innerText = 'Chưa chọn ảnh nào';
-        document.getElementById('add_gallery_file_name').innerText = 'Chưa chọn ảnh nào';
-        document.getElementById('main_image_preview').innerHTML = '';
-        document.getElementById('image_preview').innerHTML = '';
-        document.querySelectorAll('#addForm .is-valid, #addForm .is-invalid')
-            .forEach(el => el.classList.remove('is-valid','is-invalid'));
+        e.target.reset(); if(addPlaceEditor) addPlaceEditor.setData('');
+        ['add_main_file_name','add_gallery_file_name'].forEach(id=>document.getElementById(id).innerText='Chưa chọn ảnh nào');
+        ['main_image_preview','image_preview'].forEach(id=>document.getElementById(id).innerHTML='');
+        document.querySelectorAll('#addForm .is-valid,.is-invalid').forEach(el=>el.classList.remove('is-valid','is-invalid'));
         loadPlaces();
-    } else {
-        alert("❌ Có lỗi xảy ra, vui lòng thử lại.");
-    }
+    } else alert("❌ Có lỗi xảy ra, vui lòng thử lại.");
 };
 
 // ── FORM SUBMIT: EDIT ─────────────────────────────
-document.getElementById("editForm").onsubmit = async (e) => {
+document.getElementById("editForm").onsubmit = async e => {
     e.preventDefault();
-    const fields = ['editName','editCategory','editLat','editLng','editPhone','editPrice'];
-    if (!validateForm(fields)) return;
-    if (!validateGallery('edit_image_files', 'edit_gallery_hint')) return;
-
+    if (!validateForm(['editName','editCategory','editLat','editLng','editPhone','editPrice'])) return;
+    if (!validateGallery('edit_image_files','edit_gallery_hint')) return;
     const id = document.getElementById("editId").value;
-    const formData = new FormData(e.target);
-    if (editPlaceEditor) formData.append('description', editPlaceEditor.getData());
-
-    const res = await fetch(`/api/admin/places/${id}/`, {
-        method: "POST", body: formData,
-        headers: { "X-CSRFToken": "{{ csrf_token }}", "X-HTTP-Method-Override": "PUT" }
-    });
+    const fd = new FormData(e.target);
+    if (editPlaceEditor) fd.append('description', editPlaceEditor.getData());
+    const res = await fetch(`/api/admin/places/${id}/`, {method:"POST",body:fd,headers:{"X-CSRFToken":"{{ csrf_token }}","X-HTTP-Method-Override":"PUT"}});
     if (res.ok) { closeEditModal(); loadPlaces(); alert("✅ Cập nhật thành công!"); }
     else alert("❌ Cập nhật thất bại.");
 };
 
-// ── EDIT MODAL ────────────────────────────────────
 function openEditModalById(id) {
-    const p = allData.find(item => item.id === id);
-    if (!p) return;
-    document.getElementById('editId').value = p.id;
-    document.getElementById('editName').value = p.name;
-    document.getElementById('editCategory').value = p.category;
-    document.getElementById('editLat').value = p.latitude;
-    document.getElementById('editLng').value = p.longitude;
-    document.getElementById('editPrice').value = p.price || '';
-    document.getElementById('editAddress').value = p.address || '';
-    document.getElementById('editPhone').value = p.phone || '';
-    if (editPlaceEditor) editPlaceEditor.setData(p.description || '');
-    // Reset validation states
-    document.querySelectorAll('#editForm .is-valid, #editForm .is-invalid')
-        .forEach(el => el.classList.remove('is-valid','is-invalid'));
-    document.querySelectorAll('#editForm .field-hint').forEach(h => h.classList.remove('show'));
-
+    const p = allData.find(item=>item.id===id); if (!p) return;
+    ['editId','editName','editCategory','editLat','editLng','editPrice','editAddress','editPhone']
+        .forEach(fid => {
+            const el = document.getElementById(fid);
+            if (!el) return;
+            el.value = p[{editId:'id',editName:'name',editCategory:'category',editLat:'latitude',editLng:'longitude',editPrice:'price',editAddress:'address',editPhone:'phone'}[fid]] ?? '';
+        });
+    if (editPlaceEditor) editPlaceEditor.setData(p.description||'');
+    document.querySelectorAll('#editForm .is-valid,.is-invalid').forEach(el=>el.classList.remove('is-valid','is-invalid'));
+    document.querySelectorAll('#editForm .field-hint').forEach(h=>h.classList.remove('show'));
     document.getElementById('editModal').classList.add('open');
     const pos = [p.latitude, p.longitude];
     if (!editMap) {
         editMap = L.map('editMap').setView(pos, 15);
         L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png').addTo(editMap);
-        editMarker = L.marker(pos, {draggable: true}).addTo(editMap);
-        editMap.on('click', ev => { editMarker.setLatLng(ev.latlng); updateCoords('editLat','editLng', ev.latlng); });
-        editMarker.on('dragend', () => updateCoords('editLat','editLng', editMarker.getLatLng()));
-    } else {
-        editMap.setView(pos, 15);
-        editMarker.setLatLng(pos);
-    }
-    setTimeout(() => editMap.invalidateSize(), 200);
+        editMarker = L.marker(pos, {draggable:true}).addTo(editMap);
+        editMap.on('click', ev=>{editMarker.setLatLng(ev.latlng);updateCoords('editLat','editLng',ev.latlng);});
+        editMarker.on('dragend', ()=>updateCoords('editLat','editLng',editMarker.getLatLng()));
+    } else { editMap.setView(pos,15); editMarker.setLatLng(pos); }
+    setTimeout(()=>editMap.invalidateSize(), 200);
 }
 
-function closeEditModal() {
-    document.getElementById('editModal').classList.remove('open');
-}
+function closeEditModal() { document.getElementById('editModal').classList.remove('open'); }
 
-// ── DELETE ────────────────────────────────────────
 async function deletePlace(id) {
-    if (!confirm("Bạn có chắc muốn xóa địa điểm này? Hành động không thể hoàn tác.")) return;
-    const res = await fetch(`/api/admin/places/${id}/`, {
-        method: "DELETE", headers: { "X-CSRFToken": "{{ csrf_token }}" }
-    });
+    if (!confirm("Bạn có chắc muốn xóa địa điểm này?")) return;
+    const res = await fetch(`/api/admin/places/${id}/`, {method:"DELETE",headers:{"X-CSRFToken":"{{ csrf_token }}"}});
     if (res.ok) loadPlaces();
 }
 
-// ── INIT ──────────────────────────────────────────
 window.onload = async () => {
     initMainMap();
     await initPlaceEditors();
-
-    // File previews
-    setupPreview('image_files', 'image_preview');
-    setupPreview('edit_image_files', 'edit_image_preview');
-    setupPreview('main_image', 'main_image_preview');
-    setupPreview('edit_main_image', 'edit_main_image_preview');
-
-    // File name display
-    handleFileNameDisplay('edit_main_image', 'main_file_name');
-    handleFileNameDisplay('edit_image_files', 'gallery_file_name');
-    handleFileNameDisplay('main_image', 'add_main_file_name');
-    handleFileNameDisplay('image_files', 'add_gallery_file_name');
-
-    // Live validation
+    ['image_files','edit_image_files','main_image','edit_main_image'].forEach((id,i) => {
+        setupPreview(id, ['image_preview','edit_image_preview','main_image_preview','edit_main_image_preview'][i]);
+    });
+    handleFileName('main_image','add_main_file_name');
+    handleFileName('image_files','add_gallery_file_name');
+    handleFileName('edit_main_image','main_file_name');
+    handleFileName('edit_image_files','gallery_file_name');
     attachLiveValidation(['add_name','add_category','latitude','longitude','add_phone','add_price']);
     attachLiveValidation(['editName','editCategory','editLat','editLng','editPhone','editPrice']);
-
-    // Gallery change validation
-    document.getElementById('image_files').addEventListener('change', () => validateGallery('image_files','add_gallery_hint'));
-    document.getElementById('edit_image_files').addEventListener('change', () => validateGallery('edit_image_files','edit_gallery_hint'));
-
-    // Reset main image border when re-selected
-    document.getElementById('main_image').addEventListener('change', function() {
-        this.closest('.upload-area').style.borderColor = '';
-        this.setCustomValidity('');
-        document.getElementById('add_main_hint').classList.remove('show');
+    document.getElementById('image_files').addEventListener('change', ()=>validateGallery('image_files','add_gallery_hint'));
+    document.getElementById('edit_image_files').addEventListener('change', ()=>validateGallery('edit_image_files','edit_gallery_hint'));
+    document.getElementById('main_image').addEventListener('change', function(){
+        this.setCustomValidity(''); document.getElementById('add_main_hint').classList.remove('show');
     });
-
     loadPlaces();
 };
 </script>
