@@ -19,7 +19,7 @@
         {% endif %}
         <div class="tour-detail-overlay">
             <h1 class="tour-detail-title">{{ tour.title }}</h1>
-            <p class="tour-detail-intro">{{ tour.short_intro }}</p>
+            <p class="tour-detail-intro">{{ tour.short_intro|striptags }}</p>
         </div>
     </div>
 
@@ -54,7 +54,7 @@
                 <div class="tour-description">
                     <h2>Chi tiết tour</h2>
                     <div style="color: #555;">
-                        {{ tour.description|linebreaks }}
+                        {{ tour.description|safe }}
                     </div>
                 </div>
                 {% endif %}
