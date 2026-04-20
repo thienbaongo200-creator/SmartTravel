@@ -10,12 +10,14 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
+<div class="topbar">
+    <button class="btn-menu" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+    <div class="topbar-brand"><i class="fas fa-map-marked-alt"></i>Smart Travel</div>
+</div>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
-<div class="sidebar">
-    <div class="sidebar-brand">
-        <i class="fas fa-map-marked-alt"></i>
-        <span>Smart Travel</span>
-    </div>
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-brand"><i class="fas fa-map-marked-alt"></i><span>Smart Travel</span></div>
     <nav>
         <a href="{% url 'admin_dashboard' %}" class="sidebar-link active"><i class="fas fa-th-large"></i>Dashboard</a>
         <a href="{% url 'admin_places' %}" class="sidebar-link"><i class="fas fa-layer-group"></i>Quản lý Địa điểm</a>
@@ -26,12 +28,12 @@
         <a href="{% url 'admin_manage_events' %}" class="sidebar-link"><i class="fas fa-calendar-alt"></i>Sự kiện</a>
         <hr class="sidebar-divider">
         <a href="/" class="sidebar-link"><i class="fas fa-external-link-alt"></i>Xem Website</a>
-        <a href="{% url 'logout' %}" class="sidebar-link" style="color:#f87171"><i class="fas fa-sign-out-alt"></i>Đăng xuất</a>
+        <a href="{% url 'logout' %}" class="sidebar-link logout-link"><i class="fas fa-sign-out-alt"></i>Đăng xuất</a>
     </nav>
 </div>
 
 <main class="main-content">
-    <div class="header-section mb-5 d-flex justify-content-between align-items-center">
+    <div class="page-header mb-5 d-flex justify-content-between align-items-center">
         <div>
             <h2 class="fw-bold" style="color: var(--text-dark);">Tổng quan quản trị</h2>
             <p class="text-muted small">Chào mừng trở lại, <span class="text-primary fw-bold">{{ request.user.username }}</span></p>
@@ -107,6 +109,14 @@
         </div>
     </div>
 </main>
+
+<script>
+// ── MOBILE SIDEBAR ────────────────────────────────
+function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('open');
+    document.getElementById('sidebarOverlay').classList.toggle('show');
+}
+</script>
 
 </body>
 </html>
