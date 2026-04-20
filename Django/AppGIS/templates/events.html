@@ -1,69 +1,109 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Sự kiện{% endblock %}
+{% block title %}Khám phá Sự kiện | Smart Travel Map{% endblock %}
 
 {% block content %}
-<section class="events_section">
+<style>
+    .event-hero { background: #1a2b48; color: white; padding: 60px 0; margin-bottom: 40px; }
+    .event-card { background: white; border-radius: 15px; overflow: hidden; transition: 0.3s; border: 1px solid #eee; }
+    .event-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+    
+    .event-image-box { position: relative; height: 220px; }
+    .event-image-box img { width: 100%; height: 100%; object-fit: cover; }
+    
+    .category-badge { 
+        position: absolute; top: 15px; left: 15px; background: rgba(255, 193, 7, 0.9);
+        color: #000; padding: 4px 12px; border-radius: 20px; font-weight: 700; font-size: 0.75rem; 
+    }
+    
+    .date-tag {
+        position: absolute; bottom: -15px; right: 20px; background: white;
+        padding: 10px 15px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        text-align: center; line-height: 1; border-top: 3px solid #ffc107;
+    }
+    .date-tag .day { display: block; font-size: 1.2rem; font-weight: 800; color: #1a2b48; }
+    .date-tag .month { font-size: 0.7rem; text-uppercase: true; color: #777; }
+
+    .event-body { padding: 30px 20px 20px; }
+    .event-title { font-size: 1.2rem; font-weight: 700; color: #1a2b48; margin-bottom: 10px; min-height: 2.8rem; }
+    .event-meta { font-size: 0.85rem; color: #666; margin-bottom: 15px; }
+    .event-meta i { color: #ffc107; width: 20px; }
+    
+    .desc-truncate { 
+        font-size: 0.9rem; color: #555; display: -webkit-box; 
+        -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; 
+    }
+    
+    .btn-detail { 
+        display: block; width: 100%; text-align: center; padding: 10px; 
+        background: #f8f9fa; color: #1a2b48; border-radius: 8px; 
+        text-decoration: none; font-weight: 700; font-size: 0.8rem; transition: 0.3s;
+    }
+    .btn-detail:hover { background: #1a2b48; color: white; }
+
+    /* Badge Status */
+    .status-pill { font-size: 0.7rem; padding: 2px 8px; border-radius: 4px; font-weight: 600; }
+</style>
+
+<section class="event-hero text-center">
     <div class="container">
-        <div class="text-center mb-5">
-            <h2>Sự kiện du lịch nổi bật</h2>
-            <p class="text-muted">
-                Smart Travel Map mang đến cho bạn những sự kiện hấp dẫn, nơi du khách có thể hòa mình vào không khí lễ hội, văn hóa và giải trí đặc sắc.
-            </p>
-        </div>
-
-        <div class="events_grid">
-            <div class="event_card">
-                <img src="{% static 'images/AoDaiFestival.jpg' %}" alt="Lễ hội Áo dài">
-                <div class="card-body">
-                    <h3>Lễ hội Áo dài TP.HCM</h3>
-                    <p>
-                        Tôn vinh vẻ đẹp truyền thống của tà áo dài Việt Nam với các hoạt động trình diễn, triển lãm và giao lưu văn hóa.
-                    </p>
-                    <ul>
-                        <li><strong>Thời gian:</strong> Tháng 3 hàng năm</li>
-                        <li><strong>Địa điểm:</strong> TP.HCM</li>
-                        <li><strong>Hoạt động:</strong> Trình diễn áo dài, triển lãm nghệ thuật</li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="event_card">
-                <img src="{% static 'images/NguyenHueFlowerStreet.jpg' %}" alt="Đường hoa Nguyễn Huệ">
-                <div class="card-body">
-                    <h3>Đường hoa Nguyễn Huệ</h3>
-                    <p>
-                        Sự kiện thường niên vào dịp Tết Nguyên Đán, biến phố đi bộ Nguyễn Huệ thành không gian nghệ thuật rực rỡ sắc hoa.
-                    </p>
-                    <ul>
-                        <li><strong>Thời gian:</strong> Tết Nguyên Đán</li>
-                        <li><strong>Địa điểm:</strong> Quận 1, TP.HCM</li>
-                        <li><strong>Hoạt động:</strong> Tham quan, chụp ảnh, nghệ thuật đường phố</li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="event_card">
-                <img src="{% static 'images/HCMTourismFestival.jpg' %}" alt="Ngày hội Du lịch TP.HCM">
-                <div class="card-body">
-                    <h3>Ngày hội Du lịch TP.HCM</h3>
-                    <p>
-                        Sự kiện quảng bá du lịch lớn nhất thành phố, quy tụ nhiều doanh nghiệp, gian hàng và hoạt động văn hóa – ẩm thực phong phú.
-                    </p>
-                    <ul>
-                        <li><strong>Thời gian:</strong> Tháng 4 hàng năm</li>
-                        <li><strong>Địa điểm:</strong> Công viên 23/9, Quận 1</li>
-                        <li><strong>Hoạt động:</strong> Hội chợ du lịch, biểu diễn nghệ thuật, ẩm thực</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-
-        <div class="section-footer">
-            <h4>Khám phá thêm nhiều sự kiện hấp dẫn khác</h4>
-            <p>Smart Travel Map sẽ liên tục cập nhật để bạn không bỏ lỡ bất kỳ lễ hội nào.</p>
-        </div>
+        <h1 class="fw-bold">SỰ KIỆN & LỄ HỘI</h1>
+        <p class="opacity-75">Cập nhật những hoạt động văn hóa đặc sắc tại địa phương</p>
     </div>
 </section>
+
+<div class="container mb-5">
+    <div class="row">
+        {% for su_kien in ds_su_kien %}
+        <div class="col-lg-6 col-md-12 mb-4">
+            <div class="event-card h-100 d-flex flex-column">
+                <div class="event-image-box">
+                    <span class="category-badge">{{ su_kien.category|default:"Du lịch" }}</span>
+                    
+                    <div class="image-slider h-100">
+                        {% with first_img=su_kien.images.all.0 %}
+                        <img src="{{ first_img.image.url }}" alt="{{ su_kien.title }}" 
+                             onerror="this.src='{% static 'images/default_event.jpg' %}'">
+                        {% endwith %}
+                    </div>
+
+                    <div class="date-tag">
+                        <span class="day">{{ su_kien.start_date|date:"d" }}</span>
+                        <span class="month">Tháng {{ su_kien.start_date|date:"m" }}</span>
+                    </div>
+                </div>
+
+                <div class="event-body flex-grow-1">
+                    <div class="mb-2">
+                        <span class="status-pill {{ su_kien.status_class|default:'bg-light text-dark' }}">
+                            {{ su_kien.status_type|default:"Đang cập nhật" }}
+                        </span>
+                    </div>
+                    
+                    <h5 class="event-title">{{ su_kien.title }}</h5>
+                    
+                    <div class="event-meta">
+                        <div><i class="fas fa-map-marker-alt"></i> {{ su_kien.location|default:"Liên hệ BTC" }}</div>
+                        <div><i class="far fa-clock"></i> 
+                            {{ su_kien.start_date|date:"d/m/Y" }} 
+                            {% if su_kien.end_date %} - {{ su_kien.end_date|date:"d/m/Y" }}{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="desc-truncate mb-4">
+                        {{ su_kien.description|striptags }}
+                    </div>
+
+                <a href="{% url 'event_detail' su_kien.id %}" class="btn-detail">CHI TIẾT SỰ KIỆN</a>                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <img src="{% static 'images/empty_box.png' %}" style="width: 100px; opacity: 0.3;">
+            <p class="text-muted mt-3 italic">Hiện chưa có sự kiện nào được diễn ra.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
 {% endblock %}
