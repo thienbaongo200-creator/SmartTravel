@@ -5,45 +5,79 @@
 
 {% block content %}
 <style>
+    /* Tổng thể */
+    .events-section { background: #f8fafc; min-height: 100vh; padding-bottom: 50px; }
     .event-hero { background: #1a2b48; color: white; padding: 60px 0; margin-bottom: 40px; }
-    .event-card { background: white; border-radius: 15px; overflow: hidden; transition: 0.3s; border: 1px solid #eee; }
-    .event-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-    
-    .event-image-box { position: relative; height: 220px; }
-    .event-image-box img { width: 100%; height: 100%; object-fit: cover; }
-    
-    .category-badge { 
-        position: absolute; top: 15px; left: 15px; background: rgba(255, 193, 7, 0.9);
-        color: #000; padding: 4px 12px; border-radius: 20px; font-weight: 700; font-size: 0.75rem; 
-    }
-    
-    .date-tag {
-        position: absolute; bottom: -15px; right: 20px; background: white;
-        padding: 10px 15px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        text-align: center; line-height: 1; border-top: 3px solid #ffc107;
-    }
-    .date-tag .day { display: block; font-size: 1.2rem; font-weight: 800; color: #1a2b48; }
-    .date-tag .month { font-size: 0.7rem; text-uppercase: true; color: #777; }
 
-    .event-body { padding: 30px 20px 20px; }
-    .event-title { font-size: 1.2rem; font-weight: 700; color: #1a2b48; margin-bottom: 10px; min-height: 2.8rem; }
-    .event-meta { font-size: 0.85rem; color: #666; margin-bottom: 15px; }
-    .event-meta i { color: #ffc107; width: 20px; }
-    
-    .desc-truncate { 
-        font-size: 0.9rem; color: #555; display: -webkit-box; 
-        -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; 
+    /* Filter Section */
+    .filter-section {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(15px);
+        border-radius: 20px;
+        border: 1px solid rgba(0,0,0,0.05);
+        box-shadow: 0 8px 32px rgba(31, 38, 135, 0.07);
+        padding: 1.5rem;
+        margin-bottom: 30px;
     }
-    
-    .btn-detail { 
-        display: block; width: 100%; text-align: center; padding: 10px; 
-        background: #f8f9fa; color: #1a2b48; border-radius: 8px; 
-        text-decoration: none; font-weight: 700; font-size: 0.8rem; transition: 0.3s;
-    }
-    .btn-detail:hover { background: #1a2b48; color: white; }
+    .filter-section .form-label { font-size: 0.85rem; font-weight: 700; color: #4a5568; text-transform: uppercase; }
+    .filter-section .form-control, .filter-section .form-select { border-radius: 10px; padding: 0.6rem 1rem; }
 
-    /* Badge Status */
-    .status-pill { font-size: 0.7rem; padding: 2px 8px; border-radius: 4px; font-weight: 600; }
+    /* Event Card (Hotel Style) */
+    .hotel-card {
+        display: flex; background: white; border-radius: 20px; overflow: hidden;
+        transition: all 0.3s ease; border: 1px solid rgba(0,0,0,0.05); margin-bottom: 25px;
+    }
+    .hotel-card:hover { transform: translateY(-5px); box-shadow: 0 15px 35px rgba(0,0,0,0.1); }
+
+    .hotel-img-container { width: 350px; position: relative; overflow: hidden; flex-shrink: 0; height: 280px; }
+    .image-slider { display: flex; transition: transform 0.5s ease; height: 100%; }
+    .slider-item { min-width: 100%; height: 100%; }
+    .hotel-img { width: 100%; height: 100%; object-fit: cover; cursor: pointer; }
+
+    .rating-badge {
+        position: absolute; top: 15px; left: 15px; background: #ffc107;
+        padding: 5px 12px; border-radius: 8px; font-weight: bold; z-index: 10; font-size: 0.9rem;
+    }
+
+    .slider-nav {
+        position: absolute; top: 50%; transform: translateY(-50%);
+        background: rgba(255,255,255,0.8); border: none; width: 35px; height: 35px;
+        border-radius: 50%; z-index: 15; cursor: pointer; transition: 0.3s;
+    }
+    .slider-nav:hover { background: #fff; }
+    .nav-prev { left: 10px; } .nav-next { right: 10px; }
+
+    .hotel-content-body { padding: 25px; flex-grow: 1; display: flex; flex-direction: column; }
+    .hotel-title { font-size: 1.3rem; font-weight: 700; color: #1a2b48; margin-bottom: 10px; }
+
+    .badge-status { padding: 4px 12px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; }
+    .status-upcoming { background: #e0f2fe; color: #0369a1; }
+    .status-ongoing { background: #dcfce7; color: #15803d; }
+
+    .info-list { list-style: none; padding: 0; margin: 15px 0; }
+    .info-list li { margin-bottom: 6px; color: #555; display: flex; align-items: center; font-size: 0.95rem; }
+    .info-list i { color: #ffc107; margin-right: 10px; width: 20px; }
+
+    .hotel-desc { color: #666; font-size: 0.9rem; line-height: 1.5; margin-bottom: 20px; }
+
+    .btn-hotel-action {
+        background: #1a2b48; color: white; padding: 10px 25px; border-radius: 10px;
+        text-decoration: none; display: inline-block; transition: 0.3s; font-weight: 600; width: fit-content;
+    }
+    .btn-hotel-action:hover { background: #ffc107; color: #1a2b48; }
+
+    /* Lightbox */
+    #imageModal {
+        display: none; position: fixed; z-index: 9999; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.9); justify-content: center; align-items: center;
+    }
+    #modalImg { max-width: 90%; max-height: 80%; border-radius: 10px; }
+    .modal-close { position: absolute; top: 20px; right: 30px; color: white; font-size: 40px; cursor: pointer; }
+
+    @media (max-width: 992px) {
+        .hotel-card { flex-direction: column; }
+        .hotel-img-container { width: 100%; height: 220px; }
+    }
 </style>
 
 <section class="event-hero text-center">
@@ -53,57 +87,135 @@
     </div>
 </section>
 
-<div class="container mb-5">
+<div class="container events-section">
+    <div class="filter-section">
+        <form method="get" class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Trạng thái</label>
+                <select name="status" class="form-select">
+                    <option value="">Tất cả trạng thái</option>
+                    <option value="Sắp diễn ra">Sắp diễn ra</option>
+                    <option value="Đang diễn ra">Đang diễn ra</option>
+                    <option value="Đã kết thúc">Đã kết thúc</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Thể loại</label>
+                <select name="category" class="form-select">
+                    <option value="">Tất cả thể loại</option>
+                    <option value="Văn hóa">Văn hóa</option>
+                    <option value="Lễ hội">Lễ hội</option>
+                    <option value="Âm nhạc">Âm nhạc</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Tìm địa điểm</label>
+                <input type="text" name="location" class="form-control" placeholder="Nhập tên địa phương...">
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100" style="background: #1a2b48; border: none; height: 45px;">Lọc</button>
+            </div>
+        </form>
+    </div>
+
     <div class="row">
         {% for su_kien in ds_su_kien %}
-        <div class="col-lg-6 col-md-12 mb-4">
-            <div class="event-card h-100 d-flex flex-column">
-                <div class="event-image-box">
-                    <span class="category-badge">{{ su_kien.category|default:"Du lịch" }}</span>
+        <div class="col-12">
+            <div class="hotel-card">
+                <div class="hotel-img-container" id="slider-{{ forloop.counter }}">
+                    <div class="rating-badge">
+                        <i class="fas fa-calendar-alt"></i> {{ su_kien.start_date|date:"d/m" }}
+                    </div>
                     
-                    <div class="image-slider h-100">
-                        {% with first_img=su_kien.images.all.0 %}
-                        <img src="{{ first_img.image.url }}" alt="{{ su_kien.title }}" 
-                             onerror="this.src='{% static 'images/default_event.jpg' %}'">
-                        {% endwith %}
-                    </div>
-
-                    <div class="date-tag">
-                        <span class="day">{{ su_kien.start_date|date:"d" }}</span>
-                        <span class="month">Tháng {{ su_kien.start_date|date:"m" }}</span>
-                    </div>
+                    <button class="slider-nav nav-prev" onclick="moveSlider('{{ forloop.counter }}', -1)"><i class="fas fa-chevron-left"></i></button>
+                    <button class="slider-nav nav-next" onclick="moveSlider('{{ forloop.counter }}', 1)"><i class="fas fa-chevron-right"></i></button>
+                    
+                    <div class="image-slider">
+                        {% for img in su_kien.images.all %}
+                        <div class="slider-item">
+                            <img src="{{ img.image.url }}" class="hotel-img" onclick="openLightbox(this.src)" onerror="this.src='{% static 'images/default_event.jpg' %}'">
+                        </div>
+                        {% empty %}
+                        <div class="slider-item">
+                            <img src="{% static 'images/default_event.jpg' %}" class="hotel-img">
+                        </div>
+                        {% endfor %}
+                    </div> 
                 </div>
 
-                <div class="event-body flex-grow-1">
-                    <div class="mb-2">
-                        <span class="status-pill {{ su_kien.status_class|default:'bg-light text-dark' }}">
-                            {{ su_kien.status_type|default:"Đang cập nhật" }}
+                <div class="hotel-content-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h5 class="hotel-title">{{ su_kien.title }}</h5>
+                        <span class="badge-status {{ su_kien.status_class|default:'bg-light text-dark' }}">
+                            {{ su_kien.status_type|default:su_kien.status|default:"Đang cập nhật" }}
                         </span>
                     </div>
-                    
-                    <h5 class="event-title">{{ su_kien.title }}</h5>
-                    
-                    <div class="event-meta">
-                        <div><i class="fas fa-map-marker-alt"></i> {{ su_kien.location|default:"Liên hệ BTC" }}</div>
-                        <div><i class="far fa-clock"></i> 
+
+                    <ul class="info-list">
+                        <li><i class="fas fa-map-marker-alt"></i> {{ su_kien.location|default:"Liên hệ BTC" }}</li>
+                        <li><i class="far fa-clock"></i> 
                             {{ su_kien.start_date|date:"d/m/Y" }} 
                             {% if su_kien.end_date %} - {{ su_kien.end_date|date:"d/m/Y" }}{% endif %}
-                        </div>
-                    </div>
+                        </li>
+                        <li><i class="fas fa-tag"></i> {{ su_kien.category|default:"Văn hóa & Du lịch" }}</li>
+                    </ul>
 
-                    <div class="desc-truncate mb-4">
-                        {{ su_kien.description|striptags }}
+                    <div class="hotel-desc">
+                        {{ su_kien.description|striptags|truncatewords:40 }}
                     </div>
-
-                <a href="{% url 'event_detail' su_kien.id %}" class="btn-detail">CHI TIẾT SỰ KIỆN</a>                </div>
+                    
+                    <div class="mt-auto">
+                        <a href="{% url 'event_detail' su_kien.id %}" class="btn-hotel-action">
+                            <i class="fas fa-eye me-2"></i> Xem chi tiết
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
         {% empty %}
         <div class="col-12 text-center py-5">
-            <img src="{% static 'images/empty_box.png' %}" style="width: 100px; opacity: 0.3;">
-            <p class="text-muted mt-3 italic">Hiện chưa có sự kiện nào được diễn ra.</p>
+            <img src="{% static 'images/empty_box.png' %}" style="width: 80px; opacity: 0.3;">
+            <p class="text-muted mt-3">Không tìm thấy sự kiện nào phù hợp.</p>
         </div>
         {% endfor %}
     </div>
 </div>
+
+<div id="imageModal">
+    <span class="modal-close" onclick="closeLightbox()">&times;</span>
+    <div id="modalContent" onclick="closeLightbox()">
+        <img id="modalImg" src="">
+    </div>
+</div>
+
+<script>
+    // Logic Slider
+    let sliderPositions = {};
+
+    function moveSlider(id, direction) {
+        if (typeof sliderPositions[id] === 'undefined') sliderPositions[id] = 0;
+        const container = document.getElementById(`slider-${id}`);
+        const slider = container.querySelector('.image-slider');
+        const items = slider.querySelectorAll('.slider-item');
+        if (items.length <= 1) return;
+
+        sliderPositions[id] = (sliderPositions[id] + direction + items.length) % items.length;
+        slider.style.transform = `translateX(-${sliderPositions[id] * 100}%)`;
+    }
+
+    // Lightbox Logic
+    const modal = document.getElementById('imageModal');
+    const modalImg = document.getElementById('modalImg');
+
+    function openLightbox(src) {
+        modalImg.src = src;
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox() {
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+</script>
 {% endblock %}
