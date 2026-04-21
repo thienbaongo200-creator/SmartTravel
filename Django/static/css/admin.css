@@ -41,7 +41,7 @@ body {
     backdrop-filter: blur(20px);
     border-right: 1px solid var(--glass-border);
     padding: 2rem 0;
-    z-index: 1000;
+    z-index: 1002;
     overflow-y: auto;
 }
 
@@ -96,6 +96,20 @@ body {
     margin-right: 0.75rem;
 }
 
+.sidebar-divider {
+    border: none;
+    border-top: 1px solid rgba(255,255,255,.08);
+    margin: 8px 20px;
+}
+
+.sidebar-link.logout-link {
+    color: #f87171 !important;
+}
+
+.sidebar-link.logout-link:hover {
+    color: #fca5a5 !important;
+}
+
 /* Main Content */
 .main-content {
     margin-left: 280px;
@@ -103,13 +117,65 @@ body {
     min-height: 100vh;
 }
 
-.header-section {
-    background: var(--glass-bg);
+/* Topbar */
+.topbar {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(20px);
-    border: 1px solid var(--glass-border);
-    border-radius: 16px;
-    padding: 2rem;
-    box-shadow: var(--shadow);
+    border-bottom: 1px solid var(--glass-border);
+    padding: 0 1rem;
+    z-index: 1001;
+    align-items: center;
+    gap: 1rem;
+}
+
+.topbar-brand {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-dark);
+}
+
+.topbar-brand i {
+    color: var(--primary-color);
+    margin-right: 0.5rem;
+}
+
+.btn-menu {
+    background: none;
+    border: none;
+    font-size: 1.25rem;
+    color: var(--text-dark);
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-menu:hover {
+    background: rgba(79, 70, 229, 0.1);
+    color: var(--primary-color);
+}
+
+/* Sidebar Overlay */
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
+    z-index: 1000;
+}
+
+.sidebar-overlay.show {
+    display: block;
 }
 
 /* Glass Card */
@@ -298,4 +364,90 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
     background: rgba(79, 70, 229, 0.5);
+}
+
+/* ── EVENT PAGE STYLES ────────────────────────────── */
+.required-label::after { 
+    content: " *"; 
+    color: var(--danger); 
+    margin-left: 2px; 
+}
+
+.preview-img { 
+    width: 80px; 
+    height: 56px; 
+    object-fit: cover; 
+    border-radius: var(--radius-sm); 
+    border: 1px solid var(--border); 
+}
+
+.status-badge { 
+    font-size: .75rem; 
+    padding: 5px 12px; 
+    border-radius: 20px; 
+    font-weight: 600; 
+}
+
+.sticky-top { 
+    position: sticky !important;
+}
+
+/* Responsive Design */
+@media (max-width: 900px) {
+    .topbar {
+        display: flex;
+    }
+    
+    .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+    }
+    
+    .sidebar.open {
+        transform: translateX(0);
+    }
+    
+    .main-content {
+        margin-left: 0;
+        padding: 5rem 1rem 2rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .main-content {
+        padding: 5rem 1rem 2rem;
+    }
+    
+    .glass-card {
+        padding: 1.5rem;
+    }
+    
+    .header-section {
+        padding: 1.5rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .main-content {
+        padding: 5rem 0.5rem 2rem;
+    }
+    
+    .glass-card {
+        padding: 1rem;
+        margin: 0.5rem;
+    }
+    
+    .header-section {
+        padding: 1rem;
+        margin: 0.5rem;
+    }
+    
+    .custom-table {
+        font-size: 0.875rem;
+    }
+    
+    .custom-table th,
+    .custom-table td {
+        padding: 0.5rem;
+    }
 }
