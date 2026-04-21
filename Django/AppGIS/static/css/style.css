@@ -678,11 +678,17 @@ textarea::placeholder {
     border-radius: var(--radius-xl);
     padding: var(--space-lg);
     box-shadow: 0 24px 60px rgba(29, 67, 114, 0.14);
-    max-height: calc(100% - 120px);
+    max-height: calc(100% - 150px);
     overflow-y: auto;
     border: 1px solid rgba(34, 49, 63, 0.08);
     backdrop-filter: blur(14px);
-    animation: slideDown 0.3s ease-out;
+    animation: slideInRight 0.3s ease-out;
+    transition: transform 0.3s ease;
+}
+
+@keyframes slideInRight {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
 }
 
 /* Info Header Image */
@@ -695,7 +701,8 @@ textarea::placeholder {
 
 .info-header img {
     width: 100%;
-    height: 200px;
+    aspect-ratio: 16/9;
+    height: auto;
     object-fit: cover;
     border-radius: var(--radius-md);
     display: block;
@@ -2173,8 +2180,38 @@ textarea::placeholder {
 
 .main-content {
     flex: 1;
-    padding: var(--space-xl);
-    overflow-x: hidden;
+    padding: var(--space-
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+}
+
+/* Admin Responsive Table Wrapper */
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    background: var(--bg-white);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--space-md);
+}
+
+/* Admin Split Layout (Map + Form) */
+.admin-split-container {
+    display: flex;
+    gap: var(--space-lg);
+    flex-wrap: wrap;
+}
+
+.admin-split-container > .admin-card-half {
+    flex: 1;
+    min-width: 400px;
+}
+
+@media (max-width: 992px) {
+    .admin-split-container > .admin-card-half {
+        min-width: 100%;
+    }
 }
 
 .glass-card {
@@ -2778,19 +2815,38 @@ footer ul li a:hover {
     }
 
     /* Info Panel & Route Modal */
-    #info-panel,
+    #info-panel {
+        width: 100%;
+        bottom: 0;
+        top: auto;
+        right: 0;
+        left: 0;
+        max-height: 60vh;
+        border-radius: 25px 25px 0 0;
+        padding-bottom: 40px;
+        animation: slideUpMobile 0.4s ease-out;
+        box-shadow: 0 -10px 30px rgba(0,0,0,0.2);
+    }
+
+    @keyframes slideUpMobile {
+        from { transform: translateY(100%); }
+        to { transform: translateY(0); }
+    }
+
     .route-modal {
         width: calc(100% - 20px);
-        right: 10px;
         left: 10px;
-        top: 70px;
+        top: 80px;
     }
 
     /* Category Filter */
     .category-filter-nav {
-        left: 50%;
-        top: 70px;
-        width: calc(100% - 20px);
+        top: 75px;
+        left: 10px;
+        right: 10px;
+        width: auto;
+        transform: none;
+        padding: 8px;
     }
 
     /* Navbar */

@@ -4,6 +4,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.contrib.auth import password_validation 
 from django.core.exceptions import ValidationError
+from .models import EventImage, TourismPoint
 class UserLoginForm(AuthenticationForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -104,6 +105,32 @@ class UserRegisterForm(forms.ModelForm):
         if commit:
             user.save()
         return user
+class EventImageForm(forms.ModelForm):
+    class Meta:
+        model = EventImage
+        fields = '__all__'
+        widgets = {
+            'image': forms.ClearableFileInput(attrs={'accept': 'image/*'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['image'].label = "Hình ảnh sự kiện"
+
+class TourismPointForm(forms.ModelForm):
+    class Meta:
+        model = TourismPoint
+        fields = '__all__'
+        widgets = {
+            'img': forms.URLInput(attrs={'placeholder': 'Nhập URL hình ảnh'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['img'].label = "Hình ảnh chính"
+
+    class Media:
+        js = ('js/admin_preview.js',)
 class ResetPasswordForm(PasswordResetForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

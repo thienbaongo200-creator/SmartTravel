@@ -1,15 +1,24 @@
 {% load static %}
-
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ thống Quản lý Đặt Tour</title>
+    <title>Hệ thống Quản lý Đặt Tour | Admin</title>
     <link rel="stylesheet" href="{% static 'css/admin.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    
+    <style>
+        /* Bổ sung một số hiệu ứng chuyển cảnh cho dòng dữ liệu */
+        tr { transition: var(--transition); }
+        .btn-action i { transition: transform 0.2s ease; }
+        .btn-action:hover i { transform: scale(1.2); }
+        
+        /* Hiệu ứng badge trạng thái */
+        .status-confirmed { background: #e0f9f1 !important; color: #10b981 !important; }
+        .status-cancelled { background: #fff5f5 !important; color: #ef4444 !important; }
+        .status-pending { background: #fff9db !important; color: #f59e0b !important; }
+    </style>
 </head>
 <body>
 
@@ -19,52 +28,64 @@
             <span>Smart Travel</span>
         </div>
         <nav>
-        <a href="{% url 'admin_dashboard' %}" class="sidebar-link">
-            <i class="fas fa-th-large"></i> Dashboard
-        </a>
-        <a href="{% url 'admin_places' %}" class="sidebar-link">
-            <i class="fas fa-layer-group"></i> Quản lý Địa điểm
-        </a>
-        <a href="{% url 'admin_user' %}" class="sidebar-link">
-            <i class="fas fa-user-friends"></i> Người dùng
-        </a>
-        <a href="{% url 'admin_tours' %}" class="sidebar-link">
-            <i class="fas fa-route"></i> Quản lý Tour
-        </a>
-        <a href="{% url 'admin_tour_booking' %}" class="sidebar-link">
-            <i class="fas fa-calendar-check"></i> Quản lý Đặt Tour
-        </a>
-        <a href="{% url 'admin_contacts' %}" class="sidebar-link">
-            <i class="fas fa-envelope"></i> Quản lý Liên hệ
-        </a>
-        <a href="{% url 'admin_manage_events' %}" class="sidebar-link active">
-            <i class="fas fa-calendar-alt"></i> Quản lý Sự kiện
-        </a>
-        <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 20px 0;">
-        <a href="/" class="sidebar-link">
-            <i class="fas fa-external-link-alt"></i> Xem Website
-        </a>
-        <a href="{% url 'logout' %}" class="sidebar-link" style="color: #ff7675;">
-            <i class="fas fa-sign-out-alt"></i> Đăng xuất
-        </a>
-    </nav>
+            <a href="{% url 'admin_dashboard' %}" class="sidebar-link">
+                <i class="fas fa-th-large"></i> <span>Dashboard</span>
+            </a>
+            <a href="{% url 'admin_places' %}" class="sidebar-link">
+                <i class="fas fa-layer-group"></i> <span>Quản lý Địa điểm</span>
+            </a>
+            <a href="{% url 'admin_user' %}" class="sidebar-link">
+                <i class="fas fa-user-friends"></i> <span>Người dùng</span>
+            </a>
+            <a href="{% url 'admin_tours' %}" class="sidebar-link">
+                <i class="fas fa-route"></i> <span>Quản lý Tour</span>
+            </a>
+            <a href="#" class="sidebar-link active">
+                <i class="fas fa-calendar-check"></i> <span>Quản lý Đặt Tour</span>
+            </a>
+            <a href="{% url 'admin_contacts' %}" class="sidebar-link">
+                <i class="fas fa-envelope"></i> <span>Quản lý Liên hệ</span>
+            </a>
+            <a href="{% url 'admin_manage_events' %}" class="sidebar-link">
+                <i class="fas fa-calendar-alt"></i> <span>Quản lý Sự kiện</span>
+            </a>
+            <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 20px 0;">
+            <a href="/" class="sidebar-link">
+                <i class="fas fa-external-link-alt"></i> <span>Xem Website</span>
+            </a>
+            <a href="{% url 'logout' %}" class="sidebar-link" style="color: #ff7675;">
+                <i class="fas fa-sign-out-alt"></i> <span>Đăng xuất</span>
+            </a>
+        </nav>
     </div>
 
     <div class="main-content">
-        <div class="header-section mb-5">
-            <h2 class="fw-bold" style="color: var(--text-dark);">Quản lý Đặt Tour</h2>
-            <p class="text-muted small">Cập nhật trạng thái và điều phối lịch trình của khách hàng.</p>
+        <div class="header-section">
+            <h2 class="fw-bold">Quản lý Đặt Tour</h2>
+            <p>Theo dõi, cập nhật trạng thái và điều phối các yêu cầu đặt tour từ khách hàng.</p>
         </div>
 
-        <div class="glass-card">
+        <div class="stats mb-4">
+            <div class="glass-card d-flex align-items-center gap-3">
+                <div class="stat-icon-box" style="background: #e0f9f1; color: #10b981;">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div>
+                    <p class="stat-label">Tổng đơn đã xác nhận</p>
+                    <h3 class="stat-value">{{ confirmed_count|default:"0" }}</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-section">
             <div class="table-responsive">
-                <table class="table custom-table">
+                <table class="custom-table align-middle">
                     <thead>
                         <tr>
                             <th>Tour & Khách hàng</th>
                             <th>Thời gian đặt</th>
                             <th>Trạng thái</th>
-                            <th class="text-center">Thao tác</th>
+                            <th class="text-center">Thao tác xử lý</th>
                         </tr>
                     </thead>
                     <tbody id="bookingTable">
@@ -72,21 +93,24 @@
                         <tr data-id="{{ b.id }}">
                             <td>
                                 <div class="d-flex align-items-center">
-                                    <div class="avatar shadow-sm me-3 d-flex align-items-center justify-content-center" 
-                                         style="width:40px; height:40px; border-radius:12px; background: #eef2ff; color:#4361ee">
-                                        <i class="fas fa-Suitcase"></i>
+                                    <div class="contact-icon me-3 shadow-sm">
+                                        <i class="fas fa-suitcase-rolling"></i>
                                     </div>
                                     <div>
-                                        <div class="text-dark fw-bold">{{ b.tour.title }}</div>
-                                        <div class="text-muted small"><i class="far fa-user me-1"></i>{{ b.user.username }}</div>
+                                        <div class="text-dark fw-bold mb-0">{{ b.tour.title }}</div>
+                                        <div class="text-muted small">
+                                            <i class="far fa-user-circle me-1"></i>{{ b.user.username }}
+                                        </div>
                                     </div>
                                 </div>
                             </td>
                             <td>
-                                <div class="text-dark small fw-bold">
-                                    <i class="far fa-calendar-alt me-1 text-primary"></i>{{ b.booked_at|date:"d/m/Y" }}
+                                <div>
+                                    <span class="badge bg-soft-primary mb-1">
+                                        <i class="far fa-calendar-alt me-1"></i>{{ b.booked_at|date:"d/m/Y" }}
+                                    </span>
                                 </div>
-                                <div class="text-muted x-small" style="font-size: 0.75rem;">
+                                <div class="text-muted" style="font-size: 0.8rem;">
                                     <i class="far fa-clock me-1"></i>{{ b.booked_at|date:"H:i" }}
                                 </div>
                             </td>
@@ -97,20 +121,25 @@
                             </td>
                             <td class="text-center">
                                 <div class="d-flex justify-content-center gap-2">
-                                    <button onclick="updateStatus({{ b.id }}, 'confirmed')" class="btn-action" title="Xác nhận">
+                                    <button onclick="updateStatus({{ b.id }}, 'confirmed')" class="btn-action shadow-sm" title="Xác nhận tour">
                                         <i class="fas fa-check text-success"></i>
                                     </button>
-                                    <button onclick="updateStatus({{ b.id }}, 'cancelled')" class="btn-action" title="Hủy">
-                                        <i class="fas fa-times text-warning"></i>
+                                    <button onclick="updateStatus({{ b.id }}, 'cancelled')" class="btn-action shadow-sm" title="Hủy tour">
+                                        <i class="fas fa-ban text-warning"></i>
                                     </button>
-                                    <button onclick="deleteBooking({{ b.id }})" class="btn-action" title="Xóa">
-                                        <i class="fas fa-trash text-danger"></i>
+                                    <button onclick="deleteBooking({{ b.id }})" class="btn-action shadow-sm" title="Xóa vĩnh viễn">
+                                        <i class="fas fa-trash-alt text-danger"></i>
                                     </button>
                                 </div>
                             </td>
                         </tr>
                         {% empty %}
-                        <tr><td colspan="4" class="text-center py-5 text-muted">Chưa có dữ liệu đặt tour nào.</td></tr>
+                        <tr>
+                            <td colspan="4" class="text-center py-5">
+                                <img src="https://cdn-icons-png.flaticon.com/512/7486/7486744.png" width="80" class="mb-3 opacity-25">
+                                <p class="text-muted">Hiện chưa có đơn đặt tour nào được ghi nhận.</p>
+                            </td>
+                        </tr>
                         {% endfor %}
                     </tbody>
                 </table>
@@ -119,7 +148,11 @@
     </div>
 
     <script>
+        // Hàm cập nhật trạng thái qua API
         function updateStatus(bookingId, newStatus) {
+            const btn = event.currentTarget;
+            btn.disabled = true; // Chống click nhiều lần
+            
             fetch(`/api/bookings/${bookingId}/`, {
                 method: "PUT",
                 headers: {
@@ -130,35 +163,47 @@
             })
             .then(response => response.json())
             .then(data => {
+                btn.disabled = false;
                 if (data.message) {
                     const row = document.querySelector(`tr[data-id='${bookingId}']`);
                     const statusSpan = row.querySelector('.status-text');
                     
+                    // Cập nhật giao diện mượt mà
                     statusSpan.className = `badge-status status-${newStatus} status-text`;
                     statusSpan.textContent = newStatus === "confirmed" ? "Đã xác nhận" : "Đã hủy";
+                    
+                    // Hiệu ứng nháy nhẹ để báo thành công
+                    row.style.backgroundColor = '#f0fdf4';
+                    setTimeout(() => row.style.backgroundColor = 'transparent', 1000);
                 } else {
-                    alert("Lỗi: " + (data.error || "Không thể cập nhật"));
+                    alert("Lỗi hệ thống: " + (data.error || "Không thể xử lý yêu cầu"));
                 }
+            })
+            .catch(err => {
+                btn.disabled = false;
+                console.error("Lỗi:", err);
             });
         }
 
+        // Hàm xóa dữ liệu
         function deleteBooking(bookingId) {
-            if (confirm("Bạn có chắc chắn muốn xóa dữ liệu đặt tour này?")) {
+            if (confirm("Dữ liệu đặt tour sẽ bị xóa vĩnh viễn khỏi hệ thống. Bạn có chắc chắn?")) {
                 fetch(`/api/bookings/${bookingId}/`, {
                     method: "DELETE",
                     headers: { "X-CSRFToken": getCookie("csrftoken") }
                 })
                 .then(response => {
-                    if (response.status === 204) {
+                    if (response.status === 204 || response.ok) {
                         const row = document.querySelector(`tr[data-id='${bookingId}']`);
+                        row.style.transform = 'scale(0.95)';
                         row.style.opacity = '0';
-                        row.style.transform = 'translateX(20px)';
                         setTimeout(() => row.remove(), 300);
                     }
                 });
             }
         }
 
+        // Lấy CSRF Token để bảo mật request Django
         function getCookie(name) {
             let cookieValue = null;
             if (document.cookie && document.cookie !== "") {
