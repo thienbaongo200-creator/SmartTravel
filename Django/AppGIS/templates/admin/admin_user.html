@@ -1,234 +1,346 @@
 {% load static %}
-
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ thống Quản lý Người dùng</title>
+    <title>Quản lý Người dùng | Smart Travel</title>
     <link rel="stylesheet" href="{% static 'css/admin.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
 
-    <div class="sidebar">
-        <div class="sidebar-brand">
-            <i class="fas fa-map-marked-alt"></i>
-            <span>Smart Travel</span>
-        </div>
-        <nav>
-            <a href="{% url 'admin_dashboard' %}" class="sidebar-link">
-                <i class="fas fa-th-large"></i> Dashboard
-            </a>
-            <a href="{% url 'admin_places' %}" class="sidebar-link">
-                <i class="fas fa-layer-group"></i> Quản lý Địa điểm
-            </a>
-            <a href="#" class="sidebar-link active">
-                <i class="fas fa-user-friends"></i> Người dùng
-            </a>
+<div class="topbar">
+    <button class="btn-menu" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+    <div class="topbar-brand"><i class="fas fa-map-marked-alt"></i>Smart Travel</div>
+</div>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
-            <a href="{% url 'admin_tours' %}" class="sidebar-link">
-                <i class="fas fa-route"></i> Quản lý Tour
-            </a>
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-brand"><i class="fas fa-map-marked-alt"></i><span>Smart Travel</span></div>
+    <nav>
+        <a href="{% url 'admin_dashboard' %}" class="sidebar-link"><i class="fas fa-th-large"></i>Dashboard</a>
+        <a href="{% url 'admin_places' %}" class="sidebar-link"><i class="fas fa-layer-group"></i>Quản lý Địa điểm</a>
+        <a href="{% url 'admin_user' %}" class="sidebar-link active"><i class="fas fa-user-friends"></i>Người dùng</a>
+        <a href="{% url 'admin_tours' %}" class="sidebar-link"><i class="fas fa-route"></i>Quản lý Tour</a>
+        <a href="{% url 'admin_tour_booking' %}" class="sidebar-link"><i class="fas fa-calendar-check"></i>Đặt Tour</a>
+        <a href="{% url 'admin_contacts' %}" class="sidebar-link"><i class="fas fa-envelope"></i>Liên hệ</a>
+        <a href="{% url 'admin_manage_events' %}" class="sidebar-link"><i class="fas fa-calendar-alt"></i>Sự kiện</a>
+        <hr class="sidebar-divider">
+        <a href="/" class="sidebar-link"><i class="fas fa-external-link-alt"></i>Xem Website</a>
+        <a href="{% url 'logout' %}" class="sidebar-link logout-link"><i class="fas fa-sign-out-alt"></i>Đăng xuất</a>
+    </nav>
+</div>
 
-            <a href="{% url 'admin_tour_booking' %}" class="sidebar-link">
-                <i class="fas fa-calendar-check"></i> Quản lý Đặt Tour
-            </a>
-
-            <a href="{% url 'admin_contacts' %}" class="sidebar-link">
-                <i class="fas fa-envelope"></i> Quản lý Liên hệ
-            </a>
-            <a href="{% url 'admin_manage_events' %}" class="sidebar-link">
-                <i class="fas fa-calendar-alt"></i> <span>Quản lý Sự kiện</span>
-            </a>
-            <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 20px 0;">
-
-            <a href="/" class="sidebar-link">
-                <i class="fas fa-external-link-alt"></i> Xem Website
-            </a>
-
-            <a href="{% url 'logout' %}" class="sidebar-link" style="color: #ff7675;">
-                <i class="fas fa-sign-out-alt"></i> Đăng xuất
-            </a>
-        </nav>
+<div class="main-content">
+    <div class="page-header">
+        <h1><i class="fas fa-user-friends"></i>Quản lý Người dùng</h1>
+        <a href="{% url 'admin_dashboard' %}" class="btn-back"><i class="fas fa-arrow-left"></i>Dashboard</a>
     </div>
 
-    <div class="main-content">
-        <div class="header-section mb-5">
-            <h2 class="fw-bold" style="color: var(--text-dark);">Quản lý Người dùng</h2>
-            <p class="text-muted small">Kiểm soát truy cập và vai trò của các thành viên trong hệ thống.</p>
-        </div>
+    <div class="users-layout">
+        <!-- ADD FORM -->
+        <div class="card">
+            <div class="card-header"><i class="fas fa-user-plus"></i><h2>Tạo tài khoản</h2></div>
+            <div class="card-body">
+                <form id="addUserForm" novalidate>
 
-        <div class="row">
-            <div class="col-lg-4">
-                <div class="glass-card">
-                    <h5 class="fw-bold mb-4 text-primary"><i class="fas fa-plus-circle me-2"></i>Tạo tài khoản</h5>
-                    <form id="addUserForm">
-                        <div class="mb-3">
-                            <label class="small fw-bold text-muted mb-2">USERNAME</label>
-                            <input type="text" name="username" class="form-control custom-input" placeholder="Nhập tên..." required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="small fw-bold text-muted mb-2">EMAIL</label>
-                            <input type="email" name="email" class="form-control custom-input" placeholder="mail@example.com" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="small fw-bold text-muted mb-2">MẬT KHẨU</label>
-                            <input type="password" name="password" class="form-control custom-input" placeholder="••••••••" required>
-                        </div>
-                        <div class="bg-light p-3 rounded-4 mb-4">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="is_superuser" id="superCheck">
-                                <label class="form-check-label small fw-bold" for="superCheck">Quản trị viên</label>
-                            </div>
-                        </div>
-                        <button type="submit" class="btn btn-primary w-100 py-3 rounded-pill fw-bold shadow-sm">
-                            Thêm người dùng
-                        </button>
-                    </form>
-                </div>
-            </div>
-
-            <div class="col-lg-8">
-                <div class="glass-card">
-                    <div class="table-responsive">
-                        <table class="table custom-table">
-                            <thead>
-                                <tr>
-                                    <th>Thông tin</th>
-                                    <th>Vai trò</th>
-                                    <th class="text-center">Thao tác</th>
-                                </tr>
-                            </thead>
-                            <tbody id="usersTable">
-                                </tbody>
-                        </table>
+                    <div class="form-group">
+                        <label class="form-label">Tên đăng nhập <span class="req">*</span></label>
+                        <input id="add_username" type="text" name="username" class="form-control" placeholder="VD: nguyen_van_a" required>
+                        <span class="field-hint" id="add_username_hint"></span>
                     </div>
-                </div>
+
+                    <div class="form-group" style="margin-top:14px">
+                        <label class="form-label">Email <span class="req">*</span></label>
+                        <input id="add_email" type="email" name="email" class="form-control" placeholder="mail@example.com" required>
+                        <span class="field-hint" id="add_email_hint"></span>
+                    </div>
+
+                    <div class="form-group" style="margin-top:14px">
+                        <label class="form-label">Mật khẩu <span class="req">*</span></label>
+                        <div style="position:relative">
+                            <input id="add_password" type="password" name="password" class="form-control" placeholder="Ít nhất 8 ký tự" required>
+                            <button type="button" class="btn-eye" onclick="togglePw('add_password','eye_add')"><i id="eye_add" class="fas fa-eye"></i></button>
+                        </div>
+                        <span class="field-hint" id="add_password_hint"></span>
+                    </div>
+
+                    <div class="form-group" style="margin-top:14px">
+                        <label class="form-label">Xác nhận mật khẩu <span class="req">*</span></label>
+                        <div style="position:relative">
+                            <input id="add_confirm" type="password" name="confirm_password" class="form-control" placeholder="Nhập lại mật khẩu" required>
+                            <button type="button" class="btn-eye" onclick="togglePw('add_confirm','eye_confirm')"><i id="eye_confirm" class="fas fa-eye"></i></button>
+                        </div>
+                        <span class="field-hint" id="add_confirm_hint"></span>
+                    </div>
+
+                    <div class="role-toggle" style="margin-top:14px">
+                        <label class="form-label">Vai trò</label>
+                        <div class="role-options">
+                            <label class="role-opt">
+                                <input type="radio" name="is_superuser" value="false" checked>
+                                <span><i class="fas fa-user"></i>Thành viên</span>
+                            </label>
+                            <label class="role-opt">
+                                <input type="radio" name="is_superuser" value="true">
+                                <span><i class="fas fa-crown"></i>Quản trị viên</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="width:100%;margin-top:18px">
+                        <i class="fas fa-user-plus"></i>Thêm người dùng
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- TABLE -->
+        <div class="card">
+            <div class="card-header"><i class="fas fa-users"></i><h2>Danh sách người dùng</h2></div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Thông tin</th>
+                            <th>Vai trò</th>
+                            <th class="th-actions">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTable">
+                        <tr><td colspan="3"><div class="empty-state"><i class="fas fa-spinner fa-spin"></i><p>Đang tải...</p></div></td></tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
+</div>
 
-    <div id="editUserModal" class="modal-overlay">
-        <div class="modal-box">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h4 class="fw-bold m-0">Cập nhật tài khoản</h4>
-                <button class="btn-close" onclick="closeEditUserModal()"></button>
-            </div>
-            <form id="editUserForm">
+<!-- EDIT MODAL -->
+<div id="editUserModal" class="modal-overlay">
+    <div class="modal-box" style="max-width:500px">
+        <div class="modal-header">
+            <h3><i class="fas fa-user-edit"></i>Cập nhật tài khoản</h3>
+            <button class="btn-close-modal" onclick="closeEditUserModal()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+            <form id="editUserForm" novalidate>
                 <input type="hidden" id="editUserId">
-                <div class="mb-3">
-                    <label class="small fw-bold mb-2">Email</label>
-                    <input type="email" id="editEmail" class="form-control custom-input" required>
+
+                <div class="form-group">
+                    <label class="form-label">Email <span class="req">*</span></label>
+                    <input id="editEmail" type="email" class="form-control" required>
+                    <span class="field-hint" id="edit_email_hint"></span>
                 </div>
-                <div class="mb-3">
-                    <label class="small fw-bold mb-2">Mật khẩu mới</label>
-                    <input type="password" id="editPassword" class="form-control custom-input" placeholder="Để trống nếu không đổi">
+
+                <div class="form-group" style="margin-top:14px">
+                    <label class="form-label">Mật khẩu mới</label>
+                    <div style="position:relative">
+                        <input id="editPassword" type="password" class="form-control" placeholder="Để trống nếu không đổi">
+                        <button type="button" class="btn-eye" onclick="togglePw('editPassword','eye_edit')"><i id="eye_edit" class="fas fa-eye"></i></button>
+                    </div>
+                    <span class="field-hint" id="edit_password_hint"></span>
                 </div>
-                <div class="mb-4 border p-3 rounded-4">
-                    <label class="small fw-bold"><input type="checkbox" id="editIsSuperuser"> Admin</label>
-                </div>
-                <div class="d-flex gap-2">
-                    <button type="button" class="btn btn-light w-100 rounded-pill py-2" onclick="closeEditUserModal()">Hủy</button>
-                    <button type="submit" class="btn btn-primary w-100 rounded-pill py-2">Lưu lại</button>
+
+                <div class="role-toggle" style="margin-top:14px">
+                    <label class="form-label">Vai trò</label>
+                    <div class="role-options">
+                        <label class="role-opt">
+                            <input type="radio" name="edit_role" id="edit_role_member" value="false">
+                            <span><i class="fas fa-user"></i>Thành viên</span>
+                        </label>
+                        <label class="role-opt">
+                            <input type="radio" name="edit_role" id="edit_role_admin" value="true">
+                            <span><i class="fas fa-crown"></i>Quản trị viên</span>
+                        </label>
+                    </div>
                 </div>
             </form>
         </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-ghost" onclick="closeEditUserModal()"><i class="fas fa-times"></i>Hủy</button>
+            <button type="button" class="btn btn-primary" onclick="document.getElementById('editUserForm').requestSubmit()"><i class="fas fa-save"></i>Lưu lại</button>
+        </div>
     </div>
+</div>
 
-    <script>
-        async function loadUsers() {
-            const res = await fetch("/api/admin/users/");
-            const users = await res.json();
-            const tbody = document.getElementById("usersTable");
-            tbody.innerHTML = users.map(u => `
-                <tr>
-                    <td>
-                        <div class="d-flex align-items-center">
-                            <div class="avatar shadow-sm me-3 text-white d-flex align-items-center justify-content-center" 
-                                 style="width:40px; height:40px; border-radius:12px; background: #eef2ff; color:#4361ee">
-                                <i class="fas fa-user"></i>
-                            </div>
-                            <div>
-                                <div class="text-dark fw-bold">${u.username}</div>
-                                <div class="text-muted x-small" style="font-size: 0.75rem;">${u.email}</div>
-                            </div>
-                        </div>
-                    </td>
-                    <td>
-                        ${u.is_superuser ? '<span class="role-badge bg-soft-warning"><i class="fas fa-crown me-1"></i>Admin</span>' : '<span class="text-muted small">Thành viên</span>'}
-                    </td>
-                    <td class="text-center">
-                        <div class="d-flex justify-content-center gap-1">
-                            <button onclick="openEditUserModal(${u.id}, '${u.username}', '${u.email}', ${u.is_superuser})" 
-                                    class="btn btn-sm btn-light border rounded-3 p-2">
-                                <i class="fas fa-pen text-primary"></i>
-                            </button>
-                            <button onclick="deleteUser(${u.id})" 
-                                    class="btn btn-sm btn-light border rounded-3 p-2">
-                                <i class="fas fa-trash text-danger"></i>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-            `).join('');
-        }
+<style>
+.users-layout { display: grid; grid-template-columns: 360px 1fr; gap: 24px; align-items: start; }
+@media (max-width: 1000px) { .users-layout { grid-template-columns: 1fr; } }
 
-        // Các logic API (POST, PUT, DELETE) giữ nguyên như cũ
-        document.getElementById("addUserForm").addEventListener("submit", async function(e) {
-            e.preventDefault();
-            const formData = new FormData(this);
-            const data = {
-                username: formData.get("username"),
-                email: formData.get("email"),
-                password: formData.get("password"),
-                is_superuser: formData.get("is_superuser") ? true : false
-            };
-            await fetch("/api/admin/users/", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify(data)
-            });
-            this.reset();
-            loadUsers();
-        });
+.role-options { display: flex; gap: 10px; margin-top: 6px; }
+.role-opt { flex: 1; }
+.role-opt input[type="radio"] { display: none; }
+.role-opt span {
+    display: flex; align-items: center; justify-content: center; gap: 7px;
+    padding: 10px 14px; border-radius: 8px;
+    border: 1.5px solid var(--border); cursor: pointer;
+    font-size: .85rem; font-weight: 600; color: var(--text-muted);
+    transition: var(--transition);
+}
+.role-opt input:checked + span { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
 
-        async function deleteUser(id) {
-            if (!confirm("Bạn có chắc chắn muốn xóa tài khoản này?")) return;
-            await fetch(`/api/admin/users/${id}/`, { method: "DELETE" });
-            loadUsers();
-        }
+.btn-eye {
+    position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; cursor: pointer;
+    color: var(--text-muted); font-size: .9rem; padding: 4px;
+    transition: color .2s;
+}
+.btn-eye:hover { color: var(--primary); }
+</style>
 
-        function openEditUserModal(id, username, email, isSuperuser) {
-            document.getElementById("editUserId").value = id;
-            document.getElementById("editEmail").value = email;
-            document.getElementById("editIsSuperuser").checked = isSuperuser;
-            document.getElementById("editUserModal").style.display = "flex";
-        }
+<script>
+function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('open');
+    document.getElementById('sidebarOverlay').classList.toggle('show');
+}
 
-        function closeEditUserModal() {
-            document.getElementById("editUserModal").style.display = "none";
-        }
+function togglePw(inputId, iconId) {
+    const el = document.getElementById(inputId), icon = document.getElementById(iconId);
+    if (el.type === 'password') { el.type = 'text'; icon.classList.replace('fa-eye','fa-eye-slash'); }
+    else { el.type = 'password'; icon.classList.replace('fa-eye-slash','fa-eye'); }
+}
 
-        document.getElementById("editUserForm").addEventListener("submit", async function(e) {
-            e.preventDefault();
-            const id = document.getElementById("editUserId").value;
-            const data = {
-                email: document.getElementById("editEmail").value,
-                password: document.getElementById("editPassword").value,
-                is_superuser: document.getElementById("editIsSuperuser").checked
-            };
-            await fetch(`/api/admin/users/${id}/`, {
-                method: "PUT",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify(data)
-            });
-            closeEditUserModal();
-            loadUsers();
-        });
+async function loadUsers() {
+    const res = await fetch("/api/admin/users/");
+    const users = await res.json();
+    const tbody = document.getElementById("usersTable");
+    if (!users.length) {
+        tbody.innerHTML = `<tr><td colspan="3"><div class="empty-state"><i class="fas fa-users"></i><p>Chưa có người dùng nào</p></div></td></tr>`; return;
+    }
+    tbody.innerHTML = users.map(u => `
+        <tr>
+            <td>
+                <div style="display:flex;align-items:center;gap:10px">
+                    <div style="width:38px;height:38px;border-radius:10px;background:#eef2ff;color:#4361ee;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="fas fa-user"></i></div>
+                    <div>
+                        <div class="place-name">${u.username}</div>
+                        <div style="font-size:.78rem;color:var(--text-muted)">${u.email}</div>
+                    </div>
+                </div>
+            </td>
+            <td>${u.is_superuser ? '<span class="role-badge bg-soft-warning"><i class="fas fa-crown" style="margin-right:4px"></i>Admin</span>' : '<span style="color:var(--text-muted);font-size:.83rem">Thành viên</span>'}</td>
+            <td><div class="action-btns">
+                <button class="btn-icon" title="Sửa" onclick="openEditUserModal(${u.id},'${u.username}','${u.email}',${u.is_superuser})"><i class="fas fa-pen" style="color:var(--primary)"></i></button>
+                <button class="btn-icon" title="Xóa" onclick="deleteUser(${u.id})"><i class="fas fa-trash" style="color:var(--danger)"></i></button>
+            </div></td>
+        </tr>
+    `).join('');
+}
 
-        window.onload = loadUsers;
-    </script>
+// ── VALIDATION ────────────────────────────────────
+const VALIDATORS = {
+    add_username: {el:'add_username',hint:'add_username_hint', rules:[
+        [v=>!v.trim(),                       'Tên đăng nhập không được để trống'],
+        [v=>v.trim().length<3,               'Tên đăng nhập phải có ít nhất 3 ký tự'],
+        [v=>/\s/.test(v),                    'Tên đăng nhập không được chứa khoảng trắng'],
+        [v=>!/^[a-zA-Z0-9_]+$/.test(v),     'Chỉ được dùng chữ, số và dấu gạch dưới (_)'],
+    ]},
+    add_email: {el:'add_email', hint:'add_email_hint', rules:[
+        [v=>!v.trim(),                       'Email không được để trống'],
+        [v=>!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v),'Email không hợp lệ'],
+    ]},
+    add_password: {el:'add_password', hint:'add_password_hint', rules:[
+        [v=>!v,                              'Mật khẩu không được để trống'],
+        [v=>v.length<8,                      'Mật khẩu phải có ít nhất 8 ký tự'],
+    ]},
+    add_confirm: {el:'add_confirm', hint:'add_confirm_hint', rules:[
+        [v=>!v,                              'Vui lòng xác nhận mật khẩu'],
+        [v=>v !== document.getElementById('add_password')?.value, 'Mật khẩu xác nhận không khớp'],
+    ]},
+    editEmail: {el:'editEmail', hint:'edit_email_hint', rules:[
+        [v=>!v.trim(),                       'Email không được để trống'],
+        [v=>!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v),'Email không hợp lệ'],
+    ]},
+    editPassword: {el:'editPassword', hint:'edit_password_hint', rules:[
+        [v=>v!==''&&v.length<8,              'Mật khẩu phải có ít nhất 8 ký tự'],
+    ]},
+};
+
+function validateField(key) {
+    const cfg = VALIDATORS[key]; if (!cfg) return true;
+    const el = document.getElementById(cfg.el), hint = document.getElementById(cfg.hint);
+    if (!el||!hint) return true;
+    let msg = '';
+    for (const [test,text] of cfg.rules) { if (test(el.value)) { msg=text; break; } }
+    el.setCustomValidity(msg);
+    if (msg) { el.classList.add('is-invalid'); el.classList.remove('is-valid'); hint.textContent=msg; hint.classList.add('show'); }
+    else      { el.classList.remove('is-invalid'); if(el.value.trim()) el.classList.add('is-valid'); hint.textContent=''; hint.classList.remove('show'); }
+    return !msg;
+}
+
+function validateForm(keys) { return keys.map(k=>validateField(k)).every(Boolean); }
+
+function attachLiveValidation(ids) {
+    ids.forEach(id=>{ const el=document.getElementById(id); if(el) el.addEventListener('blur',()=>validateField(id)); });
+}
+
+// ── SUBMIT: ADD ───────────────────────────────────
+document.getElementById("addUserForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    if (!validateForm(['add_username','add_email','add_password','add_confirm'])) {
+        document.querySelector('#addUserForm .is-invalid')?.scrollIntoView({behavior:'smooth',block:'center'}); return;
+    }
+    const fd = new FormData(e.target);
+    const isSuperuser = document.querySelector('input[name="is_superuser"]:checked')?.value === 'true';
+    const data = {username:fd.get('username'), email:fd.get('email'), password:fd.get('password'), is_superuser:isSuperuser};
+    const res = await fetch("/api/admin/users/", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(data)});
+    if (res.ok) {
+        alert("✅ Tạo tài khoản thành công!");
+        e.target.reset();
+        document.querySelectorAll('#addUserForm .is-valid,.is-invalid').forEach(el=>el.classList.remove('is-valid','is-invalid'));
+        loadUsers();
+    } else {
+        const err = await res.json().catch(()=>({}));
+        alert("❌ " + (err.error || "Có lỗi xảy ra."));
+    }
+});
+
+// ── SUBMIT: EDIT ──────────────────────────────────
+document.getElementById("editUserForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    if (!validateForm(['editEmail','editPassword'])) return;
+    const id = document.getElementById("editUserId").value;
+    const isSuperuser = document.querySelector('input[name="edit_role"]:checked')?.value === 'true';
+    const data = {
+        email: document.getElementById("editEmail").value,
+        is_superuser: isSuperuser,
+    };
+    const pw = document.getElementById("editPassword").value;
+    if (pw) data.password = pw;
+    await fetch(`/api/admin/users/${id}/`, {method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify(data)});
+    closeEditUserModal(); loadUsers();
+});
+
+function openEditUserModal(id, username, email, isSuperuser) {
+    document.getElementById("editUserId").value = id;
+    document.getElementById("editEmail").value  = email;
+    document.getElementById("editPassword").value = '';
+    document.getElementById(isSuperuser ? 'edit_role_admin' : 'edit_role_member').checked = true;
+    document.querySelectorAll('#editUserForm .is-valid,.is-invalid').forEach(el=>el.classList.remove('is-valid','is-invalid'));
+    document.querySelectorAll('#editUserForm .field-hint').forEach(h=>h.classList.remove('show'));
+    document.getElementById("editUserModal").classList.add('open');
+}
+
+function closeEditUserModal() { document.getElementById("editUserModal").classList.remove('open'); }
+
+async function deleteUser(id) {
+    if (!confirm("Bạn có chắc chắn muốn xóa tài khoản này?")) return;
+    await fetch(`/api/admin/users/${id}/`, {method:"DELETE"});
+    loadUsers();
+}
+
+window.onload = () => {
+    attachLiveValidation(['add_username','add_email','add_password','add_confirm']);
+    attachLiveValidation(['editEmail','editPassword']);
+    // Re-validate confirm when password changes
+    document.getElementById('add_password')?.addEventListener('input', ()=>{
+        if(document.getElementById('add_confirm').value) validateField('add_confirm');
+    });
+    loadUsers();
+};
+</script>
 </body>
 </html>
