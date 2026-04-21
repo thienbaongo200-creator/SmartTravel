@@ -7,7 +7,35 @@
 <style>
     /* Tổng thể */
     .events-section { background: #f8fafc; min-height: 100vh; padding-bottom: 50px; }
-    .event-hero { background: #1a2b48; color: white; padding: 60px 0; margin-bottom: 40px; }
+    
+    .event-hero {
+            background: linear-gradient(135deg, #0b1120 0%, #0a1428 100%);
+            color: white !important;
+        padding: 80px 0;
+        margin-bottom: 40px;
+        border-radius: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    }
+    
+    .event-hero h1 {
+        color: white !important;
+        font-size: 3rem;
+        letter-spacing: 2px;
+        margin-bottom: 15px;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+    
+    .event-hero p {
+        color: rgba(255, 255, 255, 0.9) !important;
+        font-size: 1.2rem;
+        max-width: 600px;
+        margin: 0 auto;
+    }
 
     /* Filter Section */
     .filter-section {
@@ -94,9 +122,9 @@
                 <label class="form-label">Trạng thái</label>
                 <select name="status" class="form-select">
                     <option value="">Tất cả trạng thái</option>
-                    <option value="Sắp diễn ra">Sắp diễn ra</option>
-                    <option value="Đang diễn ra">Đang diễn ra</option>
-                    <option value="Đã kết thúc">Đã kết thúc</option>
+                    <option value="Sắp diễn ra" {% if request.GET.status == "Sắp diễn ra" %}selected{% endif %}>Sắp diễn ra</option>
+                    <option value="Đang diễn ra" {% if request.GET.status == "Đang diễn ra" %}selected{% endif %}>Đang diễn ra</option>
+                    <option value="Đã kết thúc" {% if request.GET.status == "Đã kết thúc" %}selected{% endif %}>Đã kết thúc</option>
                 </select>
             </div>
             <div class="col-md-3">
@@ -133,11 +161,11 @@
                     <div class="image-slider">
                         {% for img in su_kien.images.all %}
                         <div class="slider-item">
-                            <img src="{{ img.image.url }}" class="hotel-img" onclick="openLightbox(this.src)" onerror="this.src='{% static 'images/default_event.jpg' %}'">
+                            <img src="{{ img.image.url }}" class="hotel-img" onclick="openLightbox(this.src)" onerror="this.src='https://via.placeholder.com/800x600?text=Smart+Travel+Event'">
                         </div>
                         {% empty %}
                         <div class="slider-item">
-                            <img src="{% static 'images/default_event.jpg' %}" class="hotel-img">
+                            <img src="https://via.placeholder.com/800x600?text=Smart+Travel+Event" class="hotel-img">
                         </div>
                         {% endfor %}
                     </div> 
@@ -174,11 +202,46 @@
         </div>
         {% empty %}
         <div class="col-12 text-center py-5">
-            <img src="{% static 'images/empty_box.png' %}" style="width: 80px; opacity: 0.3;">
+            <i class="fa-solid fa-calendar-xmark" style="font-size: 80px; opacity: 0.3; color: #6c757d;"></i>
             <p class="text-muted mt-3">Không tìm thấy sự kiện nào phù hợp.</p>
         </div>
         {% endfor %}
     </div>
+
+    <!-- Phân trang -->
+    {% if page_obj.has_other_pages %}
+    <div class="pagination-container text-center mt-4">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+                <li>
+                    <a class="page-link-custom" href="?page={{ page_obj.previous_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.location %}&location={{ request.GET.location }}{% endif %}">
+                        &laquo; Trước
+                    </a>
+                </li>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                    <li class="active"><span class="page-link-custom">{{ num }}</span></li>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <li>
+                        <a class="page-link-custom" href="?page={{ num }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.location %}&location={{ request.GET.location }}{% endif %}">
+                            {{ num }}
+                        </a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+                <li>
+                    <a class="page-link-custom" href="?page={{ page_obj.next_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}{% if request.GET.location %}&location={{ request.GET.location }}{% endif %}">
+                        Sau &raquo;
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+    </div>
+    {% endif %}
 </div>
 
 <div id="imageModal">
