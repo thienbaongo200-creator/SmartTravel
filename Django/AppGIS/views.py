@@ -979,44 +979,109 @@ from django.contrib.auth.decorators import user_passes_test
 def admin_events(request): 
     return render(request, 'admin/admin_events.html')    
 
-@csrf_exempt
-@user_passes_test(lambda u: u.is_superuser)
-def api_events(request, pk=None):
-    # --- LẤY DANH SÁCH (GET) ---
-    if request.method == "GET":
-        events = Event.objects.all().prefetch_related('images').order_by('-start_date')
-        data = []
-        
-        for e in events:
-            gallery = [img.image.url for img in e.images.all()]
-            
-            data.append({
-                "id": e.id,
-                "title": e.title,
-                "location": e.location,
-                "start_date": e.start_date.strftime('%Y-%m-%d') if e.start_date else "",
-                "end_date": e.end_date.strftime('%Y-%m-%d') if e.end_date else "",
-                "description": e.description,
-                "category": e.category,
-                "status": e.status,
-                "status_class": e.status_class,
-                "images": gallery
-            })
-        return JsonResponse(data, safe=False)
 
-    # --- XỬ LÝ CẬP NHẬT (UPDATE) ---
+def event_detail(request, event_id):
+    """
+    Render trang chi tiết sự kiện (HTML)
+    Đường dẫn: /events/<id>/
+    """
+    su_kien = get_object_or_404(Event, id=event_id)
+    return render(request, 'event_detail.html', {'su_kien': su_kien})
+
+@csrf_exempt
+def api_events(request, pk=None):
+    """
+    API xử lý Sự kiện: 
+    - GET: Lấy danh sách hoặc chi tiết
+    - POST: Thêm mới hoặc Cập nhật (nếu có pk)
+    - DELETE: Xóa sự kiện
+    """
+    today = date.today()
+
+    # --- 1. LẤY DỮ LIỆU (GET) ---
+    if request.method == "GET":
+        if pk:
+            # --- CHI TIẾT SỰ KIỆN (DETAIL) ---
+            try:
+                e = Event.objects.prefetch_related('images').get(pk=pk)
+                gallery = [img.image.url for img in e.images.all()]
+                data = {
+                    "id": e.id,
+                    "title": e.title,
+                    "location": e.location,
+                    "start_date": e.start_date.strftime('%Y-%m-%d') if e.start_date else "",
+                    "end_date": e.end_date.strftime('%Y-%m-%d') if e.end_date else "",
+                    "description": e.description,
+                    "lat": e.lat,
+                    "lng": e.lng,
+                    "category": e.category,
+                    "status": e.status, # Trạng thái lưu trong DB
+                    "images": gallery,
+                }
+                return JsonResponse(data)
+            except Event.DoesNotExist:
+                return JsonResponse({"error": "Không tìm thấy sự kiện"}, status=404)
+        
+        else:
+            # --- DANH SÁCH SỰ KIỆN (LIST) ---
+            events = Event.objects.all().prefetch_related('images').order_by('-start_date')
+            data = []
+            for e in events:
+                gallery = [img.image.url for img in e.images.all()]
+                
+                # Logic xác định trạng thái hiển thị dựa trên thời gian (Dynamic Status)
+                # Cái này giúp UI hiển thị "Ngày mai diễn ra", "Còn 2 ngày"... rất chuyên nghiệp
+                status_text, status_class = "Chưa xếp lịch", "bg-secondary"
+                
+                if e.end_date and e.end_date < today:
+                    status_text, status_class = "Đã kết thúc", "bg-dark"
+                elif e.start_date:
+                    diff = (e.start_date - today).days
+                    if diff < 0:
+                        status_text, status_class = "Đang diễn ra", "bg-success"
+                    elif diff == 0:
+                        status_text, status_class = "Bắt đầu hôm nay", "bg-danger"
+                    elif diff == 1:
+                        status_text, status_class = "Ngày mai diễn ra", "bg-warning text-dark"
+                    elif diff == 2:
+                        status_text, status_class = "Ngày kia diễn ra", "bg-info"
+                    else:
+                        status_text, status_class = f"Còn {diff} ngày", "bg-primary"
+
+                data.append({
+                    "id": e.id,
+                    "title": e.title,
+                    "location": e.location,
+                    "start_date": e.start_date.strftime('%Y-%m-%d') if e.start_date else "",
+                    "end_date": e.end_date.strftime('%Y-%m-%d') if e.end_date else "",
+                    "description": e.description,
+                    "lat": e.lat,
+                    "lng": e.lng,
+                    "category": e.category,
+                    "images": gallery,
+                    "status": status_text,        # Trạng thái tính toán nhanh
+                    "status_class": status_class   # Class màu Bootstrap tương ứng
+                })
+            return JsonResponse(data, safe=False)
+
+    # --- 2. XỬ LÝ CẬP NHẬT (UPDATE) ---
+    # Kiểm tra pk và hỗ trợ cả X-HTTP-Method-Override cho các request từ frontend cũ
     elif pk and (request.method in ["POST", "PUT"] or request.headers.get('X-HTTP-Method-Override') == 'PUT'):
         try:
             event = Event.objects.get(pk=pk)
+            # Dùng .get() với fallback giá trị cũ nếu không có dữ liệu mới truyền lên
             event.title = request.POST.get('title', event.title)
             event.location = request.POST.get('location', event.location)
+            event.lat = request.POST.get('lat') or event.lat
+            event.lng = request.POST.get('lng') or event.lng
             event.start_date = request.POST.get('start_date') or event.start_date
             event.end_date = request.POST.get('end_date') or event.end_date
             event.description = request.POST.get('description', event.description)
             event.category = request.POST.get('category', event.category)
-            event.status = request.POST.get('status_type', event.status)  # Sử dụng status_type từ form
+            event.status = request.POST.get('status_type', event.status) 
             event.save()
 
+            # Xử lý upload thêm ảnh mới (giữ ảnh cũ, thêm ảnh mới)
             files = request.FILES.getlist('images')
             if files:
                 for f in files:
@@ -1026,28 +1091,34 @@ def api_events(request, pk=None):
         except Event.DoesNotExist:
             return JsonResponse({"error": "Không tìm thấy sự kiện"}, status=404)
 
-    # --- THÊM MỚI (CREATE) ---
+    # --- 3. THÊM MỚI (CREATE) ---
     elif request.method == "POST":
         try:
             event = Event.objects.create(
                 title=request.POST.get('title'),
-                start_date=request.POST.get('start_date'),
-                end_date=request.POST.get('end_date'),
+                start_date=request.POST.get('start_date') or None,
+                end_date=request.POST.get('end_date') or None,
                 location=request.POST.get('location'),
+                lat=request.POST.get('lat') or None,
+                lng=request.POST.get('lng') or None,
                 description=request.POST.get('description'),
                 category=request.POST.get('category', 'Văn hóa'),
-                status=request.POST.get('status_type', 'Sắp diễn ra')  # Sử dụng status_type từ form
+                status=request.POST.get('status_type', 'Sắp diễn ra')
             )
+            # Lưu danh sách ảnh nếu có
             for f in request.FILES.getlist('images'):
                 EventImage.objects.create(event=event, image=f)
+                
             return JsonResponse({"message": "Đã thêm sự kiện!", "id": event.id})
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=400)
 
-    # --- XÓA (DELETE) ---
+    # --- 4. XÓA (DELETE) ---
     elif request.method == "DELETE":
         try:
             Event.objects.get(pk=pk).delete()
             return JsonResponse({"message": "Đã xóa!"})
         except Event.DoesNotExist:
             return JsonResponse({"error": "Không tìm thấy"}, status=404)
+
+    return JsonResponse({"error": "Method not allowed"}, status=405)

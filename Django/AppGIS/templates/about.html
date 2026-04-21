@@ -6,27 +6,37 @@
 {% block content %}
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
+{% if is_admin %}
+<!-- Admin Control Bar -->
+<div class="admin-control-bar">
+    <button id="toggle-edit-mode" class="btn btn-primary">
+        <i class="fas fa-edit"></i> Bật chế độ chỉnh sửa
+    </button>
+    <span id="edit-mode-status" class="status-badge">Chế độ xem</span>
+</div>
+{% endif %}
+
 <section class="about_section section">
     <div class="about-header">
-        <h2>{{ content.title }}</h2>
-        <h4>{{ content.subtitle }}</h4>
+        <h2 class="editable" data-field="title">{{ content.title }}</h2>
+        <h4 class="editable" data-field="subtitle">{{ content.subtitle }}</h4>
         <p class="editable" data-field="description">{{ content.description }}</p>
     </div>
 
     <div class="grid about-cards">
         <div class="card">
             <div class="card-icon blue"><i class="fas fa-eye"></i></div>
-            <h3>{{ content.vision_title }}</h3>
+            <h3 class="editable" data-field="vision_title">{{ content.vision_title }}</h3>
             <p class="editable" data-field="vision_text">{{ content.vision_text }}</p>
         </div>
         <div class="card">
             <div class="card-icon green"><i class="fas fa-bullseye"></i></div>
-            <h3>{{ content.mission_title }}</h3>
+            <h3 class="editable" data-field="mission_title">{{ content.mission_title }}</h3>
             <p class="editable" data-field="mission_text">{{ content.mission_text }}</p>
         </div>
         <div class="card">
             <div class="card-icon yellow"><i class="fas fa-star"></i></div>
-            <h3>{{ content.values_title }}</h3>
+            <h3 class="editable" data-field="values_title">{{ content.values_title }}</h3>
             <p class="editable" data-field="values_text">{{ content.values_text }}</p>
         </div>
     </div>
@@ -35,67 +45,67 @@
 <section class="stats-container">
     <div class="tech-grid">
         <div class="stat-item">
-            <h2>{{ content.stats_data_points }}</h2>
+            <h2 class="editable" data-field="stats_data_points">{{ content.stats_data_points }}</h2>
             <p class="editable" data-field="stats_data_label">{{ content.stats_data_label }}</p>
         </div>
         <div class="stat-item">
-            <h2>{{ content.stats_accuracy }}</h2>
+            <h2 class="editable" data-field="stats_accuracy">{{ content.stats_accuracy }}</h2>
             <p class="editable" data-field="stats_accuracy_label">{{ content.stats_accuracy_label }}</p>
         </div>
         <div class="stat-item">
-            <h2>{{ content.stats_response_time }}</h2>
+            <h2 class="editable" data-field="stats_response_time">{{ content.stats_response_time }}</h2>
             <p class="editable" data-field="stats_response_label">{{ content.stats_response_label }}</p>
         </div>
     </div>
 </section>
 
 <section class="workflow_section">
-    <h2 class="section-title">{{ content.workflow_title }}</h2>
+    <h2 class="section-title editable" data-field="workflow_title">{{ content.workflow_title }}</h2>
     <div class="workflow-container">
         <div class="step">
             <div class="step-number">01</div>
-            <h3>{{ content.step1_title }}</h3>
+            <h3 class="editable" data-field="step1_title">{{ content.step1_title }}</h3>
             <p class="editable" data-field="step1_text">{{ content.step1_text }}</p>
         </div>
         <div class="step">
             <div class="step-number">02</div>
-            <h3>{{ content.step2_title }}</h3>
+            <h3 class="editable" data-field="step2_title">{{ content.step2_title }}</h3>
             <p class="editable" data-field="step2_text">{{ content.step2_text }}</p>
         </div>
         <div class="step">
             <div class="step-number">03</div>
-            <h3>{{ content.step3_title }}</h3>
+            <h3 class="editable" data-field="step3_title">{{ content.step3_title }}</h3>
             <p class="editable" data-field="step3_text">{{ content.step3_text }}</p>
         </div>
     </div>
 </section>
 
 <section class="about-container section">
-    <h2 class="section-title">{{ content.tech_title }}</h2>
+    <h2 class="section-title editable" data-field="tech_title">{{ content.tech_title }}</h2>
     <div class="tech-grid">
         <div class="tech-item">
             <div class="img-wrapper">
                 <img src="{% static 'images/ThuVien/Folium & Leaflet.jpg' %}" alt="Leaflet">
             </div>
-            <p><strong>{{ content.tech1_name }}</strong><br><small class="editable" data-field="tech1_desc">{{ content.tech1_desc }}</small></p>
+            <p><strong class="editable" data-field="tech1_name">{{ content.tech1_name }}</strong><br><small class="editable" data-field="tech1_desc">{{ content.tech1_desc }}</small></p>
         </div>
         <div class="tech-item">
             <div class="img-wrapper">
                 <img src="{% static 'images/ThuVien/GeoPandas.jpg' %}" alt="GeoPandas">
             </div>
-            <p><strong>{{ content.tech2_name }}</strong><br><small class="editable" data-field="tech2_desc">{{ content.tech2_desc }}</small></p>
+            <p><strong class="editable" data-field="tech2_name">{{ content.tech2_name }}</strong><br><small class="editable" data-field="tech2_desc">{{ content.tech2_desc }}</small></p>
         </div>
         <div class="tech-item">
             <div class="img-wrapper">
                 <img src="{% static 'images/ThuVien/GeoPy & PyProj.jpg' %}" alt="GeoPy">
             </div>
-            <p><strong>{{ content.tech3_name }}</strong><br><small class="editable" data-field="tech3_desc">{{ content.tech3_desc }}</small></p>
+            <p><strong class="editable" data-field="tech3_name">{{ content.tech3_name }}</strong><br><small class="editable" data-field="tech3_desc">{{ content.tech3_desc }}</small></p>
         </div>
         <div class="tech-item">
             <div class="img-wrapper">
                 <img src="{% static 'images/ThuVien/Python.jpg' %}" alt="Django">
             </div>
-            <p><strong>{{ content.tech4_name }}</strong><br><small class="editable" data-field="tech4_desc">{{ content.tech4_desc }}</small></p>
+            <p><strong class="editable" data-field="tech4_name">{{ content.tech4_name }}</strong><br><small class="editable" data-field="tech4_desc">{{ content.tech4_desc }}</small></p>
         </div>
     </div>
 </section>
@@ -103,49 +113,98 @@
 <div class="cta-wrapper">
     <p class="editable" data-field="cta_text">{{ content.cta_text }}</p>
     <a href="{% url 'home' %}" class="cta-btn">
-        <i class="fas fa-map-marked-alt" style="margin-right: 10px;"></i> <span>{{ content.cta_button }}</span>
+        <i class="fas fa-map-marked-alt" style="margin-right: 10px;"></i> <span class="editable" data-field="cta_button">{{ content.cta_button }}</span>
     </a>
 </div>
 
 {% if is_admin %}
 <script>
 $(document).ready(function() {
-    $('.editable').click(function() {
+    let editMode = false;
+    const $toggleBtn = $('#toggle-edit-mode');
+    const $statusBadge = $('#edit-mode-status');
+
+    $toggleBtn.click(function() {
+        editMode = !editMode;
+        if (editMode) {
+            $(this).html('<i class="fas fa-save"></i> Đang chỉnh sửa...').removeClass('btn-primary').addClass('btn-success');
+            $statusBadge.text('Chế độ chỉnh sửa (Nhấp vào chữ để sửa)').addClass('active');
+            $('.editable').addClass('edit-ready');
+        } else {
+            $(this).html('<i class="fas fa-edit"></i> Bật chế độ chỉnh sửa').removeClass('btn-success').addClass('btn-primary');
+            $statusBadge.text('Chế độ xem').removeClass('active');
+            $('.editable').removeClass('edit-ready');
+        }
+    });
+
+    $('.editable').each(function() {
+        $(this).attr('title', 'Bật chế độ chỉnh sửa để thay đổi nội dung');
+    });
+
+    $('.editable').click(function(e) {
+        if (!editMode) return;
+        if ($(this).find('.edit-input').length > 0) return;
+        
         var $this = $(this);
         var field = $this.data('field');
         var currentText = $this.text().trim();
         
-        // Nếu text trống, dùng placeholder
-        if (currentText === '') {
-            currentText = '[Nhấp để chỉnh sửa]';
+        if (currentText === '[Nhấp để chỉnh sửa]') {
+            currentText = '';
         }
         
         var tagName = $this.prop('tagName').toLowerCase();
+        var $input;
         
-        // Tạo input dựa trên tag
-        var inputType = (tagName === 'small') ? 'text' : 'textarea';
-        var $input = $('<' + inputType + '>').val(currentText).addClass('edit-input');
-        
-        if (inputType === 'textarea') {
-            $input.css({'width': '100%', 'min-height': '60px'});
+        // Chọn loại input phù hợp
+        if (tagName === 'p' || tagName === 'small' || $this.hasClass('cta-wrapper')) {
+            $input = $('<textarea>').val(currentText).addClass('edit-input');
         } else {
-            $input.css({'width': '100%'});
+            $input = $('<input type="text">').val(currentText).addClass('edit-input');
         }
         
+        $input.css({
+            'width': '100%',
+            'padding': '8px',
+            'font-size': 'inherit',
+            'font-family': 'inherit',
+            'border': '2px solid #007bff',
+            'border-radius': '4px',
+            'box-sizing': 'border-box',
+            'background': '#fff',
+            'color': '#333'
+        });
+
+        $this.data('original-html', $this.html());
         $this.html($input);
         $input.focus();
         
-        // Lưu khi blur hoặc enter
-        $input.on('blur keypress', function(e) {
-            if (e.type === 'blur' || e.which === 13) {
-                var newText = $(this).val();
-                // Nếu newText là placeholder hoặc trống, set thành trống
-                if (newText === '[Nhấp để chỉnh sửa]' || newText.trim() === '') {
-                    newText = '';
-                }
-                $this.text(newText || '[Nhấp để chỉnh sửa]');
+        // Ngăn sự kiện click lan ra ngoài
+        $input.click(function(e) {
+            e.stopPropagation();
+        });
+
+        $input.on('keydown', function(e) {
+            if (e.which === 13 && !e.shiftKey) { // Enter to save
+                e.preventDefault();
+                $(this).blur();
+            } else if (e.which === 27) { // ESC to cancel
+                $this.html($this.data('original-html'));
+            }
+        });
+        
+        $input.on('blur', function() {
+            var newText = $(this).val().trim();
+            if (newText === '') {
+                newText = '[Nhấp để chỉnh sửa]';
+            }
+            
+            $this.text(newText);
+            
+            // Chỉ gọi API nếu có thay đổi
+            if (newText !== currentText) {
+                $this.addClass('saving');
                 
-                // AJAX save using fetch
                 fetch('{% url "update_about" %}', {
                     method: 'POST',
                     headers: {
@@ -154,15 +213,19 @@ $(document).ready(function() {
                     },
                     body: new URLSearchParams({
                         'field': field,
-                        'value': newText
+                        'value': newText === '[Nhấp để chỉnh sửa]' ? '' : newText
                     })
                 })
                 .then(response => response.json())
                 .then(data => {
+                    $this.removeClass('saving').addClass('saved');
+                    setTimeout(() => $this.removeClass('saved'), 2000);
                     console.log('Updated:', data);
                 })
                 .catch(error => {
+                    $this.removeClass('saving').addClass('error');
                     console.error('Error:', error);
+                    alert('Lỗi khi lưu dữ liệu!');
                 });
             }
         });
@@ -170,15 +233,69 @@ $(document).ready(function() {
 });
 </script>
 <style>
-.edit-input {
-    border: 1px solid #ccc;
-    padding: 5px;
-    font-size: inherit;
-    font-family: inherit;
+.admin-control-bar {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    z-index: 1000;
+    background: white;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    transition: all 0.3s ease;
+}
+.admin-control-bar:hover {
+    box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+}
+.status-badge {
+    padding: 4px 10px;
+    border-radius: 4px;
+    background: #6c757d;
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 500;
+    width: 100%;
+    text-align: center;
+}
+.status-badge.active {
+    background: #28a745;
 }
 .editable {
+    position: relative;
+    transition: all 0.2s ease;
+    border-radius: 4px;
+    padding: 2px 5px;
+    cursor: default;
+}
+.editable.edit-ready {
     cursor: pointer;
-    min-height: 1em;
+    background-color: rgba(0, 123, 255, 0.05);
+    outline: 1px dashed rgba(0, 123, 255, 0.3);
+}
+.editable.edit-ready:hover {
+    background-color: rgba(0, 123, 255, 0.15);
+    outline: 2px dashed #007bff;
+}
+.editable.saving {
+    opacity: 0.5;
+    cursor: wait;
+}
+.editable.saved {
+    background-color: rgba(40, 167, 69, 0.2);
+    outline: 1px solid #28a745;
+}
+.editable.error {
+    background-color: rgba(220, 53, 69, 0.2);
+    outline: 1px solid #dc3545;
+}
+.edit-input {
+    display: block;
+    margin: 5px 0;
 }
 </style>
 {% endif %}

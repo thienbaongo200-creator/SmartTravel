@@ -122,6 +122,10 @@ class Event(models.Model):
     end_date = models.DateField(null=True, blank=True)
     description = models.TextField(null=True, blank=True)
     
+    # Tọa độ để hiển thị trên bản đồ
+    lat = models.FloatField(null=True, blank=True, verbose_name="Vĩ độ")
+    lng = models.FloatField(null=True, blank=True, verbose_name="Kinh độ")
+    
     # THÊM MỚI: Thể loại (Lễ hội, Văn hóa, Âm nhạc...)
     category = models.CharField(max_length=100, default="Văn hóa")
     
@@ -141,12 +145,12 @@ class Event(models.Model):
     def status_class(self):
         """Hàm trả về class CSS tương ứng với trạng thái để đổi màu bên giao diện"""
         status_map = {
-            'Đang diễn ra': 'badge-danger',
-            'Sắp diễn ra': 'badge-info',
-            'Tạm hoãn': 'badge-warning',
-            'Đã kết thúc': 'badge-secondary',
+            'Đang diễn ra': 'bg-danger text-white',
+            'Sắp diễn ra': 'bg-info text-dark',
+            'Tạm hoãn': 'bg-warning text-dark',
+            'Đã kết thúc': 'bg-secondary text-white',
         }
-        return status_map.get(self.status, 'badge-info')
+        return status_map.get(self.status, 'bg-info text-dark')
 
     def clean(self):
         from django.core.exceptions import ValidationError
