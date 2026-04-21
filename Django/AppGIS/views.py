@@ -128,8 +128,14 @@ def events(request):
     if location_filter:
         events = events.filter(location__icontains=location_filter)
     
+    # Phân trang: 5 sự kiện mỗi trang
+    paginator = Paginator(events, 5)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
     context = {
-        'ds_su_kien': events,
+        'ds_su_kien': page_obj,
+        'page_obj': page_obj,
     }
     return render(request, 'events.html', context)
 
@@ -1069,13 +1075,26 @@ def api_events(request, pk=None):
     elif pk and (request.method in ["POST", "PUT"] or request.headers.get('X-HTTP-Method-Override') == 'PUT'):
         try:
             event = Event.objects.get(pk=pk)
+            
+            # Kiểm tra logic ngày tháng
+            start_date_str = request.POST.get('start_date')
+            end_date_str = request.POST.get('end_date')
+            
+            if start_date_str and end_date_str:
+                from datetime import datetime
+                s_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+                e_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+                if e_date < s_date:
+                    return JsonResponse({"error": "Ngày kết thúc không thể trước ngày bắt đầu!"}, status=400)
+
             # Dùng .get() với fallback giá trị cũ nếu không có dữ liệu mới truyền lên
             event.title = request.POST.get('title', event.title)
             event.location = request.POST.get('location', event.location)
+            # Bản đồ đã bỏ, gán None hoặc giữ nguyên
             event.lat = request.POST.get('lat') or event.lat
             event.lng = request.POST.get('lng') or event.lng
-            event.start_date = request.POST.get('start_date') or event.start_date
-            event.end_date = request.POST.get('end_date') or event.end_date
+            event.start_date = start_date_str or event.start_date
+            event.end_date = end_date_str or event.end_date
             event.description = request.POST.get('description', event.description)
             event.category = request.POST.get('category', event.category)
             event.status = request.POST.get('status_type', event.status) 
@@ -1094,10 +1113,20 @@ def api_events(request, pk=None):
     # --- 3. THÊM MỚI (CREATE) ---
     elif request.method == "POST":
         try:
+            start_date_str = request.POST.get('start_date')
+            end_date_str = request.POST.get('end_date')
+            
+            if start_date_str and end_date_str:
+                from datetime import datetime
+                s_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+                e_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+                if e_date < s_date:
+                    return JsonResponse({"error": "Ngày kết thúc không thể trước ngày bắt đầu!"}, status=400)
+
             event = Event.objects.create(
                 title=request.POST.get('title'),
-                start_date=request.POST.get('start_date') or None,
-                end_date=request.POST.get('end_date') or None,
+                start_date=start_date_str or None,
+                end_date=end_date_str or None,
                 location=request.POST.get('location'),
                 lat=request.POST.get('lat') or None,
                 lng=request.POST.get('lng') or None,

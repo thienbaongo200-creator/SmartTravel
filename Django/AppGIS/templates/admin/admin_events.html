@@ -7,7 +7,94 @@
     <title>Quản lý Sự kiện | Admin Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
     <link rel="stylesheet" href="{% static 'css/admin.css' %}">
+    <style>
+        /* Custom Upload Button */
+        .upload-wrapper {
+            position: relative;
+            margin-top: 10px;
+        }
+        .upload-label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100px;
+            border: 2px dashed #ddd;
+            border-radius: 12px;
+            background: #f8f9fa;
+            color: #6c757d;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            gap: 8px;
+        }
+        .upload-label:hover {
+            border-color: var(--primary-color, #0d6efd);
+            background: #f0f7ff;
+            color: var(--primary-color, #0d6efd);
+        }
+        .upload-label i {
+            font-size: 24px;
+        }
+        .upload-label span {
+            font-size: 13px;
+            font-weight: 500;
+        }
+        #inputImages {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0,0,0,0);
+            border: 0;
+        }
+        .preview-container {
+            position: relative;
+            display: inline-block;
+        }
+        .preview-img {
+            width: 80px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        .btn-remove-img {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: rgba(255,0,0,0.8);
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        .btn-remove-img:hover {
+            background: red;
+        }
+        .table > :not(caption) > * > * {
+            padding: 0.75rem 0.5rem;
+        }
+        .ck-editor__editable {
+            min-height: 200px;
+        }
+        /* Fix CKEditor images too big in editor */
+        .ck-content img {
+            max-width: 100% !important;
+            height: auto !important;
+        }
+    </style>
 </head>
 <body>
 
@@ -45,83 +132,93 @@
             <h2 class="fw-bold">Quản lý Sự kiện</h2>
             <p class="text-muted small">Cập nhật các hoạt động văn hóa và lễ hội du lịch.</p>
         </div>
-        <span class="badge bg-white text-primary p-3 shadow-sm rounded-4 text-dark">
-            <i class="fas fa-calendar-day me-2 text-primary"></i>{% now "d/m/Y" %}
-        </span>
+        <div class="d-flex gap-2">
+            <button class="btn btn-primary rounded-pill px-4 shadow-sm" onclick="toggleForm()">
+                <i class="fas fa-plus me-2"></i>Thêm sự kiện
+            </button>
+            <span class="badge bg-white text-primary p-3 shadow-sm rounded-4 text-dark d-none d-md-inline-block">
+                <i class="fas fa-calendar-day me-2 text-primary"></i>{% now "d/m/Y" %}
+            </span>
+        </div>
     </div>
 
     <div class="row g-4">
-        <div class="col-lg-4">
+        <div class="col-lg-4" id="formColumn" style="display: none;">
             <div class="glass-card sticky-top" style="top: 20px; z-index: 1;">
-                <h5 class="fw-bold mb-4 text-primary" id="formTitle">
-                    <i class="fas fa-plus-circle me-2"></i>Thêm sự kiện mới
-                </h5>
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="fw-bold mb-0 text-primary" id="formTitle">
+                        <i class="fas fa-plus-circle me-2"></i>Thêm mới
+                    </h5>
+                    <button class="btn-close small" onclick="toggleForm()"></button>
+                </div>
                 <form id="eventForm" enctype="multipart/form-data">
                     {% csrf_token %}
                     <input type="hidden" id="eventId">
 
-                    <div class="mb-3">
-                        <label class="small fw-bold text-muted mb-2 required-label">TIÊU ĐỀ</label>
-                        <input type="text" name="title" id="title" class="form-control" placeholder="Tên lễ hội, sự kiện..." required>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-6 mb-3">
-                            <label class="small fw-bold text-muted mb-2">THỂ LOẠI</label>
-                            <select name="category" id="category" class="form-select">
+                    <div class="row g-2 mb-2">
+                        <div class="col-md-8">
+                            <label class="form-label-sm fw-bold text-muted mb-1 small">TIÊU ĐỀ</label>
+                            <input type="text" name="title" id="title" class="form-control form-control-sm" placeholder="Tên sự kiện..." required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label-sm fw-bold text-muted mb-1 small">THỂ LOẠI</label>
+                            <select name="category" id="category" class="form-select form-select-sm">
                                 <option value="Văn hóa">Văn hóa</option>
                                 <option value="Lễ hội">Lễ hội</option>
                                 <option value="Âm nhạc">Âm nhạc</option>
                                 <option value="Ẩm thực">Ẩm thực</option>
                             </select>
                         </div>
-                        <div class="col-6 mb-3">
-                            <label class="small fw-bold text-muted mb-2">TRẠNG THÁI</label>
-                            <select name="status_type" id="status_type" class="form-select">
-                                <option value="Sắp diễn ra">Sắp diễn ra</option>
-                                <option value="Đang diễn ra">Đang diễn ra</option>
-                                <option value="Đã kết thúc">Đã kết thúc</option>
-                            </select>
-                        </div>
-
-                    <div class="mb-3">
-                        <label class="small fw-bold text-muted mb-2">ĐỊA ĐIỂM</label>
-                        <input type="text" name="location" id="location" class="form-control" placeholder="Địa chỉ tổ chức">
                     </div>
 
-                    <div class="row">
-                        <div class="col-6 mb-3">
-                            <label class="small fw-bold text-muted mb-2 required-label">NGÀY BẮT ĐẦU</label>
-                            <input type="date" name="start_date" id="start_date" class="form-control" required>
+                    <div class="row g-2 mb-2">
+                        <div class="col-md-12">
+                            <label class="form-label-sm fw-bold text-muted mb-1 small">ĐỊA ĐIỂM</label>
+                            <input type="text" name="location" id="location" class="form-control form-control-sm" placeholder="Địa chỉ...">
                         </div>
-                        <div class="col-6 mb-3">
-                            <label class="small fw-bold text-muted mb-2">NGÀY KẾT THÚC</label>
-                            <input type="date" name="end_date" id="end_date" class="form-control">
-                        </div>
-
-                    <div class="mb-3">
-                        <label class="small fw-bold text-muted mb-2">MÔ TẢ CHI TIẾT</label>
-                        <div id="editor"></div> </div>
-
-                    <div class="mb-3">
-                        <label class="small fw-bold text-muted mb-2">HÌNH ẢNH</label>
-                        <input type="file" name="images" class="form-control" id="inputImages" accept="image/*" multiple>
-                        <div id="imagePreview" class="d-flex gap-2 mt-2 flex-wrap"></div>
                     </div>
 
-                    <div class="mt-4">
-                        <button type="submit" class="btn btn-primary w-100 py-2 fw-bold shadow-sm" id="btnSubmit">
-                            <i class="fas fa-save me-2"></i>Lưu dữ liệu
+                    <div class="row g-2 mb-2">
+                        <div class="col-6">
+                            <label class="form-label-sm fw-bold text-muted mb-1 small">BẮT ĐẦU</label>
+                            <input type="date" name="start_date" id="start_date" class="form-control form-control-sm" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label-sm fw-bold text-muted mb-1 small">KẾT THÚC</label>
+                            <input type="date" name="end_date" id="end_date" class="form-control form-control-sm">
+                        </div>
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="form-label-sm fw-bold text-muted mb-1 small">MÔ TẢ CHI TIẾT</label>
+                        <div id="editor"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label-sm fw-bold text-muted mb-1 small">HÌNH ẢNH SỰ KIỆN</label>
+                        <div class="upload-wrapper">
+                            <label for="inputImages" class="upload-label">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <span>Nhấn để chọn hoặc kéo thả ảnh vào đây</span>
+                            </label>
+                            <input type="file" name="images" id="inputImages" accept="image/*" multiple>
+                        </div>
+                        <div id="imagePreview" class="d-flex gap-2 mt-3 flex-wrap"></div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary flex-grow-1 py-2 fw-bold shadow-sm" id="btnSubmit">
+                            <i class="fas fa-save me-1"></i>Lưu
                         </button>
-                        <button type="button" class="btn btn-light w-100 border mt-2" id="btnCancel" style="display:none;" onclick="resetForm()">
-                            Hủy bỏ
+                        <button type="button" class="btn btn-light border px-3" id="btnCancel" style="display:none;" onclick="resetForm()">
+                            Hủy
                         </button>
                     </div>
                 </form>
             </div>
         </div>
 
-        <div class="col-lg-8">
+        <div class="col-lg-12" id="listColumn">
             <div class="glass-card">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h5 class="fw-bold mb-0">Danh sách Sự kiện</h5>
@@ -133,6 +230,7 @@
                             <tr>
                                 <th style="width: 40%;">Sự kiện</th>
                                 <th>Thể loại</th>
+                                <th>Trạng thái</th>
                                 <th>Thời gian</th>
                                 <th class="text-end">Hành động</th>
                             </tr>
@@ -146,6 +244,7 @@
     </div></div></main>
 
 <script src="https://cdn.ckeditor.com/ckeditor5/35.4.0/classic/ckeditor.js"></script>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 <script>
 // ── MOBILE SIDEBAR ────────────────────────────────
@@ -156,12 +255,73 @@ function toggleSidebar() {
 
     let allEvents = [];
     let eventEditor;
+    let selectedFiles = []; // Mảng lưu trữ các file đã chọn
 
-    // Khởi tạo CKEditor 5
+    // Toggle Form
+    function toggleForm() {
+        const formCol = document.getElementById('formColumn');
+        const listCol = document.getElementById('listColumn');
+        
+        if (formCol.style.display === 'none') {
+            formCol.style.display = 'block';
+            listCol.className = 'col-lg-8';
+        } else {
+            formCol.style.display = 'none';
+            listCol.className = 'col-lg-12';
+        }
+    }
+
+    // Custom Upload Adapter for Base64
+    class Base64UploadAdapter {
+        constructor(loader) {
+            this.loader = loader;
+        }
+        upload() {
+            return this.loader.file
+                .then(file => new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                        resolve({ default: reader.result });
+                    };
+                    reader.onerror = error => {
+                        reject(error);
+                    };
+                    reader.readAsDataURL(file);
+                }));
+        }
+        abort() {}
+    }
+
+    function Base64UploadAdapterPlugin(editor) {
+        editor.plugins.get('FileRepository').createUploadAdapter = (loader) => {
+            return new Base64UploadAdapter(loader);
+        };
+    }
+
+    // Khởi tạo CKEditor 5 với cấu hình hỗ trợ ảnh
     ClassicEditor
-        .create(document.querySelector('#editor'))
-        .then(editor => { eventEditor = editor; })
-        .catch(error => { console.error(error); });
+        .create(document.querySelector('#editor'), {
+            extraPlugins: [Base64UploadAdapterPlugin],
+            toolbar: {
+                items: [
+                    'heading', '|',
+                    'bold', 'italic', 'link', 'bulletedList', 'numberedList', '|',
+                    'imageUpload', 'insertTable', 'blockQuote', 'undo', 'redo'
+                ]
+            },
+            image: {
+                toolbar: [
+                    'imageStyle:inline', 'imageStyle:block', 'imageStyle:side', '|',
+                    'toggleImageCaption', 'imageTextAlternative'
+                ]
+            }
+        })
+        .then(editor => { 
+            eventEditor = editor; 
+        })
+        .catch(error => { 
+            console.error(error); 
+        });
 
     // Load dữ liệu
     async function loadEvents() {
@@ -175,7 +335,7 @@ function toggleSidebar() {
                 <tr>
                     <td>
                         <div class="d-flex align-items-center">
-                            <img src="${(ev.images && ev.images.length > 0) ? ev.images[0] : 'https://via.placeholder.com/80x55'}" class="preview-img me-3">
+                            <img src="${(ev.images && ev.images.length > 0) ? ev.images[0] : 'https://via.placeholder.com/60x42'}" class="preview-img me-3">
                             <div>
                                 <div class="fw-bold text-dark">${ev.title}</div>
                                 <small class="text-muted"><i class="fas fa-map-marker-alt me-1"></i>${ev.location || 'N/A'}</small>
@@ -183,10 +343,12 @@ function toggleSidebar() {
                         </div>
                     </td>
                     <td><span class="badge bg-light text-dark border">${ev.category}</span></td>
+                    <td><span class="badge ${ev.status_class || 'bg-primary'}">${ev.status}</span></td>
                     <td><small class="fw-bold">${ev.start_date}</small></td>
                     <td class="text-end">
-                        <button class="btn btn-sm btn-outline-primary border-0" onclick="openEdit(${ev.id})"><i class="fas fa-edit"></i></button>
-                        <button class="btn btn-sm btn-outline-danger border-0" onclick="deleteEvent(${ev.id})"><i class="fas fa-trash"></i></button>
+                        <a href="/events/${ev.id}/" target="_blank" class="btn btn-sm btn-outline-info border-0" title="Xem chi tiết"><i class="fas fa-eye"></i></a>
+                        <button class="btn btn-sm btn-outline-primary border-0" onclick="openEdit(${ev.id})" title="Chỉnh sửa"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-sm btn-outline-danger border-0" onclick="deleteEvent(${ev.id})" title="Xóa"><i class="fas fa-trash"></i></button>
                     </td>
                 </tr>
             `).join('');
@@ -196,13 +358,28 @@ function toggleSidebar() {
     // Submit Form (Thêm/Sửa)
     document.getElementById('eventForm').addEventListener('submit', async function(e) {
         e.preventDefault();
+        
+        const startDateStr = document.getElementById('start_date').value;
+        const endDateStr = document.getElementById('end_date').value;
+        
+        // So sánh trực tiếp chuỗi YYYY-MM-DD là chính xác nhất cho loại input date
+        if (endDateStr && startDateStr && endDateStr < startDateStr) {
+            alert("Ngày kết thúc không thể trước ngày bắt đầu!");
+            return;
+        }
+
         const id = document.getElementById('eventId').value;
         const formData = new FormData(this);
         formData.append('description', eventEditor.getData());
+        
+        // Ghi đè lại field images bằng danh sách file đã chọn thực tế (selectedFiles)
+        formData.delete('images');
+        selectedFiles.forEach(file => {
+            formData.append('images', file);
+        });
 
         const url = id ? `/api/events/${id}/` : '/api/events/';
-        // Nếu là PUT (sửa), Django REST thường cần method POST + Header đặc biệt hoặc thật sự dùng PUT
-        const method = id ? "PUT" : "POST"; 
+        const method = "POST"; 
 
         try {
             const res = await fetch(url, {
@@ -210,18 +387,29 @@ function toggleSidebar() {
                 body: formData,
                 headers: { "X-CSRFToken": "{{ csrf_token }}" }
             });
+            
+            const data = await res.json();
+            
             if (res.ok) { 
                 alert("Thao tác thành công!");
                 resetForm(); 
                 loadEvents(); 
+            } else {
+                alert(data.error || "Lỗi lưu dữ liệu!");
             }
-        } catch (error) { alert("Lỗi lưu dữ liệu!"); }
+        } catch (error) { 
+            alert("Lỗi kết nối server!"); 
+        }
     });
 
     // Mở mode chỉnh sửa
     function openEdit(id) {
         const ev = allEvents.find(x => x.id == id);
         if (!ev) return;
+        
+        const formCol = document.getElementById('formColumn');
+        if (formCol.style.display === 'none') toggleForm();
+        
         window.scrollTo({ top: 0, behavior: 'smooth' });
 
         document.getElementById('eventId').value = ev.id;
@@ -230,24 +418,65 @@ function toggleSidebar() {
         document.getElementById('start_date').value = ev.start_date;
         document.getElementById('end_date').value = ev.end_date || "";
         document.getElementById('category').value = ev.category;
-        document.getElementById('status_type').value = ev.status;
         eventEditor.setData(ev.description || "");
+
+        // Cập nhật thuộc tính min cho ngày kết thúc khi mở chế độ sửa
+        updateMinEndDate();
         
-        document.getElementById('formTitle').innerHTML = '<i class="fas fa-edit text-warning"></i> Chỉnh sửa sự kiện';
+        document.getElementById('formTitle').innerHTML = `
+            <div class="d-flex justify-content-between align-items-center w-100">
+                <span><i class="fas fa-edit text-warning"></i> Chỉnh sửa sự kiện</span>
+                <a href="/events/${ev.id}/" target="_blank" class="btn btn-sm btn-link text-primary p-0 text-decoration-none">
+                    <i class="fas fa-external-link-alt me-1"></i>Xem trên web
+                </a>
+            </div>`;
         document.getElementById('btnSubmit').className = "btn btn-warning w-100 fw-bold";
         document.getElementById('btnCancel').style.display = "block";
+        
+        // Hiển thị ảnh cũ nếu muốn (optional - ở đây ta chỉ quan tâm đến upload mới)
+        renderPreviews();
     }
 
     // Reset Form
     function resetForm() {
         document.getElementById('eventForm').reset();
         document.getElementById('eventId').value = "";
+        selectedFiles = [];
+        renderPreviews();
+
+        // Reset thuộc tính min của end_date
+        document.getElementById('end_date').removeAttribute('min');
+
         eventEditor.setData("");
-        document.getElementById('imagePreview').innerHTML = '';
         document.getElementById('formTitle').innerHTML = '<i class="fas fa-plus-circle text-primary"></i> Thêm sự kiện mới';
         document.getElementById('btnSubmit').className = "btn btn-primary w-100 fw-bold";
         document.getElementById('btnCancel').style.display = "none";
     }
+
+    // Hàm cập nhật thuộc tính min của ngày kết thúc
+    function updateMinEndDate() {
+        const startDateVal = document.getElementById('start_date').value;
+        const endDateInput = document.getElementById('end_date');
+        
+        if (startDateVal) {
+            const startDate = new Date(startDateVal);
+            // Cộng thêm 1 ngày: Ngày kết thúc phải sau ngày bắt đầu ít nhất 1 ngày
+            startDate.setDate(startDate.getDate() + 1);
+            const minEndDate = startDate.toISOString().split('T')[0];
+            
+            endDateInput.setAttribute('min', minEndDate);
+            
+            // Chỉ xóa giá trị cũ nếu nó nhỏ hơn min mới (tránh xóa nhầm khi đang sửa hợp lệ)
+            if (endDateInput.value && endDateInput.value < minEndDate) {
+                endDateInput.value = '';
+            }
+        } else {
+            endDateInput.removeAttribute('min');
+        }
+    }
+
+    // Xử lý logic ngày tháng khi người dùng thay đổi ngày bắt đầu
+    document.getElementById('start_date').addEventListener('change', updateMinEndDate);
 
     // Xóa
     async function deleteEvent(id) {
@@ -258,24 +487,50 @@ function toggleSidebar() {
             });
             loadEvents();
         }
+    }
 
     // Preview ảnh khi chọn file
     document.getElementById('inputImages').addEventListener('change', function() {
+        const newFiles = Array.from(this.files);
+        selectedFiles = selectedFiles.concat(newFiles);
+        renderPreviews();
+        this.value = ''; // Reset input để có thể chọn lại cùng file nếu cần
+    });
+
+    function renderPreviews() {
         const preview = document.getElementById('imagePreview');
         preview.innerHTML = '';
-        [...this.files].forEach(file => {
+        
+        selectedFiles.forEach((file, index) => {
             const reader = new FileReader();
             reader.onload = (e) => {
+                const container = document.createElement('div');
+                container.className = 'preview-container';
+                
                 const img = document.createElement('img');
                 img.src = e.target.result;
                 img.className = 'preview-img';
-                preview.appendChild(img);
+                
+                const btnRemove = document.createElement('button');
+                btnRemove.innerHTML = '<i class="fas fa-times"></i>';
+                btnRemove.className = 'btn-remove-img';
+                btnRemove.type = 'button';
+                btnRemove.onclick = () => {
+                    selectedFiles.splice(index, 1);
+                    renderPreviews();
+                };
+                
+                container.appendChild(img);
+                container.appendChild(btnRemove);
+                preview.appendChild(container);
             };
             reader.readAsDataURL(file);
         });
-    });
+    }
 
-    window.onload = loadEvents;
+    window.onload = () => {
+        loadEvents();
+    };
 </script>
 </body>
 </html>
