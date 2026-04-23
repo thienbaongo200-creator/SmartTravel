@@ -158,6 +158,64 @@ def contact_success(request):
 # ==============================
 # Tool WebGIS
 # ==============================
+def get_image_url(path):
+    """Trình xử lý URL ảnh thông minh cho cả static và media."""
+    if not path:
+        return None
+    if isinstance(path, str):
+        # Nếu đã là URL tuyệt đối hoặc bắt đầu bằng /
+        if path.startswith(('/', 'http')):
+            return path
+        
+        # Nếu path chứa 'static/' hoặc 'media/' nhưng không ở đầu
+        if 'static/' in path:
+            return '/' + path[path.find('static/'):]
+        if 'media/' in path:
+            return '/' + path[path.find('media/'):]
+
+        # Các thư mục ảnh cũ TRONG static/images/
+        # Bỏ 'tours/' ra vì tours/ là thư mục trong media (upload mới)
+        static_folders = ('tour/', 'monuments/', 'hotels/', 'parks/', 'restaurants/', 'atm/', 'pharmacy/', 'ThanhVien/', 'ThuVien/')
+        if path.startswith(static_folders):
+            return f'/static/images/{path}'
+        
+        # Nếu bắt đầu bằng images/
+        if path.startswith('images/'):
+            return f'/static/{path}'
+            
+        # Mặc định là media cho các upload mới (tours/main/..., tours/gallery/...)
+        return f'/media/{path}'
+    return path
+
+def _process_tour_images(tour):
+    """Xử lý image paths của Tour object mà không lưu vào DB."""
+    # Xử lý ảnh chính
+    if tour.image:
+        tour.image = get_image_url(tour.image)
+    
+    # Xử lý gallery (đảm bảo là list)
+    if tour.images:
+        # Nếu là string (JSON hoặc comma-separated)
+        if isinstance(tour.images, str):
+            import json
+            try:
+                # Thử parse JSON
+                tour.images = json.loads(tour.images.replace("'", '"'))
+            except:
+                # Thử split bằng dấu phẩy
+                tour.images = [img.strip() for img in tour.images.split(',') if img.strip()]
+        
+        # Đảm bảo là list
+        if not isinstance(tour.images, list):
+            tour.images = [tour.images]
+            
+        # Xử lý từng URL trong list
+        tour.images = [get_image_url(img) for img in tour.images if img]
+    else:
+        tour.images = []
+        
+    return tour
+
 def slugify(value):
     # chuyển unicode có dấu thành không dấu
     value = unicodedata.normalize('NFD', value)
@@ -682,36 +740,91 @@ def admin_tours(request):
     return render(request, 'admin/admin_tours.html')
 @csrf_exempt
 def api_tours(request, tour_id=None):
+    if not is_admin_user(request.user):
+        return JsonResponse({"error": "Unauthorized"}, status=403)
+
     if request.method == "GET":
-        tours = list(Tour.objects.all().values().order_by('-created_at'))
-        return JsonResponse(tours, safe=False)
+        tours = Tour.objects.all().order_by('-created_at')
+        data = []
+        for t in tours:
+            _process_tour_images(t)
+            data.append({
+                "id": t.id,
+                "title": t.title,
+                "short_intro": getattr(t, 'short_intro', ''),
+                "description": t.description,
+                "price": float(t.price) if t.price else 0,
+                "duration": t.duration,
+                "tag": t.tag,
+                "image": t.image,
+                "images": t.images,
+                "created_at": t.created_at.isoformat() if t.created_at else None
+            })
+        return JsonResponse(data, safe=False)
 
-    if request.method == "POST":
-        # Thêm hoặc Cập nhật (Sử dụng Method Override hoặc check tour_id)
-        title = request.POST.get('title')
-        description = request.POST.get('description')
-        price = request.POST.get('price')
-        duration = request.POST.get('duration')
-        tag = request.POST.get('tag')
+    elif request.method in ["POST", "PUT"] or request.headers.get('X-HTTP-Method-Override') == 'PUT':
+        try:
+            title = request.POST.get('title')
+            short_intro = request.POST.get('short_intro', '')
+            description = request.POST.get('description', '')
+            
+            try:
+                price = float(request.POST.get('price', 0))
+            except (TypeError, ValueError):
+                price = 0
+                
+            duration = request.POST.get('duration', '')
+            tag = request.POST.get('tag', '')
 
-        if tour_id: # Cập nhật
-            tour = Tour.objects.get(id=tour_id)
+            if tour_id:  # UPDATE
+                tour = get_object_or_404(Tour, id=tour_id)
+            else:  # CREATE
+                tour = Tour()
+
             tour.title = title
+            tour.short_intro = short_intro
             tour.description = description
             tour.price = price
             tour.duration = duration
             tour.tag = tag
-            tour.save()
-        else: # Thêm mới
-            Tour.objects.create(
-                title=title, description=description, 
-                price=price, duration=duration, tag=tag
-            )
-        return JsonResponse({"message": "Thành công"})
 
-    if request.method == "DELETE":
-        Tour.objects.get(id=tour_id).delete()
+            # Xử lý ảnh chính
+            main_img = request.FILES.get('main_image')
+            if main_img:
+                from django.core.files.storage import default_storage
+                path = default_storage.save(f'tours/main/{main_img.name}', main_img)
+                tour.image = path
+
+            # Xử lý gallery
+            new_gallery_files = request.FILES.getlist('gallery_images')
+            if new_gallery_files:
+                current_gallery = tour.images if isinstance(tour.images, list) else []
+                from django.core.files.storage import default_storage
+                for f in new_gallery_files:
+                    path = default_storage.save(f'tours/gallery/{f.name}', f)
+                    current_gallery.append(path)
+                tour.images = current_gallery[:6]
+
+            tour.save()
+            
+            # Trả về dữ liệu đã xử lý URL để hiển thị ngay
+            _process_tour_images(tour)
+            return JsonResponse({
+                "message": "Thành công",
+                "id": tour.id,
+                "image": tour.image,
+                "images": tour.images
+            })
+
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=400)
+
+    elif request.method == "DELETE" and tour_id:
+        tour = get_object_or_404(Tour, id=tour_id)
+        tour.delete()
         return JsonResponse({"message": "Đã xóa"})
+
+    return JsonResponse({"error": "Method not allowed"}, status=405)
 def admin_tour_booking(request):
     if not is_admin_user(request.user):
         raise PermissionDenied
@@ -920,6 +1033,10 @@ def tours_list(request):
     page_number = request.GET.get('page')
     tours = paginator.get_page(page_number)
     
+    # Xử lý ảnh cho từng tour
+    for t in tours:
+        _process_tour_images(t)
+    
     return render(request, 'tours.html', {
         'tours': tours,
         'booked_tours': booked_tours,
@@ -930,6 +1047,7 @@ def tours_list(request):
 
 def tour_detail(request, tour_id):
     tour = get_object_or_404(Tour, pk=tour_id)
+    _process_tour_images(tour)
     has_booked_tour = False
     if request.user.is_authenticated:
         has_booked_tour = TourBooking.objects.filter(user=request.user, status="pending").exists()
