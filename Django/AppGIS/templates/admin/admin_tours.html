@@ -84,14 +84,26 @@
                     <!-- Main Image Upload -->
                     <div class="form-group" style="margin-top:14px">
                         <label class="form-label">Ảnh chính</label>
-                        <input type="file" id="add_main_image" name="main_image" class="form-control" accept="image/*">
+                        <div class="file-input-wrapper">
+                            <input type="file" id="add_main_image" name="main_image" accept="image/*">
+                            <button type="button" class="file-btn" onclick="document.getElementById('add_main_image').click()">
+                                <i class="fas fa-folder-open"></i>Chọn tệp
+                            </button>
+                            <span class="file-name-label" id="add_main_image_label">Chưa chọn tệp nào</span>
+                        </div>
                         <div id="add_main_preview" class="image-preview-wrap" style="margin-top:8px;"></div>
                     </div>
 
                     <!-- Gallery Images Upload -->
                     <div class="form-group" style="margin-top:14px">
                         <label class="form-label">Ảnh gallery (tối đa 6)</label>
-                        <input type="file" id="add_gallery_images" name="gallery_images" class="form-control" multiple accept="image/*">
+                        <div class="file-input-wrapper">
+                            <input type="file" id="add_gallery_images" name="gallery_images" multiple accept="image/*">
+                            <button type="button" class="file-btn" onclick="document.getElementById('add_gallery_images').click()">
+                                <i class="fas fa-folder-open"></i>Chọn tệp
+                            </button>
+                            <span class="file-name-label" id="add_gallery_images_label">Chưa chọn tệp nào</span>
+                        </div>
                         <div id="add_gallery_preview" class="gallery-preview" style="margin-top:8px;"></div>
                     </div>
 
@@ -111,7 +123,7 @@
         <div class="card">
             <div class="card-header" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
                 <i class="fas fa-list-ul"></i><h2 style="flex:1">Danh sách Tour</h2>
-                <div style="display:flex;gap:8px;align-items:center">
+                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
                     <button class="btn btn-excel-export" onclick="exportExcel()" title="Xuất Excel">
                         <i class="fas fa-file-excel"></i>Xuất Excel
                     </button>
@@ -124,12 +136,34 @@
                     </a>
                 </div>
             </div>
+
+            <!-- Search + Page size controls -->
+            <div class="table-controls">
+                <div class="search-wrap">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" id="searchInput" class="search-input" placeholder="Tìm kiếm tour..." oninput="handleSearch()">
+                    <button class="search-clear" id="searchClear" onclick="clearSearch()" style="display:none" title="Xóa">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="page-size-wrap">
+                    <label>Hiển thị</label>
+                    <select id="pageSizeSelect" class="page-size-select" onchange="handlePageSizeChange()">
+                        <option value="5">5</option>
+                        <option value="10" selected>10</option>
+                        <option value="20">20</option>
+                        <option value="50">50</option>
+                    </select>
+                    <label>/ trang</label>
+                </div>
+            </div>
+
             <div id="importStatus" style="display:none;padding:10px 18px;font-size:.83rem;"></div>
             <div class="table-wrap">
                 <table>
                     <thead>
                         <tr>
-                            <th style="width: 100px;">Ảnh</th>
+                            <th style="width:100px;">Ảnh</th>
                             <th>Thông tin Tour</th>
                             <th>Giới thiệu ngắn</th>
                             <th>Giá niêm yết</th>
@@ -141,6 +175,12 @@
                         <tr><td colspan="6"><div class="empty-state"><i class="fas fa-spinner fa-spin"></i><p>Đang tải...</p></div></td></tr>
                     </tbody>
                 </table>
+            </div>
+
+            <!-- Pagination footer -->
+            <div class="pagination-footer">
+                <div class="pagination-info" id="paginationInfo"></div>
+                <div class="pagination-controls" id="paginationControls"></div>
             </div>
         </div>
     </div>
@@ -195,7 +235,13 @@
                     <label class="form-label">Ảnh chính hiện tại</label>
                     <div id="edit_main_current" class="current-img-box"></div>
                     <label class="form-label" style="margin-top:10px">Thay ảnh chính mới</label>
-                    <input type="file" id="edit_main_image" name="main_image" class="form-control" accept="image/*">
+                    <div class="file-input-wrapper">
+                        <input type="file" id="edit_main_image" name="main_image" accept="image/*">
+                        <button type="button" class="file-btn" onclick="document.getElementById('edit_main_image').click()">
+                            <i class="fas fa-folder-open"></i>Chọn tệp
+                        </button>
+                        <span class="file-name-label" id="edit_main_image_label">Chưa chọn tệp nào</span>
+                    </div>
                     <div id="edit_main_preview" class="image-preview-wrap" style="margin-top:8px;"></div>
                 </div>
 
@@ -204,7 +250,13 @@
                     <label class="form-label">Gallery hiện tại</label>
                     <div id="edit_gallery_current" class="gallery-preview" style="margin-bottom:10px;"></div>
                     <label class="form-label">Thêm ảnh gallery mới</label>
-                    <input type="file" id="edit_gallery_images" name="gallery_images" class="form-control" multiple accept="image/*">
+                    <div class="file-input-wrapper">
+                        <input type="file" id="edit_gallery_images" name="gallery_images" multiple accept="image/*">
+                        <button type="button" class="file-btn" onclick="document.getElementById('edit_gallery_images').click()">
+                            <i class="fas fa-folder-open"></i>Chọn tệp
+                        </button>
+                        <span class="file-name-label" id="edit_gallery_images_label">Chưa chọn tệp nào</span>
+                    </div>
                     <div id="edit_gallery_preview" class="gallery-preview" style="margin-top:8px;"></div>
                 </div>
 
@@ -250,6 +302,48 @@
     border-radius: 8px; display: block; margin: 0 auto;
 }
 
+/* ── FILE INPUT CUSTOM ── */
+.file-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.file-input-wrapper input[type="file"] {
+    display: none !important;
+}
+.file-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    background: var(--bg-light, #f8f9fa);
+    border: 1px solid var(--border-light, #dee2e6);
+    border-radius: 6px;
+    font-size: .83rem;
+    font-family: inherit;
+    cursor: pointer;
+    color: var(--text-dark, #212529);
+    transition: all .15s;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.file-btn:hover {
+    border-color: var(--primary, #0d6efd);
+    color: var(--primary, #0d6efd);
+    background: #fff;
+}
+.file-name-label {
+    font-size: .8rem;
+    color: var(--text-muted, #6c757d);
+    font-style: italic;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 /* Excel buttons */
 .btn-excel-export {
     background:#1a7f37; color:#fff; border:none;
@@ -275,10 +369,170 @@
 #importStatus.success { background:#d4edda; color:#155724; border-radius:6px; }
 #importStatus.error   { background:#f8d7da; color:#721c24; border-radius:6px; }
 #importStatus.info    { background:#d1ecf1; color:#0c5460; border-radius:6px; }
+
+/* ── SEARCH + PAGE SIZE CONTROLS ── */
+.table-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--border-light, #e9ecef);
+    flex-wrap: wrap;
+}
+
+.search-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    flex: 1;
+    min-width: 200px;
+    max-width: 340px;
+}
+
+.search-icon {
+    position: absolute;
+    left: 10px;
+    color: var(--text-muted, #6c757d);
+    font-size: .82rem;
+    pointer-events: none;
+}
+
+.search-input {
+    width: 100%;
+    padding: 7px 32px 7px 30px;
+    border: 1px solid var(--border-light, #dee2e6);
+    border-radius: 8px;
+    font-size: .83rem;
+    font-family: inherit;
+    background: var(--bg-light, #f8f9fa);
+    color: var(--text-dark, #212529);
+    transition: border-color .2s, box-shadow .2s;
+    outline: none;
+}
+
+.search-input:focus {
+    border-color: var(--primary, #0d6efd);
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(13,110,253,.1);
+}
+
+.search-clear {
+    position: absolute;
+    right: 8px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted, #6c757d);
+    font-size: .75rem;
+    padding: 2px 4px;
+    border-radius: 4px;
+    transition: color .15s;
+}
+.search-clear:hover { color: var(--danger, #dc3545); }
+
+.page-size-wrap {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: .82rem;
+    color: var(--text-muted, #6c757d);
+    white-space: nowrap;
+}
+
+.page-size-select {
+    padding: 5px 28px 5px 10px;
+    border: 1px solid var(--border-light, #dee2e6);
+    border-radius: 6px;
+    font-size: .82rem;
+    font-family: inherit;
+    background: var(--bg-light, #f8f9fa);
+    color: var(--text-dark, #212529);
+    cursor: pointer;
+    outline: none;
+    transition: border-color .2s;
+    appearance: auto;
+}
+.page-size-select:focus { border-color: var(--primary, #0d6efd); }
+
+/* ── PAGINATION FOOTER ── */
+.pagination-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    border-top: 1px solid var(--border-light, #e9ecef);
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.pagination-info {
+    font-size: .8rem;
+    color: var(--text-muted, #6c757d);
+}
+
+.pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.pg-btn {
+    min-width: 32px;
+    height: 32px;
+    padding: 0 8px;
+    border: 1px solid var(--border-light, #dee2e6);
+    border-radius: 6px;
+    background: #fff;
+    color: var(--text-dark, #212529);
+    font-size: .8rem;
+    font-family: inherit;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all .15s;
+    text-decoration: none;
+    line-height: 1;
+}
+
+.pg-btn:hover:not(:disabled):not(.pg-btn--active) {
+    background: var(--bg-light, #f8f9fa);
+    border-color: var(--primary, #0d6efd);
+    color: var(--primary, #0d6efd);
+}
+
+.pg-btn--active {
+    background: var(--primary, #0d6efd);
+    border-color: var(--primary, #0d6efd);
+    color: #fff;
+    font-weight: 600;
+    cursor: default;
+}
+
+.pg-btn:disabled {
+    opacity: .38;
+    cursor: not-allowed;
+}
+
+.pg-ellipsis {
+    min-width: 28px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .82rem;
+    color: var(--text-muted, #6c757d);
+    pointer-events: none;
+}
 </style>
 
 <script>
-let toursData = [];
+let toursData = [];        // full data from API
+let filteredData = [];     // after search filter
+let currentPage = 1;
+let pageSize = 10;
+let searchQuery = '';
 let addEditor, editEditor;
 
 function toggleSidebar() {
@@ -292,6 +546,23 @@ async function initEditors() {
 }
 
 function stripHTML(html) { return new DOMParser().parseFromString(html,'text/html').body.textContent||''; }
+
+// ── FILE INPUT LABEL UPDATE ───────────────────────
+function bindFileLabel(inputId, labelId) {
+    const input = document.getElementById(inputId);
+    const label = document.getElementById(labelId);
+    if (!input || !label) return;
+    input.addEventListener('change', () => {
+        const files = input.files;
+        if (!files || files.length === 0) {
+            label.textContent = 'Chưa chọn tệp nào';
+        } else if (files.length === 1) {
+            label.textContent = files[0].name;
+        } else {
+            label.textContent = `${files.length} tệp được chọn`;
+        }
+    });
+}
 
 // ── IMAGE PREVIEW HELPERS ─────────────────────────
 function previewMainImage(inputId, previewId) {
@@ -325,34 +596,96 @@ function previewGalleryImages(inputId, previewId) {
     });
 }
 
+// ── DATA LOAD ─────────────────────────────────────
 async function loadTours() {
     const res = await fetch("/api/admin/tours/");
     toursData = await res.json();
-    const tbody = document.getElementById("tourTableBody");
-    if (!toursData.length) {
-        tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><i class="fas fa-route"></i><p>Chưa có tour nào</p></div></td></tr>`; return;
+    applyFilterAndRender();
+}
+
+// ── SEARCH ────────────────────────────────────────
+function handleSearch() {
+    const val = document.getElementById('searchInput').value;
+    searchQuery = val.trim().toLowerCase();
+    document.getElementById('searchClear').style.display = searchQuery ? 'block' : 'none';
+    currentPage = 1;
+    applyFilterAndRender();
+}
+
+function clearSearch() {
+    document.getElementById('searchInput').value = '';
+    searchQuery = '';
+    document.getElementById('searchClear').style.display = 'none';
+    currentPage = 1;
+    applyFilterAndRender();
+}
+
+// ── PAGE SIZE ─────────────────────────────────────
+function handlePageSizeChange() {
+    pageSize = parseInt(document.getElementById('pageSizeSelect').value);
+    currentPage = 1;
+    applyFilterAndRender();
+}
+
+// ── FILTER + RENDER ───────────────────────────────
+function applyFilterAndRender() {
+    if (searchQuery) {
+        filteredData = toursData.filter(t =>
+            (t.title || '').toLowerCase().includes(searchQuery) ||
+            (t.short_intro || '').toLowerCase().includes(searchQuery) ||
+            (t.tag || '').toLowerCase().includes(searchQuery) ||
+            (t.duration || '').toLowerCase().includes(searchQuery)
+        );
+    } else {
+        filteredData = [...toursData];
     }
-    tbody.innerHTML = toursData.map(t => `
+    renderTable();
+    renderPagination();
+}
+
+// ── RENDER TABLE ──────────────────────────────────
+function renderTable() {
+    const tbody = document.getElementById("tourTableBody");
+
+    if (!filteredData.length) {
+        const msg = searchQuery
+            ? `<div class="empty-state"><i class="fas fa-search"></i><p>Không tìm thấy tour nào khớp với "<strong>${searchQuery}</strong>"</p></div>`
+            : `<div class="empty-state"><i class="fas fa-route"></i><p>Chưa có tour nào</p></div>`;
+        tbody.innerHTML = `<tr><td colspan="6">${msg}</td></tr>`;
+        return;
+    }
+
+    const totalPages = Math.ceil(filteredData.length / pageSize);
+    if (currentPage > totalPages) currentPage = totalPages;
+
+    const start = (currentPage - 1) * pageSize;
+    const pageData = filteredData.slice(start, start + pageSize);
+
+    tbody.innerHTML = pageData.map(t => `
         <tr>
             <td>
-                <img src="${t.image || '/static/images/banner.jpg'}" alt="${t.title}" 
+                <img src="${t.image || '/static/images/banner.jpg'}" alt="${t.title}"
                      style="width:80px;height:52px;object-fit:cover;border-radius:6px;border:1px solid var(--border-light);display:block"
                      onerror="this.src='/static/images/banner.jpg'">
             </td>
             <td>
-                <div class="place-name">${t.title}</div>
+                <div class="place-name">${highlight(t.title, searchQuery)}</div>
                 <div style="margin-top:4px; display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
-                    <span class="tour-tag">${t.tag || 'Phổ thông'}</span>
-                    ${t.images && t.images.length ? `<span style="font-size:.7rem; color:var(--primary); background:rgba(13,110,253,.1); padding:2px 6px; border-radius:4px;" title="Có ${t.images.length} ảnh gallery"><i class="fas fa-images"></i> ${t.images.length}</span>` : ''}
+                    <span class="tour-tag">${highlight(t.tag || 'Phổ thông', searchQuery)}</span>
+                    ${t.images && t.images.length
+                        ? `<span style="font-size:.7rem;color:var(--primary);background:rgba(13,110,253,.1);padding:2px 6px;border-radius:4px;" title="Có ${t.images.length} ảnh gallery"><i class="fas fa-images"></i> ${t.images.length}</span>`
+                        : ''}
                 </div>
             </td>
             <td style="max-width:220px">
                 <div style="font-size:.83rem;color:var(--text-muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">
-                    ${t.short_intro || '<i style="color:var(--text-light)">Chưa có giới thiệu ngắn</i>'}
+                    ${t.short_intro
+                        ? highlight(t.short_intro, searchQuery)
+                        : '<i style="color:var(--text-light)">Chưa có giới thiệu ngắn</i>'}
                 </div>
             </td>
             <td><span class="price-text">${new Intl.NumberFormat('vi-VN').format(t.price)}đ</span></td>
-            <td><span style="font-size:.83rem;color:var(--text-muted)"><i class="far fa-clock" style="margin-right:4px"></i>${t.duration||'N/A'}</span></td>
+            <td><span style="font-size:.83rem;color:var(--text-muted)"><i class="far fa-clock" style="margin-right:4px"></i>${highlight(t.duration || 'N/A', searchQuery)}</span></td>
             <td><div class="action-btns">
                 <button class="btn-icon" title="Sửa" onclick="openEdit(${t.id})"><i class="fas fa-pen" style="color:var(--primary)"></i></button>
                 <button class="btn-icon" title="Xóa" onclick="deleteTour(${t.id})"><i class="fas fa-trash" style="color:var(--danger)"></i></button>
@@ -361,6 +694,82 @@ async function loadTours() {
     `).join('');
 }
 
+// Highlight từ khóa tìm kiếm trong text
+function highlight(text, query) {
+    if (!query || !text) return text;
+    const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return String(text).replace(new RegExp(`(${escaped})`, 'gi'),
+        '<mark style="background:#fff3cd;color:inherit;padding:0 1px;border-radius:2px;">$1</mark>');
+}
+
+// ── RENDER PAGINATION ─────────────────────────────
+function renderPagination() {
+    const total = filteredData.length;
+    const totalPages = Math.ceil(total / pageSize);
+    const start = total === 0 ? 0 : (currentPage - 1) * pageSize + 1;
+    const end = Math.min(currentPage * pageSize, total);
+
+    // Info text
+    const infoEl = document.getElementById('paginationInfo');
+    if (total === 0) {
+        infoEl.textContent = '';
+    } else {
+        infoEl.textContent = `Hiển thị ${start}–${end} trong tổng số ${total} tour`;
+    }
+
+    // Controls
+    const ctrlEl = document.getElementById('paginationControls');
+    if (totalPages <= 1) { ctrlEl.innerHTML = ''; return; }
+
+    let html = '';
+
+    // Prev button
+    html += `<button class="pg-btn" onclick="goToPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''} title="Trang trước">
+        <i class="fas fa-chevron-left" style="font-size:.7rem"></i>
+    </button>`;
+
+    // Page number buttons with ellipsis
+    const pages = getPageRange(currentPage, totalPages);
+    let prevPage = null;
+    for (const p of pages) {
+        if (prevPage !== null && p - prevPage > 1) {
+            html += `<span class="pg-ellipsis">…</span>`;
+        }
+        html += `<button class="pg-btn ${p === currentPage ? 'pg-btn--active' : ''}" onclick="goToPage(${p})">${p}</button>`;
+        prevPage = p;
+    }
+
+    // Next button
+    html += `<button class="pg-btn" onclick="goToPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''} title="Trang sau">
+        <i class="fas fa-chevron-right" style="font-size:.7rem"></i>
+    </button>`;
+
+    ctrlEl.innerHTML = html;
+}
+
+// Tính dãy số trang hiển thị (tránh quá nhiều nút)
+function getPageRange(current, total) {
+    const delta = 2;
+    const range = new Set();
+
+    range.add(1);
+    range.add(total);
+    for (let i = Math.max(2, current - delta); i <= Math.min(total - 1, current + delta); i++) {
+        range.add(i);
+    }
+    return Array.from(range).sort((a, b) => a - b);
+}
+
+function goToPage(page) {
+    const totalPages = Math.ceil(filteredData.length / pageSize);
+    if (page < 1 || page > totalPages) return;
+    currentPage = page;
+    renderTable();
+    renderPagination();
+    document.querySelector('.table-wrap')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// ── EDIT / MODAL ──────────────────────────────────
 function openEdit(id) {
     const t = toursData.find(x => x.id == id); if (!t) return;
     document.getElementById("editTourId").value   = t.id;
@@ -370,10 +779,9 @@ function openEdit(id) {
     document.getElementById("editTag").value      = t.tag||'';
     document.getElementById("editShortIntro").value = t.short_intro||'';
     document.getElementById("edit_short_intro_count").textContent = `${(t.short_intro||'').length}/300`;
-    
+
     if (editEditor) editEditor.setData(t.description||'');
 
-    // --- Ảnh chính hiện tại ---
     const mainBox = document.getElementById('edit_main_current');
     if (t.image) {
         mainBox.innerHTML = `<img src="${t.image}" alt="Ảnh chính" onerror="this.src='/static/images/banner.jpg'">`;
@@ -382,8 +790,8 @@ function openEdit(id) {
     }
     document.getElementById('edit_main_preview').innerHTML = '';
     document.getElementById('edit_main_image').value = '';
+    document.getElementById('edit_main_image_label').textContent = 'Chưa chọn tệp nào';
 
-    // --- Gallery hiện tại ---
     const galBox = document.getElementById('edit_gallery_current');
     galBox.innerHTML = '';
     (t.images || []).forEach(imgUrl => {
@@ -397,6 +805,7 @@ function openEdit(id) {
     }
     document.getElementById('edit_gallery_preview').innerHTML = '';
     document.getElementById('edit_gallery_images').value = '';
+    document.getElementById('edit_gallery_images_label').textContent = 'Chưa chọn tệp nào';
 
     document.querySelectorAll('#editTourForm .is-valid,.is-invalid').forEach(el=>el.classList.remove('is-valid','is-invalid'));
     document.querySelectorAll('#editTourForm .field-hint').forEach(h=>h.classList.remove('show'));
@@ -452,7 +861,6 @@ function attachLiveValidation(ids) {
     ids.forEach(id=>{ const el=document.getElementById(id); if(el) el.addEventListener('blur',()=>validateField(id)); });
 }
 
-// Character counter for textareas
 function attachCounter(inputId, counterId, max=300) {
     const ta = document.getElementById(inputId), sp = document.getElementById(counterId);
     if (!ta||!sp) return;
@@ -478,6 +886,8 @@ document.getElementById("tourForm").onsubmit = async e => {
         document.getElementById('add_short_intro_count').textContent='0/300';
         document.getElementById('add_main_preview').innerHTML = '';
         document.getElementById('add_gallery_preview').innerHTML = '';
+        document.getElementById('add_main_image_label').textContent = 'Chưa chọn tệp nào';
+        document.getElementById('add_gallery_images_label').textContent = 'Chưa chọn tệp nào';
         document.querySelectorAll('#tourForm .is-valid,.is-invalid').forEach(el=>el.classList.remove('is-valid','is-invalid'));
         loadTours();
     } else alert("❌ Có lỗi, vui lòng thử lại.");
@@ -514,18 +924,14 @@ function exportExcel() {
         'Mô tả':        t.description ? t.description.replace(/<[^>]+>/g, '') : '',
         'Ngày tạo':     t.created_at ? t.created_at.substring(0, 10) : '',
     }));
-
     const ws = XLSX.utils.json_to_sheet(rows);
-    ws['!cols'] = [
-        {wch:6},{wch:30},{wch:40},{wch:15},{wch:16},{wch:14},{wch:50},{wch:12}
-    ];
+    ws['!cols'] = [{wch:6},{wch:30},{wch:40},{wch:15},{wch:16},{wch:14},{wch:50},{wch:12}];
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Tours");
-    const date = new Date().toISOString().slice(0,10);
-    XLSX.writeFile(wb, `tours_${date}.xlsx`);
+    XLSX.writeFile(wb, `tours_${new Date().toISOString().slice(0,10)}.xlsx`);
 }
 
-// ── EXCEL TEMPLATE DOWNLOAD ───────────────────────
+// ── EXCEL TEMPLATE ────────────────────────────────
 function downloadTemplate(e) {
     e.preventDefault();
     const headers = [['Tên Tour','Giới thiệu','Giá (VNĐ)','Thời lượng','Nhãn (Tag)','Mô tả']];
@@ -540,7 +946,6 @@ function downloadTemplate(e) {
 async function importExcel(input) {
     const file = input.files[0];
     if (!file) return;
-
     const statusEl = document.getElementById('importStatus');
     statusEl.className = 'info';
     statusEl.style.display = 'block';
@@ -560,12 +965,12 @@ async function importExcel(input) {
             }
 
             const colMap = {
-                title:       ['Tên Tour', 'title', 'Title', 'TÊN TOUR'],
-                short_intro: ['Giới thiệu', 'short_intro', 'Short Intro', 'GiỚI THIỆU'],
-                price:       ['Giá (VNĐ)', 'Giá', 'price', 'Price', 'GIÁ'],
-                duration:    ['Thời lượng', 'duration', 'Duration', 'THỜI LƯỢNG'],
-                tag:         ['Nhãn (Tag)', 'tag', 'Tag', 'NHÃN'],
-                description: ['Mô tả', 'description', 'Description', 'MÔ TẢ'],
+                title:       ['Tên Tour','title','Title','TÊN TOUR'],
+                short_intro: ['Giới thiệu','short_intro','Short Intro','GiỚI THIỆU'],
+                price:       ['Giá (VNĐ)','Giá','price','Price','GIÁ'],
+                duration:    ['Thời lượng','duration','Duration','THỜI LƯỢNG'],
+                tag:         ['Nhãn (Tag)','tag','Tag','NHÃN'],
+                description: ['Mô tả','description','Description','MÔ TẢ'],
             };
 
             function getVal(row, keys) {
@@ -589,18 +994,16 @@ async function importExcel(input) {
             }
 
             statusEl.textContent = `⏳ Đang nhập ${tours.length} tour...`;
-
             let ok = 0, fail = 0;
             for (const tour of tours) {
                 const fd = new FormData();
                 for (const [k, v] of Object.entries(tour)) fd.append(k, v);
                 const res = await fetch("/api/admin/tours/", {
-                    method: "POST", body: fd,
-                    headers: { "X-CSRFToken": "{{ csrf_token }}" }
+                    method:"POST", body:fd,
+                    headers:{"X-CSRFToken":"{{ csrf_token }}"}
                 });
                 if (res.ok) ok++; else fail++;
             }
-
             statusEl.className = fail === 0 ? 'success' : 'error';
             statusEl.textContent = `✅ Nhập xong: ${ok} thành công${fail ? `, ${fail} thất bại` : ''}.`;
             loadTours();
@@ -619,12 +1022,19 @@ window.onload = async () => {
     attachLiveValidation(['editTitle','editShortIntro','editPrice']);
     attachCounter('add_short_intro','add_short_intro_count');
     attachCounter('editShortIntro','edit_short_intro_count');
-    
+
+    // Bind file label updates
+    bindFileLabel('add_main_image',     'add_main_image_label');
+    bindFileLabel('add_gallery_images', 'add_gallery_images_label');
+    bindFileLabel('edit_main_image',    'edit_main_image_label');
+    bindFileLabel('edit_gallery_images','edit_gallery_images_label');
+
+    // Bind image previews
     previewMainImage('add_main_image', 'add_main_preview');
     previewGalleryImages('add_gallery_images', 'add_gallery_preview');
     previewMainImage('edit_main_image', 'edit_main_preview');
     previewGalleryImages('edit_gallery_images', 'edit_gallery_preview');
-    
+
     loadTours();
 };
 </script>
