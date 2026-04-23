@@ -18,23 +18,30 @@
                 <img src="{% static 'images/logo.jpg' %}" alt="Logo" />
             </div>
 
-            <ul class="navbar_links">
+            <!-- Hamburger Menu for Mobile -->
+            <button class="navbar_toggle" id="navbarToggle" aria-label="Toggle navigation">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <ul class="navbar_links" id="navbarLinks">
                 <li><a href="{% url 'home' %}">Trang Chủ</a></li>
                 <li class="dropdown map-tools-dropdown">
-                    <a href="#">Công cụ bản đồ ▾</a>
+                    <a href="javascript:void(0)" class="dropdown-toggle">Công cụ bản đồ</a>
                     <ul class="dropdown_menu">
-                        <li class="divider"></li>
                         <li><a href="javascript:void(0)" onclick="showSavedPlaces()"><i class="fa-solid fa-star"></i> Địa điểm đã lưu</a></li>
-                        <!--<li><a href="javascript:void(0)" onclick="showSearchHistory()"><i class="fa-solid fa-clock-rotate-left"></i> Lịch sử</a></li>-->
                         <li><a href="javascript:void(0)" onclick="showNearbyPlaces()"><i class="fa-solid fa-location-dot"></i> Địa điểm quanh tôi</a></li>
                     </ul>
                 </li>
                 <li><a href="{% url 'about' %}">Giới Thiệu</a></li>
                 <li class="dropdown">
-                    <a href="#">Khám phá ▾</a>
+                    <a href="javascript:void(0)" class="dropdown-toggle">Khám phá</a>
                     <ul class="dropdown_menu">
                         <li><a href="{% url 'events' %}">Sự Kiện</a></li>
-                        <li><a href="{% url 'services' %}">Dịch Vụ</a></li>
+                        <li><a href="{% url 'restaurants' %}">Nhà Hàng</a></li>
+                        <li><a href="{% url 'hotels' %}">Khách Sạn</a></li>
+                        <li><a href="{% url 'tours' %}">Tour Du Lịch</a></li>
                     </ul>
                 </li>
                 <li><a href="{% url 'contact' %}">Liên Hệ</a></li>
@@ -42,14 +49,18 @@
                 <!-- Đăng nhập/Đăng xuất -->
                 {% if user.is_authenticated %}
                 <li class="navbar_user">
-                    <span style="margin-left:8px;">{{ user.username }}</span>
+                    <div class="user-info">
+                        <i class="fas fa-user-circle"></i>
+                        <span>{{ user.username }}</span>
+                    </div>
                     <a href="{% url 'logout' %}" class="btn-logout">Đăng xuất</a>
                 </li>
                 {% else %}
-                <li><a href="{% url 'login' %}">Đăng nhập</a></li>
+                <li><a href="{% url 'login' %}" class="btn-login-nav">Đăng nhập</a></li>
                 {% endif %}
             </ul>
         </nav>
+        <div class="navbar-overlay" id="navbarOverlay"></div>
     </header>
 
     <main role="main" class="container">
@@ -71,6 +82,82 @@
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script src="https://unpkg.com/@mapbox/polyline"></script>
     <script src="{% static 'js/map.js' %}"></script>
+    <script>
+        // Navbar Toggle for Mobile
+        const navbarToggle = document.getElementById('navbarToggle');
+        const navbarLinks = document.getElementById('navbarLinks');
+        const navbarOverlay = document.getElementById('navbarOverlay');
+        
+        function closeMobileMenu() {
+            navbarLinks.classList.remove('active');
+            navbarOverlay.classList.remove('active');
+            if (navbarToggle) {
+                navbarToggle.classList.remove('active');
+            }
+        }
+
+        if (navbarToggle) {
+            navbarToggle.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const isActive = navbarLinks.classList.toggle('active');
+                navbarOverlay.classList.toggle('active', isActive);
+                this.classList.toggle('active', isActive);
+            });
+        }
+
+        if (navbarOverlay) {
+            navbarOverlay.addEventListener('click', closeMobileMenu);
+        }
+
+        // Dropdown toggle logic (Universal for Desktop & Mobile)
+        const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
+        
+        dropdownToggles.forEach(toggle => {
+            toggle.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const parent = this.parentElement;
+                const menu = this.nextElementSibling;
+                
+                // Close other dropdowns
+                document.querySelectorAll('.dropdown').forEach(d => {
+                    if (d !== parent) {
+                        d.classList.remove('active');
+                        const otherMenu = d.querySelector('.dropdown_menu');
+                        if (otherMenu) otherMenu.classList.remove('show');
+                    }
+                });
+                
+                // Toggle current dropdown
+                parent.classList.toggle('active');
+                
+                // Mobile specific: toggle max-height for smooth opening
+                if (window.innerWidth <= 992 && menu) {
+                    menu.classList.toggle('show');
+                }
+            });
+        });
+
+        // Close everything when clicking outside
+        document.addEventListener('click', function(event) {
+            const isClickInsideNavbar = navbarLinks.contains(event.target) || (navbarToggle && navbarToggle.contains(event.target));
+            
+            // Close mobile menu
+            if (!isClickInsideNavbar && navbarLinks.classList.contains('active')) {
+                closeMobileMenu();
+            }
+            
+            // Close all dropdowns
+            if (!event.target.closest('.dropdown')) {
+                document.querySelectorAll('.dropdown').forEach(d => {
+                    d.classList.remove('active');
+                    const menu = d.querySelector('.dropdown_menu');
+                    if (menu) menu.classList.remove('show');
+                });
+            }
+        });
+    </script>
     {% block scripts %}{% endblock %}
 
     <!-- Toggle mật khẩu -->

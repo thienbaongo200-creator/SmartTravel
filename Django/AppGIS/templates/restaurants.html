@@ -28,17 +28,13 @@
                             <div class="slider-item">
                                 {% if restaurant.img %}
                                     {% if restaurant.img.url %}
-                                        {# TH1: Ảnh được upload qua Admin (đối tượng ImageField) #}
-                                        <img src="{{ restaurant.img.url }}" class="restaurant-img" onclick="openLightbox(this.src)" onerror="this.src='{% static 'images/default-restaurant.jpg' %}'">
+                                        <img src="{{ restaurant.img.url }}" class="restaurant-img" onclick="openLightbox(this.src)" onerror="this.src='/static/images/default-restaurant.jpg'">
                                     {% elif "http" in restaurant.img or "media/" in restaurant.img %}
-                                        {# TH2: Ảnh là chuỗi đường dẫn có sẵn (từ API hoặc database cũ) #}
-                                        <img src="{{ restaurant.img }}" class="restaurant-img" onclick="openLightbox(this.src)" onerror="this.src='{% static 'images/default-restaurant.jpg' %}'">
+                                        <img src="{{ restaurant.img }}" class="restaurant-img" onclick="openLightbox(this.src)" onerror="this.src='/static/images/default-restaurant.jpg'">
                                     {% else %}
-                                        {# TH3: Ảnh nằm trong thư mục static/images/ #}
-                                        <img src="{% static 'images/' %}{{ restaurant.img }}" class="restaurant-img" onclick="openLightbox(this.src)" onerror="this.src='{% static 'images/default-restaurant.jpg' %}'">
+                                        <img src="{% static 'images/' %}{{ restaurant.img }}" class="restaurant-img" onclick="openLightbox(this.src)" onerror="this.src='/static/images/default-restaurant.jpg'">
                                     {% endif %}
                                 {% else %}
-                                    {# TH4: Không có dữ liệu ảnh #}
                                     <img src="{% static 'images/default-restaurant.jpg' %}" class="restaurant-img">
                                 {% endif %}
                             </div>
@@ -60,37 +56,29 @@
                     </div>
 
                     <div class="restaurant-content-body">
-                        <h5 class="restaurant-title">{{ restaurant.name }}</h5>
-                        <div class="status-wrapper">
+                        <h5 class="restaurant-title" title="{{ restaurant.name }}">{{ restaurant.name }}</h5>
+                        
+                        <div class="restaurant-status-wrapper">
                             {% if restaurant.is_open_now %}
-                                <span class="status-open"><i class="fas fa-check-circle me-1"></i> Mở cửa</span>
+                                <span class="status-open"><i class="fas fa-circle me-1" style="font-size: 8px;"></i> Đang mở cửa</span>
                             {% else %}
-                                <span class="status-closed"><i class="fas fa-times-circle me-1"></i> Đóng cửa</span>
+                                <span class="status-closed"><i class="fas fa-circle me-1" style="font-size: 8px;"></i> Đã đóng cửa</span>
                             {% endif %}
                         </div>
 
                         <ul class="info-list">
                             <li><i class="fas fa-map-marker-alt"></i> <span>{{ restaurant.address|default:"Đang cập nhật địa chỉ" }}</span></li>
-                             <li>
-                                <i class="fas fa-phone-alt"></i> 
-                                <span>
-                                    {% if restaurant.phone %}
-                                        <a href="tel:{{ restaurant.phone }}" style="color: inherit; text-decoration: none; font-weight: 500;">
-                                            {{ restaurant.phone }}
-                                        </a>
-                                    {% else %}
-                                        Liên hệ: 0123.456.789
-                                    {% endif %}
-                                </span>
-                            </li>
+                            <li><i class="fas fa-phone-alt"></i> <span>{{ restaurant.phone|default:"0123.456.789" }}</span></li>
                             <li><i class="fas fa-clock"></i> <span>{{ restaurant.open_time|default:"09:00" }} - {{ restaurant.close_time|default:"22:00" }}</span></li>
                         </ul>
 
-                        <p class="restaurant-desc">{{ restaurant.description|default:"Trải nghiệm ẩm thực đặc sắc." }}</p>
+                        <div class="restaurant-desc">
+                            {{ restaurant.description|default:"Trải nghiệm ẩm thực đặc sắc tại không gian ấm cúng với những món ăn ngon miệng." }}
+                        </div>
                         
                         <div class="restaurant-btn-container">
-                            <a href="{% url 'home' %}?id={{ restaurant.id }}&lat={{ restaurant.latitude|stringformat:".6f" }}&lng={{ restaurant.longitude|stringformat:".6f" }}&name={{ restaurant.name|urlencode }}&img={{ restaurant.img|urlencode }}&address={{ restaurant.address|urlencode }}&desc={{ restaurant.description|urlencode }}&rating={{ restaurant.rating }}&price={{ restaurant.price|default:0 }}&category=Nhà hàng&menu={{ restaurant.menu_imgs|safe|urlencode }}" class="btn-view-map">
-                                <i class="fas fa-location-arrow"></i> XEM TRÊN BẢN ĐỒ
+                            <a href="{% url 'home' %}?id={{ restaurant.id }}&lat={{ restaurant.latitude|stringformat:".6f" }}&lng={{ restaurant.longitude|stringformat:".6f" }}&name={{ restaurant.name|urlencode }}&img={{ restaurant.img|urlencode }}&address={{ restaurant.address|urlencode }}&desc={{ restaurant.description|urlencode }}&rating={{ restaurant.rating }}&price={{ restaurant.price|default:0 }}&category=Nhà hàng&menu={{ restaurant.menu_imgs|safe|urlencode }}" class="btn-restaurant-action">
+                                <i class="fas fa-location-arrow"></i> XEM BẢN ĐỒ
                             </a>
                         </div>
                     </div>
@@ -104,12 +92,10 @@
 
             {% if restaurants.has_other_pages %}
             <div class="col-12">
-                <div class="pagination-container">
-                    <ul class="pagination">
+                <div class="pagination-container text-center mt-4">
+                    <ul class="pagination justify-content-center">
                         {% if restaurants.has_previous %}
-                            <li><a href="?page={{ restaurants.previous_page_number }}" class="page-link-custom">&laquo;</a></li>
-                        {% else %}
-                            <li class="page-disabled"><span>&laquo;</span></li>
+                            <li><a href="?page={{ restaurants.previous_page_number }}" class="page-link-custom">&laquo; Trước</a></li>
                         {% endif %}
 
                         {% for i in restaurants.paginator.page_range %}
@@ -121,9 +107,7 @@
                         {% endfor %}
 
                         {% if restaurants.has_next %}
-                            <li><a href="?page={{ restaurants.next_page_number }}" class="page-link-custom">&raquo;</a></li>
-                        {% else %}
-                            <li class="page-disabled"><span>&raquo;</span></li>
+                            <li><a href="?page={{ restaurants.next_page_number }}" class="page-link-custom">Sau &raquo;</a></li>
                         {% endif %}
                     </ul>
                 </div>
