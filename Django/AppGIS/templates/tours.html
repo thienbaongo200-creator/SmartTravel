@@ -39,9 +39,9 @@
           <article class="tour-card" aria-labelledby="tour-title-{{ tour.id }}">
             <div class="tour-image-wrapper">
               {% if tour.image %}
-                <img src="{% static tour.image %}" alt="{{ tour.title }}" loading="lazy">
+                <img src="{{ tour.image }}" alt="{{ tour.title }}" loading="lazy" onerror="this.src='/static/images/banner.jpg'">
               {% else %}
-                <img src="{% static 'images/tour/default.jpg' %}" alt="Tour" loading="lazy">
+                <img src="/static/images/banner.jpg" alt="Tour" loading="lazy">
               {% endif %}
               <span class="tour-badge" aria-hidden="true">{{ tour.price }} VNĐ</span>
             </div>
@@ -211,7 +211,7 @@ function openBookingModal(tourId, tourTitle, basePrice) {
     document.getElementById("bookingModal").classList.add("active");
     document.getElementById("modalTourTitle").textContent = tourTitle;
     document.getElementById("modalTourId").value = tourId;
-    document.getElementById("bookingForm").action = "/book-tour/" + tourId + "/";
+    document.getElementById("bookingForm").action = "/tours/" + tourId + "/book/";
     
     const formatter = new Intl.NumberFormat('vi-VN');
     document.getElementById("basePrice").textContent = formatter.format(basePrice);
@@ -226,6 +226,49 @@ function openBookingModal(tourId, tourTitle, basePrice) {
 
 function closeBookingModal() {
     document.getElementById("bookingModal").classList.remove("active");
+}
+
+// Carousel functionality
+function carouselPrev(tourId) {
+    const container = document.getElementById(`carousel-${tourId}`);
+    const items = container.querySelectorAll('.carousel-item');
+    const indicators = container.querySelectorAll('.indicator');
+    let currentIndex = Array.from(items).findIndex(item => item.classList.contains('active'));
+    
+    items[currentIndex].classList.remove('active');
+    indicators[currentIndex].classList.remove('active');
+    
+    currentIndex = (currentIndex - 1 + items.length) % items.length;
+    
+    items[currentIndex].classList.add('active');
+    indicators[currentIndex].classList.add('active');
+}
+
+function carouselNext(tourId) {
+    const container = document.getElementById(`carousel-${tourId}`);
+    const items = container.querySelectorAll('.carousel-item');
+    const indicators = container.querySelectorAll('.indicator');
+    let currentIndex = Array.from(items).findIndex(item => item.classList.contains('active'));
+    
+    items[currentIndex].classList.remove('active');
+    indicators[currentIndex].classList.remove('active');
+    
+    currentIndex = (currentIndex + 1) % items.length;
+    
+    items[currentIndex].classList.add('active');
+    indicators[currentIndex].classList.add('active');
+}
+
+function carouselGoTo(tourId, index) {
+    const container = document.getElementById(`carousel-${tourId}`);
+    const items = container.querySelectorAll('.carousel-item');
+    const indicators = container.querySelectorAll('.indicator');
+    
+    items.forEach(item => item.classList.remove('active'));
+    indicators.forEach(ind => ind.classList.remove('active'));
+    
+    items[index].classList.add('active');
+    indicators[index].classList.add('active');
 }
 
 window.onclick = function(event) {

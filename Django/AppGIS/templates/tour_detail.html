@@ -10,12 +10,12 @@
 {% block content %}
 <section style="background:#f4f6f9; min-height: 100vh;">
     
-    <!-- Tour Header dengan ảnh -->
+    <!-- Tour Header với ảnh -->
     <div class="tour-detail-header">
         {% if tour.image %}
-            <img src="{% static tour.image %}" alt="{{ tour.title }}">
+            <img src="{{ tour.image }}" alt="{{ tour.title }}" onerror="this.src='/static/images/banner.jpg'">
         {% else %}
-            <img src="{% static 'images/tour/default.jpg' %}" alt="Tour">
+            <img src="/static/images/banner.jpg" alt="Tour">
         {% endif %}
         <div class="tour-detail-overlay">
             <h1 class="tour-detail-title">{{ tour.title }}</h1>
@@ -65,8 +65,8 @@
                     <h3><i class="fas fa-images"></i> Bộ sưu tập ảnh</h3>
                     <div class="gallery-grid">
                         {% for img in tour.images %}
-                        <div class="gallery-item" onclick="openGalleryModal('{% static img %}')">
-                            <img src="{% static img %}" alt="Gallery image" loading="lazy">
+                        <div class="gallery-item" onclick="openGalleryModal('{{ img }}')">
+                            <img src="{{ img }}" alt="Gallery image" loading="lazy" onerror="this.src='/static/images/banner.jpg'">
                             <div class="gallery-item-overlay">
                                 <i class="fas fa-expand"></i>
                             </div>
@@ -201,7 +201,7 @@ function openBookingModal(tourId, tourTitle, basePrice) {
     document.getElementById("bookingModal").classList.add("active");
     document.getElementById("modalTourTitle").textContent = tourTitle;
     document.getElementById("modalTourId").value = tourId;
-    document.getElementById("bookingForm").action = "/book-tour/" + tourId + "/";
+    document.getElementById("bookingForm").action = "/tours/" + tourId + "/book/";
     
     const formatter = new Intl.NumberFormat('vi-VN');
     document.getElementById("basePrice").textContent = formatter.format(basePrice);

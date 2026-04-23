@@ -79,6 +79,20 @@
                         <input id="add_tag" type="text" name="tag" class="form-control" placeholder="VD: Phổ biến, Ưu đãi, Mới">
                     </div>
 
+                    <!-- Main Image Upload -->
+                    <div class="form-group" style="margin-top:14px">
+                        <label class="form-label">Ảnh chính</label>
+                        <input type="file" id="add_main_image" name="main_image" class="form-control" accept="image/*">
+                        <div id="add_main_preview" class="image-preview-wrap" style="margin-top:8px;"></div>
+                    </div>
+
+                    <!-- Gallery Images Upload -->
+                    <div class="form-group" style="margin-top:14px">
+                        <label class="form-label">Ảnh gallery (tối đa 6)</label>
+                        <input type="file" id="add_gallery_images" name="gallery_images" class="form-control" multiple accept="image/*">
+                        <div id="add_gallery_preview" class="gallery-preview" style="margin-top:8px;"></div>
+                    </div>
+
                     <div class="form-group" style="margin-top:14px">
                         <label class="form-label">Mô tả chi tiết</label>
                         <div id="editor-add"></div>
@@ -98,6 +112,7 @@
                 <table>
                     <thead>
                         <tr>
+                            <th style="width: 100px;">Ảnh</th>
                             <th>Thông tin Tour</th>
                             <th>Giới thiệu ngắn</th>
                             <th>Giá niêm yết</th>
@@ -106,7 +121,7 @@
                         </tr>
                     </thead>
                     <tbody id="tourTableBody">
-                        <tr><td colspan="5"><div class="empty-state"><i class="fas fa-spinner fa-spin"></i><p>Đang tải...</p></div></td></tr>
+                        <tr><td colspan="6"><div class="empty-state"><i class="fas fa-spinner fa-spin"></i><p>Đang tải...</p></div></td></tr>
                     </tbody>
                 </table>
             </div>
@@ -158,6 +173,24 @@
                     </div>
                 </div>
 
+                <!-- Edit Main Image -->
+                <div class="form-group" style="margin-top:14px">
+                    <label class="form-label">Ảnh chính hiện tại</label>
+                    <div id="edit_main_current" class="current-img-box"></div>
+                    <label class="form-label" style="margin-top:10px">Thay ảnh chính mới</label>
+                    <input type="file" id="edit_main_image" name="main_image" class="form-control" accept="image/*">
+                    <div id="edit_main_preview" class="image-preview-wrap" style="margin-top:8px;"></div>
+                </div>
+
+                <!-- Edit Gallery Images -->
+                <div class="form-group" style="margin-top:14px">
+                    <label class="form-label">Gallery hiện tại</label>
+                    <div id="edit_gallery_current" class="gallery-preview" style="margin-bottom:10px;"></div>
+                    <label class="form-label">Thêm ảnh gallery mới</label>
+                    <input type="file" id="edit_gallery_images" name="gallery_images" class="form-control" multiple accept="image/*">
+                    <div id="edit_gallery_preview" class="gallery-preview" style="margin-top:8px;"></div>
+                </div>
+
                 <div class="form-group" style="margin-top:14px">
                     <label class="form-label">Mô tả chi tiết</label>
                     <div id="editor-edit"></div>
@@ -176,6 +209,29 @@
 .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 @media (max-width: 1100px) { .tours-layout { grid-template-columns: 1fr; } }
 @media (max-width: 576px)  { .two-col { grid-template-columns: 1fr; } }
+
+/* Image previews */
+.image-preview-wrap img {
+    max-width: 120px; max-height: 100px; object-fit: cover;
+    border-radius: 8px; border: 2px solid var(--border-light);
+    display: block;
+}
+.gallery-preview { display: flex; flex-wrap: wrap; gap: 6px; }
+.gallery-preview img {
+    width: 62px; height: 62px; object-fit: cover;
+    border-radius: 6px; border: 2px solid var(--border-light);
+}
+
+/* Current image box */
+.current-img-box {
+    text-align: center; padding: 14px 10px;
+    background: var(--bg-light,#f8f9fa); border-radius: 8px;
+    min-height: 90px; border: 1px dashed var(--border-light);
+}
+.current-img-box img {
+    max-width: 100%; max-height: 140px; object-fit: cover;
+    border-radius: 8px; display: block; margin: 0 auto;
+}
 </style>
 
 <script>
@@ -194,18 +250,58 @@ async function initEditors() {
 
 function stripHTML(html) { return new DOMParser().parseFromString(html,'text/html').body.textContent||''; }
 
+// ── IMAGE PREVIEW HELPERS ─────────────────────────
+function previewMainImage(inputId, previewId) {
+    const input = document.getElementById(inputId);
+    const preview = document.getElementById(previewId);
+    if (!input || !preview) return;
+    input.addEventListener('change', () => {
+        preview.innerHTML = '';
+        if (input.files && input.files[0]) {
+            const url = URL.createObjectURL(input.files[0]);
+            const img = document.createElement('img');
+            img.src = url;
+            preview.appendChild(img);
+        }
+    });
+}
+
+function previewGalleryImages(inputId, previewId) {
+    const input = document.getElementById(inputId);
+    const preview = document.getElementById(previewId);
+    if (!input || !preview) return;
+    input.addEventListener('change', () => {
+        preview.innerHTML = '';
+        Array.from(input.files).slice(0, 6).forEach(file => {
+            const url = URL.createObjectURL(file);
+            const img = document.createElement('img');
+            img.src = url;
+            img.title = file.name;
+            preview.appendChild(img);
+        });
+    });
+}
+
 async function loadTours() {
     const res = await fetch("/api/admin/tours/");
     toursData = await res.json();
     const tbody = document.getElementById("tourTableBody");
     if (!toursData.length) {
-        tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><i class="fas fa-route"></i><p>Chưa có tour nào</p></div></td></tr>`; return;
+        tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><i class="fas fa-route"></i><p>Chưa có tour nào</p></div></td></tr>`; return;
     }
     tbody.innerHTML = toursData.map(t => `
         <tr>
             <td>
+                <img src="${t.image || '/static/images/banner.jpg'}" alt="${t.title}" 
+                     style="width:80px;height:52px;object-fit:cover;border-radius:6px;border:1px solid var(--border-light);display:block"
+                     onerror="this.src='/static/images/banner.jpg'">
+            </td>
+            <td>
                 <div class="place-name">${t.title}</div>
-                <div style="margin-top:4px"><span class="tour-tag">${t.tag||'Phổ thông'}</span></div>
+                <div style="margin-top:4px; display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+                    <span class="tour-tag">${t.tag || 'Phổ thông'}</span>
+                    ${t.images && t.images.length ? `<span style="font-size:.7rem; color:var(--primary); background:rgba(13,110,253,.1); padding:2px 6px; border-radius:4px;" title="Có ${t.images.length} ảnh gallery"><i class="fas fa-images"></i> ${t.images.length}</span>` : ''}
+                </div>
             </td>
             <td style="max-width:220px">
                 <div style="font-size:.83rem;color:var(--text-muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">
@@ -231,7 +327,34 @@ function openEdit(id) {
     document.getElementById("editTag").value      = t.tag||'';
     document.getElementById("editShortIntro").value = t.short_intro||'';
     document.getElementById("edit_short_intro_count").textContent = `${(t.short_intro||'').length}/300`;
+    
     if (editEditor) editEditor.setData(t.description||'');
+
+    // --- Ảnh chính hiện tại ---
+    const mainBox = document.getElementById('edit_main_current');
+    if (t.image) {
+        mainBox.innerHTML = `<img src="${t.image}" alt="Ảnh chính" onerror="this.src='/static/images/banner.jpg'">`;
+    } else {
+        mainBox.innerHTML = `<i class="fas fa-image" style="font-size:2rem;color:var(--text-light)"></i><p style="font-size:.75rem;color:var(--text-muted)">Chưa có ảnh</p>`;
+    }
+    document.getElementById('edit_main_preview').innerHTML = '';
+    document.getElementById('edit_main_image').value = '';
+
+    // --- Gallery hiện tại ---
+    const galBox = document.getElementById('edit_gallery_current');
+    galBox.innerHTML = '';
+    (t.images || []).forEach(imgUrl => {
+        const img = document.createElement('img');
+        img.src = imgUrl;
+        img.onerror = () => img.src = '/static/images/banner.jpg';
+        galBox.appendChild(img);
+    });
+    if (!(t.images && t.images.length)) {
+        galBox.innerHTML = '<span style="font-size:.75rem;color:var(--text-muted)">Chưa có gallery</span>';
+    }
+    document.getElementById('edit_gallery_preview').innerHTML = '';
+    document.getElementById('edit_gallery_images').value = '';
+
     document.querySelectorAll('#editTourForm .is-valid,.is-invalid').forEach(el=>el.classList.remove('is-valid','is-invalid'));
     document.querySelectorAll('#editTourForm .field-hint').forEach(h=>h.classList.remove('show'));
     document.getElementById("editTourModal").classList.add('open');
@@ -310,6 +433,8 @@ document.getElementById("tourForm").onsubmit = async e => {
         alert("✅ Thêm tour thành công!");
         e.target.reset(); if(addEditor) addEditor.setData('');
         document.getElementById('add_short_intro_count').textContent='0/300';
+        document.getElementById('add_main_preview').innerHTML = '';
+        document.getElementById('add_gallery_preview').innerHTML = '';
         document.querySelectorAll('#tourForm .is-valid,.is-invalid').forEach(el=>el.classList.remove('is-valid','is-invalid'));
         loadTours();
     } else alert("❌ Có lỗi, vui lòng thử lại.");
@@ -339,6 +464,12 @@ window.onload = async () => {
     attachLiveValidation(['editTitle','editShortIntro','editPrice']);
     attachCounter('add_short_intro','add_short_intro_count');
     attachCounter('editShortIntro','edit_short_intro_count');
+    
+    previewMainImage('add_main_image', 'add_main_preview');
+    previewGalleryImages('add_gallery_images', 'add_gallery_preview');
+    previewMainImage('edit_main_image', 'edit_main_preview');
+    previewGalleryImages('edit_gallery_images', 'edit_gallery_preview');
+    
     loadTours();
 };
 </script>
